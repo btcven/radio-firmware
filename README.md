@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://locha.io">
-    <img src="doc/LogotipoTurpial-Color.20-09-19.svg" alt="Locha Mesh">
+  <a href="https://locha.io/">
+  <img height="200px" src="doc/LogotipoTurpial-Color.20-09-19.svg">
   </a>
-</p>`
+</p>
 
 <h1 align="center">Radio Firmware</h1>
 
