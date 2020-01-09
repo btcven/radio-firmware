@@ -1,7 +1,7 @@
 /**
  * @file radio-firmware.c
  * @author Locha Mesh project developers (locha.io)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2019-12-08
  * 
@@ -10,10 +10,12 @@
  */
 
 #include "contiki.h"
+
+#ifndef RENODE
 #include "uart1-arch.h"
 #include "CC1312R1_LAUNCHXL.h"
-
 #include <ti/drivers/UART.h>
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -27,23 +29,21 @@ PROCESS_THREAD(uart_process, ev, data)
 
   PROCESS_BEGIN();
 
+#ifndef RENODE
   uart1_init();
+#endif
 
   /* Setup a periodic timer that expires after 10 seconds. */
   etimer_set(&timer, CLOCK_SECOND * 10);
 
-  int tx = CC1312R1_LAUNCHXL_UART1_TX;
-  int rx = CC1312R1_LAUNCHXL_UART1_RX;
-
-  printf("RX: %d\n", rx);
-  printf("TX: %d\n", tx);
-
   while(1) {
+#ifndef RENODE
     int_fast32_t rc = uart1_write("Hello world\n", strlen("Hello world\n"));
     if (rc == UART_ERROR) {
         printf("Failed!");
         break;
     }
+#endif
 
     /* Wait for the periodic timer to expire and then restart the timer. */
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
