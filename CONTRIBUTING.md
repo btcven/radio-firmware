@@ -14,33 +14,72 @@ The following is a set of guidelines for contributing to [**Locha**](), [**Turpi
     * [Reporting **bugs**](#reporting-bugs)
     * [Pull request](#pull-request)
 
-* [Styleguide](#styleguide)
-    * [Commit messages](#commit-messages)
-    * [Code styleguide](#code-styleguide)
-        * [Include guards](#include-guards)
-        * [Include statements](#include-statements)
-        * [Naming rules](#naming-rules)
-        * [Indentation](#indentation)
-    * [Documentation styleguide](#documentation-styleguide)
+- [Contributing to the Turpial radio firmware](#contributing-to-the-turpial-radio-firmware)
+      - [Table of contents](#table-of-contents)
+  - [Before starting](#before-starting)
+  - [How can I contribute?](#how-can-i-contribute)
+    - [I have a question.](#i-have-a-question)
+    - [Suggesting features and reporting bugs.](#suggesting-features-and-reporting-bugs)
+    - [Making a Pull-Request.](#making-a-pull-request)
+    - [Making a change.](#making-a-change)
+  - [Styleguide](#styleguide)
+    - [Commit messages](#commit-messages)
+    - [Code styleguide](#code-styleguide)
+      - [Include guards](#include-guards)
+      - [Include statements](#include-statements)
+      - [Naming rules](#naming-rules)
+    - [Common statements](#common-statements)
+      - [if / if-else](#if--if-else)
+      - [while / do-while loops](#while--do-while-loops)
+    - [Indentation](#indentation)
+    - [Documentation styleguide](#documentation-styleguide)
 
 ## Before starting
 Please read our [code of conduct](CODE_OF_CONDUCT.md)
 
-## How can i contribute?
+## How can I contribute?
+We'll pleased to accept your patches and contributions to this project. There 
+are some guidelines you need to follow.
 
-ToDo
+### I have a question.
+If you have a question you can write to use using Twitter at
+[@Locha_io](https://twitter.com/Locha_io), or through our website
+[locha.io](https://locha.io).
 
-### I just have a question
-For any question you can send us a message via Twitter @Locha_io and soon through the form you will find on our website **locha.io**
+### Suggesting features and reporting bugs.
 
-### Suggesting enhancements
-ToDo
+You can use our issue tracker to share your idea, it will be discussed by the
+Locha Mesh team members. If we all agree and makes sense to implement this
+feature, it will be kept opened.
 
-### Reporting bugs
-ToDo
+You can open a new issue reporting a bug in our repository, please provide
+detailed information about the issues you're expecting.
 
-### Pull request
-ToDo
+### Making a Pull-Request.
+
+You can contribute making a Pull-Request with the code you want to fix, or with
+the features that you would like to implement. It will follow a review process
+first, and after that it can be merged.
+
+### Making a change.
+
+Antes de empezar a hacer modificaciones ejecuta estos comandos para crear una nueva rama que esté sincronizada con dev:
+
+```bash
+git fetch --all 
+
+git checkout dev 
+
+# Synchronize with the origin branch.
+git pull origin dev 
+
+# Create a branch for your feature.
+git checkout -b featurebranch 
+
+# Push your changes to your fork, assuming pr is your remote.
+git push pr featurebranch 
+```
+
 
 ## Styleguide
 
