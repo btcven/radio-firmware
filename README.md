@@ -2,6 +2,10 @@
   <a href="https://locha.io/">
   <img height="200px" src="doc/LogotipoTurpial-Color.20-09-19.svg">
   </a>
+  <br/>
+  <a href="https://travis-ci.com/btcven/radio-firmware">
+    <img src="https://travis-ci.com/btcven/radio-firmware.svg?branch=master" title="Build Status">
+  </a>
 </p>
 
 <p align="center">
