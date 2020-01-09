@@ -6,6 +6,10 @@ else
   BOARD = launchpad/cc1312r1
 endif
 
+MAKE_MAC = MAKE_MAC_CSMA
+MAKE_NET = MAKE_NET_IPV6
+MAKE_ROUTING = MAKE_ROUTING_AODV
+
 CFLAGS += -g
 
 CONTIKI_PROJECT = radio-firmware
