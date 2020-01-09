@@ -10,6 +10,8 @@
  */
 
 #include "contiki.h"
+#include "contiki-net.h"
+#include "aodv-routing.h"
 
 #ifndef RENODE
 #include "uart1-arch.h"
@@ -26,12 +28,16 @@ AUTOSTART_PROCESSES(&uart_process);
 PROCESS_THREAD(uart_process, ev, data)
 {
   static struct etimer timer;
+  static uip_ipaddr_t peeraddr; 
 
   PROCESS_BEGIN();
 
 #ifndef RENODE
   uart1_init();
 #endif
+
+  uip_ip6addr(&peeraddr, 0xfe80,0,0,0,0x0200,0,0,3);
+  aodv_request_route_to(&peeraddr);
 
   /* Setup a periodic timer that expires after 10 seconds. */
   etimer_set(&timer, CLOCK_SECOND * 10);
