@@ -22,6 +22,7 @@ The following is a set of guidelines for contributing to [**Locha**](), [**Turpi
     - [Suggesting features and reporting bugs.](#suggesting-features-and-reporting-bugs)
     - [Making a Pull-Request.](#making-a-pull-request)
     - [Making a change.](#making-a-change)
+    - [Upload your changes and make Pull Request](#upload-your-changes-and-make-pull-request)
   - [Styleguide](#styleguide)
     - [Commit messages](#commit-messages)
     - [Code styleguide](#code-styleguide)
@@ -63,23 +64,33 @@ first, and after that it can be merged.
 
 ### Making a change.
 
-Antes de empezar a hacer modificaciones ejecuta estos comandos para crear una nueva rama que esté sincronizada con dev:
+Before you start making modifications, run these commands to create a new branch that is synchronized with dev:
 
-```bash
-git fetch --all 
+    git fetch --all # Download the branches in the repository.
+    git checkout dev # it changes you to the dev branch in case you are not in it
+    git pull origin dev # to synchronize the dev branch locally.
+    git checkout -b featureNameYouWantToDo # create a new branch synchronized with dev.
+    git push pr featureNameYouWantToDo # upload your change to github
 
-git checkout dev 
+make some changes
 
-# Synchronize with the origin branch.
-git pull origin dev 
+### Upload your changes and make Pull Request
+Once you made the changes you want to propose, perform the following steps:
+    
+    git add -A
+    git commit -m "Here a description of your changes".
+    
+Configure your user data (You only need to enter this information the first time you push):
 
-# Create a branch for your feature.
-git checkout -b featurebranch 
+    git config --global user.email "tu-email@gmail.com"
+    git config --global user.name "<tu-usuario>"
 
-# Push your changes to your fork, assuming pr is your remote.
-git push pr featurebranch 
-```
+Push your commit to your repository fork: 
+    
+    git push featureNameYouWantToDo # upload your change to github
+    git push -u pr
 
+Go to the GitHub page, if you go to your repository fork, click on the Branch button and select the branch in which you made the name changes of the nature you want to do. Then press the Pull request button.
 
 ## Styleguide
 
