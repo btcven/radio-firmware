@@ -60,6 +60,7 @@ the Turpial board, mainly the CC1312R.
   - [Install ARM compiler.](#install-arm-compiler)
   - [Install Uniflash.](#install-uniflash)
   - [Compiling the project.](#compiling-the-project)
+  - [Testing with Renode.](#testing-with-renode)
 
 [License.](#license)
 
@@ -121,11 +122,41 @@ firmware. The built firmware is located under the `build/simplelink/`
 directory.
 
 ```bash
-make TARGET=simplelink BOARD=launchpad/cc1312r
+make
 ```
 
-[arm-gcc]: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads 
+[arm-gcc]: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
 [uniflash]: https://www.ti.com/tool/UNIFLASH
+
+### Testing with Renode.
+
+Currently we can test the code without using the actual SimpleLink radio MCU,
+for this case we use Renode as our emulation environment. This allows us to
+develop and test with more flexibility.
+
+ - **Installing Renode**: You can follow the Renode installation guide in their
+[homepage][renode], it can be installed on Linux, Windows and Mac OS.
+
+[renode]: https://renode.io/#downloads
+
+Now you need to build the firmware enabling Renode support:
+
+```bash
+make RENODE=1
+```
+
+To run Renode, from the command line execute this:
+
+```
+renode radio-nodes.resc
+```
+
+You can modify the radio-nodes.resc file to add your own nodes, modify their
+position in relation to each other. Learn more about Renode scripts
+[here][scripts].
+
+[scripts]: https://renode.readthedocs.io/en/latest/introduction/using.html#basic-interactive-workflow
+
 
 ## License.
 
