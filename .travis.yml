@@ -1,0 +1,11 @@
+dist: bionic
+addons:
+  apt:
+    packages:
+    - gcc-arm-none-eabi
+    - libnewlib-arm-none-eabi
+    - srecord
+    - build-essential
+
+script:
+- make

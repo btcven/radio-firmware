@@ -1,6 +1,7 @@
 .vscode
 build/
 radio-firmware.simplelink
+radio-firmware.cc2538dk
 /Debug/
 .ccsproject
 .cproject
