@@ -45,6 +45,7 @@
  * @license Apache 2.0, see LICENSE file for details
  */
 
+#include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip.h"
 #include "sys/process.h"
@@ -66,7 +67,7 @@ static struct uip_udp_conn* multicast_tx_conn;
 /* Used to receive multicast packets */
 static struct uip_udp_conn* multicast_rx_conn; 
 /* Used to send unicast packets */
-static struct uip_udp_conn* unicast_tx_conn;   
+static struct simple_udp_connection unicast_conn;   
 /*---------------------------------------------------------------------------*/
 void aodv_routing_init(void)
 {
@@ -110,16 +111,7 @@ static uint32_t my_hseqno = 0; /*!< In host byte order! */
 static void
 sendto(const uip_ipaddr_t *dest, const void *buf, int len)
 {
-  /* XXX: this is a HACK! We're updating the uIP UDP connection
-     "unicast_tx_conn" so that the destination address is the next-hop,
-     and we're patching the "uip_udp_conn" variable so that it points
-     the this connection instead. THIS IS NOT A NICE WAY TO DO THIS,
-     but it is currently nicer than the alternative (requesting a new
-     poll, and remembering the state, etc.). */
-
-  uip_ipaddr_copy(&unicast_tx_conn->ripaddr, dest);
-  uip_udp_conn = unicast_tx_conn;
-  uip_udp_packet_send(unicast_tx_conn, buf, len);
+  simple_udp_sendto(&unicast_conn, buf, len, dest);
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -208,13 +200,13 @@ aodv_send_rerr(uip_ipaddr_t *addr, uint32_t *seqno)
 }
 /*---------------------------------------------------------------------------*/
 static void
-handle_incoming_rreq(void)
+handle_incoming_rreq(const uint8_t* data, uint16_t datalen)
 {
   /*
-   * Defensive coding. uip_appdata SHOULD be valid here, but
+   * Defensive coding. data SHOULD be valid here, but
    * we test to avoid crashes at runtime.
    */
-  if(uip_appdata == NULL) {
+  if(data == NULL) {
     LOG_ERR("RREQ has no data.\n");
     return;
   }
@@ -224,14 +216,14 @@ handle_incoming_rreq(void)
    * size we don't process it. It can be larger, but we don't
    * worry about any extra bytes.
    */
-  if(uip_datalen() < sizeof(aodv_msg_rreq_t)) {
+  if(datalen < sizeof(aodv_msg_rreq_t)) {
     LOG_ERR("RREQ is too short, is %d expected at least %d.\n",
     uip_len,
     sizeof(aodv_msg_rreq_t));
     return;
   }
 
-  aodv_msg_rreq_t *rm = (aodv_msg_rreq_t *)uip_appdata;
+  aodv_msg_rreq_t *rm = (aodv_msg_rreq_t *)data;
 
     /*
      * Defensive coding. This is already checked by handle_incoming_packet.
@@ -342,19 +334,19 @@ handle_incoming_rreq(void)
 }
 /*---------------------------------------------------------------------------*/
 static void
-handle_incoming_rrep(void)
+handle_incoming_rrep(const uint8_t* data, uint16_t datalen)
 {
-  if(uip_appdata == NULL) {
+  if(data == NULL) {
     LOG_ERR("RREP has no data.\n");
     return;
   }
 
-  if(uip_datalen() < sizeof(aodv_msg_rrep_t)) {
+  if(datalen < sizeof(aodv_msg_rrep_t)) {
     LOG_ERR("RREP is too short, is %d expected at least %d.\n", uip_len, sizeof(aodv_msg_rrep_t));
     return;
   }
 
-  aodv_msg_rrep_t *rm = (aodv_msg_rrep_t *)uip_appdata;
+  aodv_msg_rrep_t *rm = (aodv_msg_rrep_t *)data;
 
   if(rm->type != AODV_TYPE_RREP) {
     LOG_ERR("Invalid RREP message type.\n");
@@ -432,20 +424,20 @@ handle_incoming_rrep(void)
 }
 /*---------------------------------------------------------------------------*/
 static void
-handle_incoming_rerr(void)
+handle_incoming_rerr(const uint8_t* data, uint16_t datalen)
 {
-  if(uip_appdata == NULL) {
+  if(data == NULL) {
     LOG_ERR("RERR has no data.\n");
     return;
   }
 
-  if(uip_datalen() < sizeof(aodv_msg_rerr_t)) {
+  if(datalen < sizeof(aodv_msg_rerr_t)) {
     LOG_ERR("RERR is too short, is %d expected at least %d.\n",
         uip_len, sizeof(aodv_msg_rerr_t));
     return;
   }
 
-  aodv_msg_rerr_t *rm = (aodv_msg_rerr_t *)uip_appdata;
+  aodv_msg_rerr_t *rm = (aodv_msg_rerr_t *)data;
 
   if(rm->type != AODV_TYPE_RREP) {
     LOG_ERR("Invalid RERR message type.\n");
@@ -456,31 +448,43 @@ handle_incoming_rerr(void)
 }
 /*---------------------------------------------------------------------------*/
 static void
-handle_incoming_packet(void)
+handle_incoming_packet(const uint8_t* data, uint16_t datalen)
 {
-  if(uip_appdata == NULL) {
+  if(data == NULL) {
     LOG_ERR("AODV message has no data.\n");
     return;
   }
 
-  if(uip_datalen() < sizeof(aodv_msg_t)) {
+  if(datalen < sizeof(aodv_msg_t)) {
     LOG_ERR("AODV message is too short.\n");
     return;
   }
 
-  aodv_msg_t *m = (aodv_msg_t *)uip_appdata;
+  aodv_msg_t *m = (aodv_msg_t *)data;
 
   switch(m->type) {
   case AODV_TYPE_RREQ:
-    handle_incoming_rreq();
+    handle_incoming_rreq(data, datalen);
     break;
   case AODV_TYPE_RREP:
-    handle_incoming_rrep();
+    handle_incoming_rrep(data, datalen);
     break;
   case AODV_TYPE_RERR:
-    handle_incoming_rerr();
+    handle_incoming_rerr(data, datalen);
     break;
   }
+}
+/*---------------------------------------------------------------------------*/
+static void
+unicast_rx(struct simple_udp_connection *c,
+           const uip_ipaddr_t *source_addr,
+           uint16_t source_port,
+           const uip_ipaddr_t *dest_addr,
+           uint16_t dest_port,
+           const uint8_t *data,
+           uint16_t datalen)
+{
+    handle_incoming_packet(data, datalen);
 }
 /*---------------------------------------------------------------------------*/
 static enum {
@@ -580,7 +584,7 @@ PROCESS_THREAD(aodv_process, ev, data)
    * Create a unicast connection, acually the address is changed to the address
    * of the node that the response should be sent.
    */
-  unicast_tx_conn = udp_broadcast_new(UIP_HTONS(AODV_UDPPORT), NULL);
+  simple_udp_register(&unicast_conn, AODV_UDPPORT, NULL, AODV_UDPPORT, unicast_rx);
 
   while(1) {
     PROCESS_WAIT_EVENT();
@@ -592,7 +596,7 @@ PROCESS_THREAD(aodv_process, ev, data)
        */
       if(uip_newdata()) {
         LOG_INFO("Received UDP datagram\n");
-        handle_incoming_packet();
+        handle_incoming_packet(uip_appdata, uip_datalen());
         continue;
       }
 
@@ -631,9 +635,6 @@ exit:
 
   uip_udp_remove(multicast_rx_conn);
   multicast_rx_conn = NULL;
-
-  uip_udp_remove(unicast_tx_conn);
-  unicast_tx_conn = NULL;
 
   PROCESS_END();
 }
