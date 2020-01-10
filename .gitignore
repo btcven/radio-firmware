@@ -1,5 +1,13 @@
 .vscode
 build/
-radio-firmware.simplelink
-radio-firmware.cc2538dk
+*.simplelink
+*.cc2538dk
 /Debug/
+.ccsproject
+.cproject
+.launches/
+.settings/
+cc13x2r1f3.lds
+targetConfigs/
+.project
+setenv
