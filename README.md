@@ -58,13 +58,21 @@ the Turpial board, mainly the CC1312R.
 
 [Supported boards.](#supported-boards)
 
-* [Getting started.](#getting-started)
+- [What's Locha Mesh?](#whats-locha-mesh)
+- [Sponsor.](#sponsor)
+- [Supported boards.](#supported-boards)
+- [Table of Contents.](#table-of-contents)
+- [Getting started.](#getting-started)
+- [Development workflow](#development-workflow)
   - [Install SRecord.](#install-srecord)
   - [Install build essentials (make, etc).](#install-build-essentials-make-etc)
   - [Install ARM compiler.](#install-arm-compiler)
+    - [On Ubuntu/Any Linux Distribution.](#on-ubuntuany-linux-distribution)
+    - [Windows.](#windows)
   - [Install Uniflash.](#install-uniflash)
   - [Compiling the project.](#compiling-the-project)
   - [Testing with Renode.](#testing-with-renode)
+- [License.](#license)
 
 [License.](#license)
 
@@ -80,6 +88,14 @@ git submodule update --init --recursive
 
 Also you need to install the necessary tools to build and flash correct
 Turpial's `radio-firmware` :
+
+## Development workflow
+
+Development happens in the `dev` branch, all of the Pull-Requests should be
+pointed to that branch. Make sure you follow the
+[CONTRIBUTING.md](CONTRIBUTING.md) guidelines. All Pull-Requests
+require that at least two developers review them first before merging to `dev`
+branch.
 
 ### Install SRecord.
 
