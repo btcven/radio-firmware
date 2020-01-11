@@ -6,11 +6,11 @@
 
 <h1 align="center">Radio Firmware</h1>
 
-The firmware for the radio module
+Open-source firmware for the radio module used in Locha Mesh networking devices.
 
 # Getting started
 
-First of all you need to clone the repository:
+First start by cloning the repository:
 
 ```bash
 git clone https://github.com/btcven/radio-firmware.git
@@ -20,7 +20,7 @@ git submodule update --init --recursive
 
 ## Install tools
 
-Also you need to install the necessary tools to build and flash correct
+Next you need to install the necessary tools to build and correctly flash
 Turpial's `radio-firmware` :
 
 ### SRecord
@@ -54,12 +54,12 @@ Add `<working-directory>/gcc-arm-none-eabi-5_2-2015q4/bin` to your `$PATH`.
 #### Windows
 
 [arm-gcc](GNU-RM Downloads) has a downloadable installer for the GCC ARM
-compiler, make sure after you install it is on your `PATH`, if not add it.
+compiler. Make sure after you install it is on your `PATH`, if not add it.
 
 ### Uniflash
 
-Insall TI's [Uniflash][uniflash] tool for your operating system. This tool
-allows you to upload the built firmware to the CC1312R.
+Install TI's [Uniflash][uniflash] tool for your operating system. This tool
+allows you to upload the built firmware to the CC1312R radio module.
 
 ### Building
 
