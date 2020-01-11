@@ -8,7 +8,7 @@ The following is a set of guidelines for contributing to [**Locha**](), [**Turpi
 
 * [Before starting](#before-starting)
 
-* [How can i contribute?](#how-can-i-contribute)
+* [How can I contribute?](#how-can-i-contribute)
     * [I just have a question](#i-just-have-a-question)
     * [Suggesting **enhancements**](#suggesting-enhancements)
     * [Reporting **bugs**](#reporting-bugs)
@@ -26,12 +26,12 @@ The following is a set of guidelines for contributing to [**Locha**](), [**Turpi
 ## Before starting
 Please read our [code of conduct](CODE_OF_CONDUCT.md)
 
-## How can i contribute?
+## How can I contribute?
 
 ToDo
 
 ### I just have a question
-For any question you can send us a message via Twitter @Locha_io and soon through the form you will find on our website **locha.io**
+For any question you can send us a message via Twitter @Locha_io, our Telegram group [t.me/Locha_io](https://t.me/Locha_io), and soon through the form you will find on our website **locha.io**
 
 ### Suggesting enhancements
 ToDo
@@ -75,7 +75,7 @@ Include statements must be located at the top of the file **only**. By default t
 #define LOW_NIBBLE(x) (x & 0xf)
 ```
 
-**Variable names** Use underscore, dont't group variables by types
+**Variable names** Use underscore, don't group variables by types
 ```cpp
 // GOOD, underscore
 int rssi_level;
