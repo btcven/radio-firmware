@@ -24,14 +24,13 @@ Please read our [code of conduct.](CODE_OF_CONDUCT.md)
 
 ## How can I contribute?
 
-We'll pleased to accept your patches and contributions to this project. There 
+We'll pleased to accept your patches and contributions to this project. There
 are some guidelines you need to follow.
 
 ### I have a question.
 
-If you have a question you can write to use using Twitter at
-[@Locha_io](https://twitter.com/Locha_io), or through our website
-[locha.io](https://locha.io).
+For any question you can send us a message via Twitter [@Locha_io](https://twitter.com/Locha_io), our Telegram group [t.me/Locha_io](https://t.me/Locha_io), or through our website
+[locha.io](https://locha.io)
 
 ### Suggesting features and reporting bugs.
 
@@ -53,18 +52,18 @@ first, and after that it can be merged.
 Antes de empezar a hacer modificaciones ejecuta estos comandos para crear una nueva rama que esté sincronizada con dev:
 
 ```bash
-git fetch --all 
+git fetch --all
 
-git checkout dev 
+git checkout dev
 
 # Synchronize with the origin branch.
-git pull origin dev 
+git pull origin dev
 
 # Create a branch for your feature.
-git checkout -b featurebranch 
+git checkout -b featurebranch
 
 # Push your changes to your fork, assuming pr is your remote.
-git push pr featurebranch 
+git push pr featurebranch
 ```
 
 ## Styleguide

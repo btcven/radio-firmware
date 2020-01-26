@@ -17,14 +17,14 @@
 
 <h1 align="center">Radio Firmware</h1>
 
-We are happy of your visit and that you can read more about us. Here you can
+Here you can
 find the main firmware for your device compatible with Locha Mesh (the radio)
 and be aware of our development process.
 
 ## What's Locha Mesh?
 
 The Locha Mesh network is a secure radio network for text messaging and bitcoin
-transactions. The main objetive is a long range network for everyone and
+transactions. The main objective is a long range network for everyone and
 everywhere, for this reason, we are working not only in a protocol, also the
 firmware for affordable devices like our "Turpial".
 
@@ -78,7 +78,7 @@ the Turpial board, mainly the CC1312R.
 
 ## Getting started.
 
-First of all you need to clone the repository:
+First start by cloning the repository:
 
 ```bash
 git clone https://github.com/btcven/radio-firmware.git
@@ -86,7 +86,7 @@ git clone https://github.com/btcven/radio-firmware.git
 git submodule update --init --recursive
 ```
 
-Also you need to install the necessary tools to build and flash correct
+Next you need to install the necessary tools to build and correctly flash
 Turpial's `radio-firmware` :
 
 ## Development workflow
@@ -128,12 +128,12 @@ Add `<working-directory>/gcc-arm-none-eabi-5_2-2015q4/bin` to your `$PATH`.
 #### Windows.
 
 [arm-gcc](GNU-RM Downloads) has a downloadable installer for the GCC ARM
-compiler, make sure after you install it is on your `PATH`, if not add it.
+compiler. Make sure after you have installed it that it is on your `PATH`, if not add it.
 
 ### Install Uniflash.
 
-Insall TI's [Uniflash][uniflash] tool for your operating system. This tool
-allows you to upload the built firmware to the CC1312R.
+Install TI's [Uniflash][uniflash] tool for your operating system. This tool
+allows you to upload the built firmware to the CC1312R radio module.
 
 ### Compiling the project.
 
