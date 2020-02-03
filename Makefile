@@ -1,27 +1,18 @@
-ifeq ($(RENODE),1)
-  TARGET = cc2538dk
-  CFLAGS += -DRENODE
-else
-  TARGET = simplelink
-  BOARD = launchpad/cc1312r1
-endif
+# name of your application
+APPLICATION = hello-world
 
-MAKE_MAC = MAKE_MAC_CSMA
-MAKE_NET = MAKE_NET_IPV6
-MAKE_ROUTING = MAKE_ROUTING_NULLROUTING
+# If no BOARD is found in the environment, use this default:
+BOARD ?= cc1312-launchpad
 
-CFLAGS += -g
+# This has to be the absolute path to the RIOT base directory:
+RIOTBASE ?= $(CURDIR)/RIOT
 
-CONTIKI_PROJECT = radio-firmware
-all: $(CONTIKI_PROJECT)
+# Comment this out to disable code in RIOT that does safety checking
+# which is not needed in a production environment but helps in the
+# development process:
+DEVELHELP ?= 1
 
-ifneq ($(RENODE),1)
-  PROJECT_SOURCEFILES += uart1-arch.c
-endif
+# Change this to 0 show compiler invocation lines by default:
+QUIET ?= 1
 
-PROJECT_SOURCEFILES += aodv-fwc.c
-PROJECT_SOURCEFILES += aodv-routing.c
-PROJECT_SOURCEFILES += aodv-rt.c
-
-CONTIKI = ./contiki-ng
-include $(CONTIKI)/Makefile.include
+include $(RIOTBASE)/Makefile.include
