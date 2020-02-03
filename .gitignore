@@ -12,3 +12,4 @@ targetConfigs/
 .project
 setenv
 .DS_Store
+bin/
