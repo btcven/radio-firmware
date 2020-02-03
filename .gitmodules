@@ -1,4 +1,4 @@
 [submodule "contiki-ng"]
-	path = contiki-ng
-	url = https://github.com/btcven/contiki-ng.git
+	path = RIOT
+	url = https://github.com/btcven/RIOT.git
 	branch = master
