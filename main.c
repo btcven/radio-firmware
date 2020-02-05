@@ -46,7 +46,7 @@ int main(void) {
 
   msg_init_queue(msg_q, RCV_MSG_Q_SIZE);
   init_socket();
-  aodv_init();
+  gnrc_aodvv2_init();
 
   puts("Welcome to RIOT!\n");
   _mock_netif = gnrc_netif_iter(_mock_netif);

@@ -29,6 +29,7 @@ USEMODULE += gnrc_pktdump
 USEMODULE += gnrc_udp
 USEMODULE += gnrc_sock_udp
 USEMODULE += posix_inet
+USEMODULE += posix_time
 
 USEMODULE += xtimer
 USEMODULE += timex
