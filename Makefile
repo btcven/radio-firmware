@@ -28,6 +28,7 @@ USEMODULE += gnrc_pktdump
 #Import posix sockets
 USEMODULE += gnrc_udp
 USEMODULE += gnrc_sock_udp
+USEMODULE += gnrc_sock_ip
 USEMODULE += posix_inet
 USEMODULE += posix_time
 
@@ -40,8 +41,12 @@ USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += gnrc_aodvv2
 
+
+
 export INCLUDES += -I${RIOTBASE}/sys/include/net/
 export INCLUDES += -I${RIOTBASE}/sys/include/net/gnrc/aodvv2/
 export INCLUDES += -I${RIOTBASE}/sys/net/gnrc/aodvv2/
 
 include $(RIOTBASE)/Makefile.include
+
+

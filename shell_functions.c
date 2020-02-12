@@ -73,15 +73,36 @@ int demo_attempt_to_send(char *dest_str, char *msg) {
 }
 
 int demo_send(int argc, char **argv) {
-  if (argc != 3) {
+
+(void)argc;
+(void)argv;
+if (argc != 3) {
     printf("Usage: send <destination ip> <message>\n");
     return 1;
-  }
+}
 
-  char *dest_str = argv[1];
-  char *msg = argv[2];
+char temp[] = "esto es una prueba";
+void *data;
+data = malloc(sizeof(char) * strlen(temp));
+memcpy((char*)data,&temp,strlen(temp));
 
-  return demo_attempt_to_send(dest_str, msg);
+
+
+gnrc_pktsnip_t *pkt;
+pkt = gnrc_pktbuf_add(NULL, data, strlen(data), GNRC_NETTYPE_UNDEF);
+if (pkt == NULL) {
+     puts("Error: unable to copy data to packet buffer\n");
+     return -1;
+}
+if (!gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP, 80, pkt)) {
+     puts("Error: no thread is interested");
+     gnrc_pktbuf_release(pkt);
+     free(data);
+     return -1;
+}
+free(data);
+
+  return 0;
 }
 
 void init_socket(void) {
