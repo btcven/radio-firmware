@@ -23,6 +23,7 @@ USEMODULE += gnrc_netdev_default
 USEMODULE += auto_init_gnrc_netif
 #for basic IPV6 and 6loWPAN functionallities
 USEMODULE += gnrc_ipv6_default 
+USEMODULE += gnrc_ipv6_router_default
 USEMODULE += gnrc_pktdump
 
 #Import posix sockets
@@ -31,6 +32,13 @@ USEMODULE += gnrc_sock_udp
 USEMODULE += gnrc_sock_ip
 USEMODULE += posix_inet
 USEMODULE += posix_time
+
+
+#USEMODULE += netdev_ieee802154
+# USEMODULE += netdev_test
+
+
+
 
 USEMODULE += xtimer
 USEMODULE += timex
@@ -46,6 +54,11 @@ USEMODULE += gnrc_aodvv2
 export INCLUDES += -I${RIOTBASE}/sys/include/net/
 export INCLUDES += -I${RIOTBASE}/sys/include/net/gnrc/aodvv2/
 export INCLUDES += -I${RIOTBASE}/sys/net/gnrc/aodvv2/
+
+
+#CFLAGS += -DGNRC_IPV6_NIB_CONF_DC=1
+#CFLAGS += -DGNRC_IPV6_NIB_CONF_ROUTER=1
+
 
 include $(RIOTBASE)/Makefile.include
 

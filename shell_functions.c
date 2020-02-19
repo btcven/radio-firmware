@@ -18,6 +18,8 @@
 #include "net/gnrc/ipv6/nib.h"
 #include "net/gnrc/ipv6/nib/nc.h"
 
+#include "aodvv2.h"
+
 #define DUMPER_QUEUE_SIZE (16)
 // constants from the AODVv2 Draft, version 03
 #define DISCOVERY_ATTEMPTS_MAX (1) //(3)
