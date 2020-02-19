@@ -15,4 +15,6 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
+DIRS += oonf_api
+
 include $(RIOTBASE)/Makefile.include
