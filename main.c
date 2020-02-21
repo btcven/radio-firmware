@@ -12,12 +12,12 @@
 
 #include <stdio.h>
 
+#include "banner.h"
+
 int main(void)
 {
-    puts("Hello World!");
-
-    printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
-    printf("This board features a(n) %s MCU.\n", RIOT_MCU);
+    printf("%s", banner);
+    puts("Welcome to Turpial CC1312 Radio!");
 
     return 0;
 }
