@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = hello-world
+APPLICATION = radio-firmware
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= cc1312-launchpad
