@@ -150,10 +150,18 @@ develop and test with more flexibility.
 
 [renode]: https://renode.io/#downloads
 
-Now you need to build the firmware enabling Renode support:
+To build and test with renode set these environment variables:
+
 
 ```bash
-make BOARD=cc2538dk
+export BOARD=cc2538dk
+export RENODE_CONFIG=$(pwd)/dist/board.resc
+```
+
+Then build the firmware:
+
+```bash
+make
 ```
 
 To run Renode, from the command line execute this:
@@ -161,6 +169,8 @@ To run Renode, from the command line execute this:
 ```
 make emulate BOARD=cc2538dk
 ```
+
+**Note**: *renode needs to be in your path.*
 
 ## License.
 
