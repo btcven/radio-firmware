@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = hello-world
+APPLICATION = radio-firmware
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= cc1312-launchpad
@@ -14,5 +14,29 @@ DEVELHELP ?= 1
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
+
+EXTERNAL_MODULE_DIRS += oonf_api
+EXTERNAL_MODULE_DIRS += aodvv2
+
+# Initialize GNRC netif
+USEMODULE += gnrc_netdev_default
+USEMODULE += auto_init_gnrc_netif
+
+USEMODULE += gnrc_ipv6_default
+USEMODULE += gnrc_udp
+USEMODULE += gnrc_sock_udp
+
+USEMODULE += oonf_api
+USEMODULE += oonf_common
+USEMODULE += oonf_rfc5444
+
+USEMODULE += aodvv2
+
+USEMODULE += shell
+USEMODULE += shell_commands
+
+USEMODULE += posix_inet
+
+USEMODULE += timex
 
 include $(RIOTBASE)/Makefile.include

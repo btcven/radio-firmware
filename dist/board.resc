@@ -1,0 +1,33 @@
+path add $CWD
+emulation CreateWirelessMedium "wireless"
+
+# The radio is using a range-based medium (with the `Range` set to `11`)
+# If not set, the default SimpleMediumFunction will be used (where range is not relevant)
+wireless SetRangeWirelessFunction 10
+
+######################### Machine 0 - begin #########################
+$name="anode"
+i $ORIGIN/machine.resc
+wireless SetPosition radio 0 0 0
+showAnalyzer sysbus.uart0
+mach clear
+start
+########################## Machine 0 - end ##########################
+
+######################### Machine 1 - begin #########################
+$name="cathode"
+i $ORIGIN/machine.resc
+wireless SetPosition radio 10 0 0
+showAnalyzer sysbus.uart0
+mach clear
+start
+########################## Machine 1 - end ##########################
+
+######################### Machine 2 - begin #########################
+$name="vcc"
+i $ORIGIN/machine.resc
+wireless SetPosition radio 20 0 0
+showAnalyzer sysbus.uart0
+mach clear
+start
+########################## Machine 2 - end ##########################
