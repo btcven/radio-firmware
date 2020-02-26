@@ -13,18 +13,6 @@ AODVv2 protocol implements three types of route messages during routing operatio
   
 These are route control  messages used to  find and  maintain path from source node to any particular target node.
 
-
-- **Highest priority SHOULD be** given to RREP_Ack messages. This allows learned routes to be confirmed as bidirectional and avoids undesirable blacklisting of next hop routers.
-  
-- **Second priority SHOULD be** given to RERR messages for undeliverable IP packets, so that broken routes that are still being used are reported, and to avoid IP data packets being repeatedly forwarded to AODVv2 routers which cannot forward to their destination.
-  
-- **Third priority SHOULD be** given to RREP messages in order that RREQs do not time out. 
-
-**RREQ messages SHOULD be** given priority over RERR messages for newly invalidated routes, since the invalidated routes may not still be in use, and if there is an attempt to use the route, a new RERR message will be generated.
-
-**Lowest priority SHOULD be** given to RERR messages generated in response to RREP messages which cannot be regenerated. In this case the route request will be retried at a later point.
-
-
 # AODVV2 PROTOCOL OPERATIONS
 
 The AODVv2 protocol's operations include:
