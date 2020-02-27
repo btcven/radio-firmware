@@ -41,6 +41,9 @@
 ipv6_addr_t ipv6_addr_all_manet_routers_link_local =
     IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL;
 
+ipv6_addr_t ipv6_addr_aodvv2_prefix =
+    IPV6_ADDR_AODVV2_PREFIX;
+
 static struct netaddr na_all_manet_routers_link_local;
 
 static char _addr_str[IPV6_ADDR_MAX_STR_LEN];

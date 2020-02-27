@@ -92,6 +92,19 @@ typedef enum tlv_index {
                                                   0x00, 0x00, 0x00, 0x6d }}
 
 /**
+ * @brief   Static initializer for the AODVv2 IPv6 prefix for the FIB.
+ */
+#define IPV6_ADDR_AODVV2_PREFIX {{ 0xfe, 0x80, 0x00, 0x00, \
+                                   0x00, 0x00, 0x00, 0x00, \
+                                   0x00, 0x00, 0x00, 0x00, \
+                                   0x00, 0x00, 0x00, 0x6d }}
+
+/**
+ * @brief   Prefix size for addresses in FIB
+ */
+#define IPV6_ADDR_AODVV2_PREFIX_LEN (64)
+
+/**
  * @brief   UDP Port for MANET Protocols 1 (udp/269).
  *
  * @see <a href="https://tools.ietf.org/html/rfc5498#section-6">
@@ -104,5 +117,10 @@ typedef enum tlv_index {
  * @see @ref IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL
  */
 extern ipv6_addr_t ipv6_addr_all_manet_routers_link_local;
+
+/**
+ * @see @ref IPV6_ADDR_AODVV2_PREFIX
+ */
+extern ipv6_addr_t ipv6_addr_aodvv2_prefix;
 
 #endif /* AODVV2_CONSTANTS_H */
