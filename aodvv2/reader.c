@@ -23,6 +23,8 @@
 
 #include "reader.h"
 
+#include "net/gnrc/ipv6/nib/ft.h"
+
 #define ENABLE_DEBUG (1)
 #include "debug.h"
 
@@ -61,6 +63,11 @@ static struct rfc5444_reader reader;
 #if ENABLE_DEBUG == 1
 static struct netaddr_str nbuf;
 #endif
+
+/*
+ * @brief   Route lifetime in seconds
+ */
+#define AODVV2_ROUTE_LIFETIME (AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME)
 
 /*
  * Message consumer, will be called once for every message of
@@ -271,6 +278,19 @@ static enum rfc5444_result _cb_rreq_end_callback(
         /* Add this RREQ to routing table*/
         aodvv2_routingtable_fill_routing_entry_rreq(&packet_data, &tmp, link_cost);
         aodvv2_routingtable_add_entry(&tmp);
+
+        /* Add entry to nib forwading table */
+        ipv6_addr_t dst;
+        ipv6_addr_t next_hop;
+
+        memcpy(&dst, packet_data.origNode.addr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, packet_data.sender._addr, sizeof(ipv6_addr_t));
+
+        DEBUG("Adding route to NIB FT\n");
+        if (gnrc_ipv6_nib_ft_add(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN, &next_hop,
+                                 aodvv2_if_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+            DEBUG("Couldn't add route!\n");
+        }
     }
     else {
         /* If the route is aready stored verify if this route offers an
@@ -286,6 +306,21 @@ static enum rfc5444_result _cb_rreq_end_callback(
         DEBUG("Updating Routing Table entry...\n");
         aodvv2_routingtable_fill_routing_entry_rreq(&packet_data, rt_entry,
                                                     link_cost);
+
+        /* Add entry to nib forwading table */
+        ipv6_addr_t dst;
+        ipv6_addr_t next_hop;
+
+        memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+
+        gnrc_ipv6_nib_ft_del(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN);
+
+        DEBUG("Adding route to NIB FT\n");
+        if (gnrc_ipv6_nib_ft_add(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN, &next_hop,
+                                 aodvv2_if_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+            DEBUG("Couldn't add route!\n");
+        }
     }
 
     /* If TargNode is a client of the router receiving the RREQ, then the
@@ -450,6 +485,19 @@ static enum rfc5444_result _cb_rrep_end_callback(
                                                     &tmp,
                                                     link_cost);
         aodvv2_routingtable_add_entry(&tmp);
+
+        /* Add entry to nib forwading table */
+        ipv6_addr_t dst;
+        ipv6_addr_t next_hop;
+
+        memcpy(&dst, packet_data.targNode.addr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, packet_data.sender._addr, sizeof(ipv6_addr_t));
+
+        DEBUG("Adding route to NIB FT\n");
+        if (gnrc_ipv6_nib_ft_add(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN, &next_hop,
+                                 aodvv2_if_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+            DEBUG("Couldn't add route!\n");
+        }
     }
     else {
         if (!aodvv2_routingtable_offers_improvement(rt_entry,
@@ -464,6 +512,21 @@ static enum rfc5444_result _cb_rrep_end_callback(
         aodvv2_routingtable_fill_routing_entry_rrep(&packet_data,
                                                     rt_entry,
                                                     link_cost);
+
+        /* Add entry to nib forwading table */
+        ipv6_addr_t dst;
+        ipv6_addr_t next_hop;
+
+        memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+
+        gnrc_ipv6_nib_ft_del(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN);
+
+        DEBUG("Adding route to NIB FT\n");
+        if (gnrc_ipv6_nib_ft_add(&dst, IPV6_ADDR_AODVV2_PREFIX_LEN, &next_hop,
+                                 aodvv2_if_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+            DEBUG("Couldn't add route!\n");
+        }
     }
 
     /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's earlier

@@ -32,7 +32,7 @@
 #include "utils.h"
 #include "writer.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define RCV_MSG_Q_SIZE (32)
@@ -44,12 +44,14 @@ ipv6_addr_t ipv6_addr_all_manet_routers_link_local =
 ipv6_addr_t ipv6_addr_aodvv2_prefix =
     IPV6_ADDR_AODVV2_PREFIX;
 
+kernel_pid_t aodvv2_if_pid = KERNEL_PID_UNDEF;
+
 static struct netaddr na_all_manet_routers_link_local;
 
 static char _addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-static char _send_stack[GNRC_UDP_STACK_SIZE];
-static char _recv_stack[THREAD_STACKSIZE_DEFAULT];
+static char _send_stack[THREAD_STACKSIZE_LARGE];
+static char _recv_stack[THREAD_STACKSIZE_LARGE];
 
 static kernel_pid_t sender_pid;
 
@@ -97,6 +99,7 @@ static void _clean_msg_container(msg_container_t *mc);
 void aodvv2_init(gnrc_netif_t *netif) {
     DEBUG("[aodvv2]: init\n");
     _netif = netif;
+    aodvv2_if_pid = _netif->pid;
 
     aodvv2_seqnum_init();
     aodvv2_routingtable_init();
@@ -328,8 +331,9 @@ static void _write_packet(struct rfc5444_writer *wr,
             break;
     }
 
+    DEBUG("[aodvv2]: sending packet\n");
     if (sock_udp_send(&_udp_sock, buffer, length, &remote) < 0) {
-        DEBUG("[aodvv2]: error sending UDP packet");
+        DEBUG("[aodvv2]: error sending UDP packet\n");
         return;
     }
 }

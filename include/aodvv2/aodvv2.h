@@ -140,6 +140,8 @@ typedef struct {
                      rerr_data) */
 } msg_container_t;
 
+extern kernel_pid_t aodvv2_if_pid;
+
 /**
  * @brief   Initialize the AODVv2 routing protocol.
  *

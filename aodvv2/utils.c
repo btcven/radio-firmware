@@ -42,11 +42,9 @@ static void _reset_entry_if_stale(uint8_t i);
 static struct netaddr client_table[AODVV2_MAX_CLIENTS];
 static aodvv2_rreq_entry_t rreq_table[AODVV2_RREQ_BUF];
 
-#if ENABLE_DEBUG == 1
-static struct netaddr_str nbuf;
-#endif
-static timex_t null_time, now, _max_idletime;
-
+static timex_t null_time;
+static timex_t now;
+static timex_t _max_idletime;
 
 void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 {
@@ -81,8 +79,6 @@ void aodvv2_clienttable_add_client(struct netaddr *addr)
         if ((client_table[i]._type == AF_UNSPEC) &&
             (client_table[i]._prefix_len == 0)) {
             client_table[i] = *addr;
-            DEBUG("clienttable: added client %s\n",
-                  netaddr_to_string(&nbuf, addr));
             mutex_unlock(&clientt_mutex);
             return;
         }
@@ -240,9 +236,6 @@ static void _reset_entry_if_stale(uint8_t i)
     }
     timex_t expiration_time = timex_add(rreq_table[i].timestamp, _max_idletime);
     if (timex_cmp(expiration_time, now) < 0) {
-        /* timestamp+expiration time is in the past: this entry is stale */
-        DEBUG("\treset rreq table entry %s\n",
-              netaddr_to_string(&nbuf, &rreq_table[i].origNode));
         memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }
 }

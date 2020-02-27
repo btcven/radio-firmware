@@ -26,11 +26,14 @@
 static void _reset_entry_if_stale(uint8_t i);
 
 static aodvv2_routing_entry_t routing_table[AODVV2_MAX_ROUTING_ENTRIES];
-static timex_t null_time, max_seqnum_lifetime, active_interval, max_idletime, validity_t;
-timex_t now;
-#ifdef ENABLE_DEBUG
+static timex_t null_time;
+static timex_t max_seqnum_lifetime;
+static timex_t active_interval;
+static timex_t max_idletime;
+static timex_t validity;
+static timex_t now;
+
 static struct netaddr_str nbuf;
-#endif
 
 void aodvv2_routingtable_init(void)
 {
@@ -38,7 +41,7 @@ void aodvv2_routingtable_init(void)
     max_seqnum_lifetime = timex_set(AODVV2_MAX_SEQNUM_LIFETIME, 0);
     active_interval = timex_set(AODVV2_ACTIVE_INTERVAL, 0);
     max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
-    validity_t = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0);
+    validity = timex_set(AODVV2_ACTIVE_INTERVAL + AODVV2_MAX_IDLETIME, 0);
 
     memset(&routing_table, 0, sizeof(routing_table));
     DEBUG("routing table initialized.\n");
@@ -77,8 +80,8 @@ aodvv2_routing_entry_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
         if (!netaddr_cmp(&routing_table[i].addr, addr)
             && routing_table[i].metricType == metricType) {
             DEBUG("[routing] found entry for %s :", netaddr_to_string(&nbuf, addr));
-#ifdef DEBUG_ENABLED
-            print_aodvv2_routingtable_entry(&routing_table[i]);
+#if ENABLE_DEBUG == 1
+            print_routingtable_entry(&routing_table[i]);
 #endif
             return &routing_table[i];
         }
@@ -214,7 +217,7 @@ void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_da
     rt_entry->seqnum = packet_data->origNode.seqnum;
     rt_entry->nextHopAddr = packet_data->sender;
     rt_entry->lastUsed = packet_data->timestamp;
-    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
+    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity);
     rt_entry->metricType = packet_data->metricType;
     rt_entry->metric = packet_data->origNode.metric + link_cost;
     rt_entry->state = ROUTE_STATE_ACTIVE;
@@ -228,7 +231,7 @@ void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_da
     rt_entry->seqnum = packet_data->targNode.seqnum;
     rt_entry->nextHopAddr = packet_data->sender;
     rt_entry->lastUsed = packet_data->timestamp;
-    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
+    rt_entry->expirationTime = timex_add(packet_data->timestamp, validity);
     rt_entry->metricType = packet_data->metricType;
     rt_entry->metric = packet_data->targNode.metric + link_cost;
     rt_entry->state = ROUTE_STATE_ACTIVE;
