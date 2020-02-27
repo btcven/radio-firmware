@@ -21,6 +21,7 @@ EXTERNAL_MODULE_DIRS += aodvv2
 # Initialize GNRC netif
 USEMODULE += gnrc_netdev_default
 USEMODULE += auto_init_gnrc_netif
+USEMODULE += gnrc_ipv6_router_default
 
 USEMODULE += gnrc_ipv6_default
 USEMODULE += gnrc_udp
