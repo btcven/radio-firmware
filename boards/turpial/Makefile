@@ -1,0 +1,10 @@
+MODULE = board
+
+# Mimic the launchpad board configuration.
+MIMIC_LAUNCHPAD ?= 1
+CFLAGS += -DMIMIC_LAUNCHPAD=$(MIMIC_LAUNCHPAD)
+
+ADDITIONAL_UART ?= 1
+CFLAGS += -DADDITIONAL_UART=$(ADDITIONAL_UART)
+
+include $(RIOTBASE)/Makefile.base
