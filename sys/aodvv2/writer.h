@@ -36,12 +36,14 @@ extern "C" {
 #endif
 
 /**
- * @brief   Wrapper for the rfc5444_writer_target that the _write_packet() callback receives.
- *          _write_packet() needs to know the type, payload and target address
- *          of the RFC5444 message to be sent as well, but the oonf api does not
- *          offer this feature. Having this wrapper enables the use of the
- *          container_of macro to fetch this information.
- *          It is hacky, but it does the trick.
+ * @brief   Wrapper for the rfc5444_writer_target that the _write_packet()
+ *          callback receives.
+ *
+ * _write_packet() needs to know the type, payload and target address
+ * of the RFC5444 message to be sent as well, but the oonf api does not
+ * offer this feature. Having this wrapper enables the use of the
+ * container_of macro to fetch this information.
+ * It is hacky, but it does the trick.
  */
 typedef struct {
     struct rfc5444_writer_target interface; /**< Interface for generating rfc5444 packets */
