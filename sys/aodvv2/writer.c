@@ -103,26 +103,26 @@ static void _cb_addMessageHeader(struct rfc5444_writer *wr,
  */
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
 {
-    /* add origNode address (has no address tlv); is mandatory address */
+    /* add orig_node address (has no address tlv); is mandatory address */
     struct rfc5444_writer_address *orig_node_addr =
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                   &_target.packet_data.origNode.addr, true);
+                                   &_target.packet_data.orig_node.addr, true);
 
-    /* add targNode address (has no address tlv); is mandatory address */
+    /* add targ_node address (has no address tlv); is mandatory address */
     rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                               &_target.packet_data.targNode.addr, true);
+                               &_target.packet_data.targ_node.addr, true);
 
-    /* add SeqNum TLV and metric TLV to origNode */
+    /* add SeqNum TLV and metric TLV to orig_node */
     /* TODO: allow_dup true or false? */
     rfc5444_writer_add_addrtlv(wr, orig_node_addr,
                                &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
-                               &_target.packet_data.origNode.seqnum,
-                               sizeof(_target.packet_data.origNode.seqnum),
+                               &_target.packet_data.orig_node.seqnum,
+                               sizeof(_target.packet_data.orig_node.seqnum),
                                false);
     rfc5444_writer_add_addrtlv(wr, orig_node_addr,
                                &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
-                               &_target.packet_data.origNode.metric,
-                               sizeof(_target.packet_data.origNode.metric),
+                               &_target.packet_data.orig_node.metric,
+                               sizeof(_target.packet_data.orig_node.metric),
                                false);
 }
 
@@ -131,21 +131,21 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
  */
 static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
 {
-    uint16_t orig_node_seqnum = _target.packet_data.origNode.seqnum;
+    uint16_t orig_node_seqnum = _target.packet_data.orig_node.seqnum;
     uint16_t targ_node_seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
 
-    uint8_t targ_node_hopct = _target.packet_data.targNode.metric;
+    uint8_t targ_node_hopct = _target.packet_data.targ_node.metric;
 
-    /* add origNode address (has no address tlv); is mandatory address */
+    /* add orig_node address (has no address tlv); is mandatory address */
     struct rfc5444_writer_address *orig_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                   &_target.packet_data.origNode.addr, true);
+                                   &_target.packet_data.orig_node.addr, true);
 
-    /* add targNode address (has no address tlv); is mandatory address */
+    /* add targ_node address (has no address tlv); is mandatory address */
     struct rfc5444_writer_address *targ_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                   &_target.packet_data.targNode.addr, true);
+                                   &_target.packet_data.targ_node.addr, true);
 
     /* add OrigNode and TargNode SeqNum TLVs */
     /* TODO: allow_dup true or false? */
@@ -158,7 +158,7 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
                                &targ_node_seqnum, sizeof(targ_node_seqnum),
                                false);
 
-    /* Add Metric TLV to targNode Address */
+    /* Add Metric TLV to targ_node Address */
     rfc5444_writer_add_addrtlv(wr, targ_node_addr,
                                &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
                                &targ_node_hopct, sizeof(targ_node_hopct),

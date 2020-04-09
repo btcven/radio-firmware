@@ -210,13 +210,13 @@ void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_da
                                                  aodvv2_routing_entry_t *rt_entry,
                                                  uint8_t link_cost)
 {
-    rt_entry->addr = packet_data->origNode.addr;
-    rt_entry->seqnum = packet_data->origNode.seqnum;
+    rt_entry->addr = packet_data->orig_node.addr;
+    rt_entry->seqnum = packet_data->orig_node.seqnum;
     rt_entry->nextHopAddr = packet_data->sender;
     rt_entry->lastUsed = packet_data->timestamp;
     rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
-    rt_entry->metricType = packet_data->metricType;
-    rt_entry->metric = packet_data->origNode.metric + link_cost;
+    rt_entry->metricType = packet_data->metric_type;
+    rt_entry->metric = packet_data->orig_node.metric + link_cost;
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
@@ -224,13 +224,13 @@ void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_da
                                                  aodvv2_routing_entry_t *rt_entry,
                                                  uint8_t link_cost)
 {
-    rt_entry->addr = packet_data->targNode.addr;
-    rt_entry->seqnum = packet_data->targNode.seqnum;
+    rt_entry->addr = packet_data->targ_node.addr;
+    rt_entry->seqnum = packet_data->targ_node.seqnum;
     rt_entry->nextHopAddr = packet_data->sender;
     rt_entry->lastUsed = packet_data->timestamp;
     rt_entry->expirationTime = timex_add(packet_data->timestamp, validity_t);
-    rt_entry->metricType = packet_data->metricType;
-    rt_entry->metric = packet_data->targNode.metric + link_cost;
+    rt_entry->metricType = packet_data->metric_type;
+    rt_entry->metric = packet_data->targ_node.metric + link_cost;
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 

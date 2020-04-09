@@ -81,15 +81,15 @@ typedef struct node_data {
 } node_data_t;
 
 /**
- * @brief   all data contained in a RREQ or RREP.
+ * @brief   All data contained in a RREQ or RREP.
  */
 typedef struct {
     uint8_t hoplimit; /**< Hop limit */
     struct netaddr sender; /**< IP address of the neighboring router
                                 which sent the RREQ/RREP*/
-    aodvv2_metric_t metricType; /**< Metric type */
-    struct node_data origNode; /**< Data about the originating node */
-    struct node_data targNode; /**< Data about the originating node */
+    aodvv2_metric_t metric_type; /**< Metric type */
+    node_data_t orig_node; /**< Data about the originating node */
+    node_data_t targ_node; /**< Data about the originating node */
     timex_t timestamp; /**< Point at which the packet was (roughly)
                             received. Note that this timestamp
                             will be set after the packet has been

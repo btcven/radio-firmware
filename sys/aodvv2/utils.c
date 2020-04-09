@@ -82,7 +82,8 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
         result = false;
     }
     else {
-        int seqnum_comparison = aodvv2_seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
+        int seqnum_comparison = aodvv2_seqnum_cmp(packet_data->orig_node.seqnum,
+                                                  comparable_rreq->seqnum);
 
         /*
          * If two RREQs have the same
@@ -95,7 +96,7 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
 
         if (seqnum_comparison == 1) {
             /* Update RREQ table entry with new seqnum value */
-            comparable_rreq->seqnum = packet_data->origNode.seqnum;
+            comparable_rreq->seqnum = packet_data->orig_node.seqnum;
         }
 
         /*
@@ -103,11 +104,11 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
          * Metric value is not needed
          */
         if (seqnum_comparison == 0) {
-            if (comparable_rreq->metric <= packet_data->origNode.metric) {
+            if (comparable_rreq->metric <= packet_data->orig_node.metric) {
                 result = true;
             }
             /* Update RREQ table entry with new metric value */
-            comparable_rreq->metric = packet_data->origNode.metric;
+            comparable_rreq->metric = packet_data->orig_node.metric;
         }
 
         /* Since we've changed RREQ info, update the timestamp */
@@ -132,9 +133,9 @@ static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_da
     for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr) &&
-            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targNode.addr) &&
-            rreq_table[i].metricType == packet_data->metricType) {
+        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->orig_node.addr) &&
+            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targ_node.addr) &&
+            rreq_table[i].metricType == packet_data->metric_type) {
             return &rreq_table[i];
         }
     }
@@ -153,11 +154,11 @@ static void _add_rreq(aodvv2_packet_data_t *packet_data)
     for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
         if (!rreq_table[i].timestamp.seconds &&
             !rreq_table[i].timestamp.microseconds) {
-            rreq_table[i].origNode = packet_data->origNode.addr;
-            rreq_table[i].targNode = packet_data->targNode.addr;
-            rreq_table[i].metricType = packet_data->metricType;
-            rreq_table[i].metric = packet_data->origNode.metric;
-            rreq_table[i].seqnum = packet_data->origNode.seqnum;
+            rreq_table[i].origNode = packet_data->orig_node.addr;
+            rreq_table[i].targNode = packet_data->targ_node.addr;
+            rreq_table[i].metricType = packet_data->metric_type;
+            rreq_table[i].metric = packet_data->orig_node.metric;
+            rreq_table[i].seqnum = packet_data->orig_node.seqnum;
             rreq_table[i].timestamp = packet_data->timestamp;
             return;
         }

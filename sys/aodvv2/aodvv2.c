@@ -173,13 +173,13 @@ void aodvv2_find_route(ipv6_addr_t *target_addr)
 
     aodvv2_packet_data_t rreq_data = {
         .hoplimit = AODVV2_MAX_HOPCOUNT,
-        .metricType = AODVV2_DEFAULT_METRIC_TYPE,
-        .origNode = {
+        .metric_type = AODVV2_DEFAULT_METRIC_TYPE,
+        .orig_node = {
             .addr = na_orig,
             .metric = 0,
             .seqnum = seqnum,
         },
-        .targNode = {
+        .targ_node = {
             .addr = na_target,
         },
         .timestamp = {0},
