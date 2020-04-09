@@ -33,11 +33,6 @@ extern "C" {
 #endif
 
 /**
- * @brief   Multiple clients are currently not supported.
- */
-#define AODVV2_MAX_CLIENTS (1)
-
-/**
  * @brief   should be enough for now...
  */
 #define AODVV2_RREQ_BUF (128)
