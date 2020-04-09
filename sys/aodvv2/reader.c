@@ -22,6 +22,7 @@
  */
 
 #include "reader.h"
+#include "aodvv2/client.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"
@@ -58,9 +59,7 @@ static aodvv2_packet_data_t packet_data;
 //static int num_unreachable_nodes;
 
 static struct rfc5444_reader reader;
-#if ENABLE_DEBUG == 1
 static struct netaddr_str nbuf;
-#endif
 
 /*
  * Message consumer, will be called once for every message of
@@ -293,7 +292,9 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * subsequently processing for the RREQ is complete.  Otherwise,
      * processing continues as follows.
      */
-    if (aodvv2_clienttable_is_client(&packet_data.targNode.addr)) {
+    ipv6_addr_t tmp;
+    netaddr_to_ipv6_addr(&packet_data.targNode.addr, &tmp);
+    if (aodvv2_client_find(&tmp)) {
         DEBUG("TargNode is in client list, sending RREP\n");
 
         /* Make sure to start with a clean metric value */
@@ -339,9 +340,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(struct rfc5444_rea
  */
 static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
-#ifdef DEBUG_ENABLED
     struct netaddr_str nbuf;
-#endif
     struct rfc5444_reader_tlvblock_entry *tlv;
     bool is_targNode_addr = false;
 
@@ -404,9 +403,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     (void) cont;
 
     aodvv2_routing_entry_t *rt_entry;
-#ifdef DEBUG_ENABLED
     struct netaddr_str nbuf;
-#endif
     timex_t now;
     uint8_t link_cost = _get_link_cost(packet_data.metricType);
 
@@ -469,7 +466,9 @@ static enum rfc5444_result _cb_rrep_end_callback(
     /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's earlier
      * RREQ, and RREP processing is completed. Any packets buffered for
      * OrigNode should be transmitted. */
-    if (aodvv2_clienttable_is_client(&packet_data.origNode.addr)) {
+    ipv6_addr_t tmp;
+    netaddr_to_ipv6_addr(&packet_data.origNode.addr, &tmp);
+    if (aodvv2_client_find(&tmp)) {
 #ifdef ENABLE_DEBUG
         static struct netaddr_str nbuf2;
 #endif

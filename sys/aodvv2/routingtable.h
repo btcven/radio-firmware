@@ -35,8 +35,7 @@ extern "C" {
 /**
  * A route table entry (i.e., a route) may be in one of the following states:
  */
-enum aodvv2_routing_states
-{
+enum aodvv2_routing_state {
     ROUTE_STATE_ACTIVE,
     ROUTE_STATE_IDLE,
     ROUTE_STATE_EXPIRED,

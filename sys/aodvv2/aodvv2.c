@@ -22,6 +22,7 @@
  */
 
 #include "aodvv2/aodvv2.h"
+#include "aodvv2/client.h"
 
 #include "net/gnrc/udp.h"
 #include "net/sock/udp.h"
@@ -97,7 +98,7 @@ void aodvv2_init(gnrc_netif_t *netif) {
 
     aodvv2_seqnum_init();
     aodvv2_routingtable_init();
-    aodvv2_clienttable_init();
+    aodvv2_client_init();
     aodvv2_rreqtable_init();
 
     aodvv2_packet_writer_init(_write_packet);
@@ -116,7 +117,8 @@ void aodvv2_init(gnrc_netif_t *netif) {
     ipv6_addr_to_netaddr(&orig_addr, &na_orig);
 
     /* Every node is its own client */
-    aodvv2_clienttable_add_client(&na_orig);
+    aodvv2_client_add(&orig_addr, sizeof(orig_addr) * 8,
+                      AODVV2_METRIC_HOP_COUNT);
 
     /* Initialize na_all_manet_routers_link_local */
     ipv6_addr_to_netaddr(&ipv6_addr_all_manet_routers_link_local,
