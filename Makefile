@@ -2,7 +2,10 @@
 APPLICATION = radio-firmware
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= cc1312-launchpad
+BOARD ?= turpial
+ifeq ($(BOARD),turpial)
+  BOARDSDIR ?= $(CURDIR)/boards
+endif
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/RIOT
