@@ -35,6 +35,7 @@ USEMODULE += aodvv2
 
 USEMODULE += shell
 USEMODULE += shell_commands
+USEMODULE += ps
 
 USEMODULE += posix_inet
 
