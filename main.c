@@ -14,6 +14,7 @@
 #include "shell.h"
 #include "msg.h"
 
+#include "net/manet/manet.h"
 #include "aodvv2/aodvv2.h"
 #include "banner.h"
 
@@ -43,6 +44,11 @@ int main(void)
 {
     gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
     aodvv2_init(ieee802154_netif);
+
+    /* Join LL-MANET-Routers multicast group */
+    if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
+        printf("Couldn't join MANET mcast group\n");
+    }
 
     printf("%s", banner);
     puts("Welcome to Turpial CC1312 Radio!");

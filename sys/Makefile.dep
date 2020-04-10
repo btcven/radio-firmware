@@ -1,10 +1,15 @@
 ifneq (,$(filter aodvv2,$(USEMODULE)))
   USEMODULE += oonf_api
   USEMODULE += oonf_rfc5444
+  USEMODULE += manet
 endif
 
 ifneq (,$(filter oonf_rfc5444,$(USEMODULE)))
   USEMODULE += oonf_common
   USEMODULE += oonf_regex
   USEMODULE += oonf_config
+endif
+
+ifeq (,$(filter manet,$(USEMODULE)))
+  USEMODULE += radio_firmware_net
 endif

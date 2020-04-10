@@ -78,31 +78,4 @@ typedef enum tlv_index {
     TLV_METRIC, /** Metric */
 } tlv_index_t;
 
-/**
- * @brief   Static initializer for the link-local all MANET-Routers IPv6
- *          address (ff02:0:0:0:0:0:0:6d)
- *
- * @see <a href="https://tools.ietf.org/html/rfc5498#section-6">
- *          RFC 5498, section 6
- *      </a>
- */
-#define IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL {{ 0xff, 0x02, 0x00, 0x00, \
-                                                  0x00, 0x00, 0x00, 0x00, \
-                                                  0x00, 0x00, 0x00, 0x00, \
-                                                  0x00, 0x00, 0x00, 0x6d }}
-
-/**
- * @brief   UDP Port for MANET Protocols 1 (udp/269).
- *
- * @see <a href="https://tools.ietf.org/html/rfc5498#section-6">
- *          RFC 5498, section 6
- *      </a>
- */
-#define UDP_MANET_PROTOCOLS_1 (269)
-
-/**
- * @see @ref IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL
- */
-extern ipv6_addr_t ipv6_addr_all_manet_routers_link_local;
-
 #endif /* AODVV2_CONSTANTS_H */
