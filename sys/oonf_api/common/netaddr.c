@@ -50,7 +50,6 @@
 #endif
 
 #include "common/common_types.h"
-#include "common/string.h"
 #include "common/netaddr.h"
 
 static char *_mac_to_string(char *dst, const void *bin, size_t dst_size,

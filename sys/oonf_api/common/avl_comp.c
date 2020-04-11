@@ -43,7 +43,6 @@
 #include <strings.h>
 
 #include "common/avl_comp.h"
-#include "common/string.h"
 
 /**
  * AVL tree comparator for unsigned 32 bit integers
