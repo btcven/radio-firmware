@@ -1,0 +1,3 @@
+INCLUDES += -I$(APPBASE)/sys/include
+INCLUDES += -I$(APPBASE)/sys/oonf_api
+INCLUDES += -I$(APPBASE)/sys/oonf_api/rfc5444
