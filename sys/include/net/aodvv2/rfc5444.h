@@ -145,18 +145,12 @@ typedef struct {
 } aodvv2_writer_target_t;
 
 /**
- * @brief   Register RREP message reader
+ * @brief   Register AODVv2 message reader
  *
  * @param[in] reader Pointer to the reader context.
  */
-void aodvv2_rfc5444_reader_rrep_register(struct rfc5444_reader *reader);
-
-/**
- * @brief   Register RREQ message reader
- *
- * @param[in] reader Pointer to the reader context.
- */
-void aodvv2_rfc5444_reader_rreq_register(struct rfc5444_reader *reader);
+void aodvv2_rfc5444_reader_register(struct rfc5444_reader *reader,
+                                    kernel_pid_t netif_pid);
 
 /**
  * @brief   Sets the sender address
