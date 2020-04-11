@@ -48,6 +48,8 @@
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_print.h"
 
+#include "kernel_defines.h"
+
 static enum rfc5444_result _cb_print_pkt_start(
     struct rfc5444_reader_tlvblock_context *context);
 static enum rfc5444_result _cb_print_pkt_tlv(

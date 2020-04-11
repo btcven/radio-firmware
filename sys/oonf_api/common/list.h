@@ -44,6 +44,7 @@
 
 #include <stddef.h>
 
+#include "kernel_defines.h"
 #include "common/container_of.h"
 #include "common/common_types.h"
 

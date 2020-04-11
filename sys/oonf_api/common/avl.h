@@ -45,8 +45,9 @@
 #include <stddef.h>
 
 #include "common/common_types.h"
+#include "common/container_of.h"
 #include "list.h"
-#include "container_of.h"
+#include "kernel_defines.h"
 
 /**
  * This element is a member of a avl-tree. It must be contained in all
