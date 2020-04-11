@@ -343,9 +343,8 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Initialize reader */
     rfc5444_reader_init(&_reader);
 
-    /* Register RREQ and RREP */
-    aodvv2_rfc5444_reader_rrep_register(&_reader);
-    aodvv2_rfc5444_reader_rreq_register(&_reader);
+    /* Register AODVv2 messages reader */
+    aodvv2_rfc5444_reader_register(&_reader, _netif->pid);
 
     mutex_unlock(&_reader_lock);
 
