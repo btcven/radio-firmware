@@ -182,7 +182,7 @@ EXPORT int inet_pton(int af, const char *cp, void * buf);
  * Sets the address type of a netaddr object to AF_UNSPEC
  * @param addr netaddr object
  */
-static INLINE void
+static inline void
 netaddr_invalidate(struct netaddr *addr) {
   memset(addr, 0, sizeof(*addr));
 }
@@ -191,7 +191,7 @@ netaddr_invalidate(struct netaddr *addr) {
  * @param addr netaddr object
  * @return prefix length, 0 if unknown address family
  */
-static INLINE uint8_t
+static inline uint8_t
 netaddr_get_maxprefix(const struct netaddr *addr) {
   return netaddr_get_af_maxprefix(addr->_type);
 }
@@ -203,7 +203,7 @@ netaddr_get_maxprefix(const struct netaddr *addr) {
  * @param src netaddr source
  * @return pointer to target buffer, NULL if an error happened
  */
-static INLINE const char *
+static inline const char *
 netaddr_to_string(struct netaddr_str *dst, const struct netaddr *src) {
   return netaddr_to_prefixstring(dst, src, false);
 }
@@ -217,7 +217,7 @@ netaddr_to_string(struct netaddr_str *dst, const struct netaddr *src) {
  * @param host_number postfix of result
  * @return -1 if an error happened, 0 otherwise
  */
-static INLINE int
+static inline int
 netaddr_create_host(struct netaddr *host, const struct netaddr *netmask,
     const struct netaddr *host_number) {
   return netaddr_create_host_bin(host, netmask, host_number->_addr,
@@ -229,7 +229,7 @@ netaddr_create_host(struct netaddr *host, const struct netaddr *netmask,
  * @param dst target IPv6 address
  * @param src source IPv4 address
  */
-static INLINE void
+static inline void
 netaddr_embed_ipv4_compatible(struct netaddr *dst, const struct netaddr *src) {
   memcpy(&dst->_addr[0], &NETADDR_IPV6_IPV4COMPATIBLE._addr[0], 12);
   memcpy(&dst->_addr[12], &src->_addr[0], 4);
@@ -242,7 +242,7 @@ netaddr_embed_ipv4_compatible(struct netaddr *dst, const struct netaddr *src) {
  * @param dst target IPv4 address
  * @param src source IPv6 address
  */
-static INLINE void
+static inline void
 netaddr_extract_ipv4_compatible(struct netaddr *dst, const struct netaddr *src) {
   memcpy(&dst->_addr[0], &src->_addr[12], 4);
   memset(&dst->_addr[4], 0, 12);
@@ -259,7 +259,7 @@ netaddr_extract_ipv4_compatible(struct netaddr *dst, const struct netaddr *src) 
  *   0 for autodetection based on length
  * @return 0 if successful read binary data, -1 otherwise
  */
-static INLINE int
+static inline int
 netaddr_from_binary(struct netaddr *dst, const void *binary,
     size_t len, uint8_t addr_type) {
   return netaddr_from_binary_prefix(dst, binary, len, addr_type, 255);
@@ -272,7 +272,7 @@ netaddr_from_binary(struct netaddr *dst, const void *binary,
  * @param a2 address 2
  * @return >0 if a1>a2, <0 if a1<a2, 0 otherwise
  */
-static INLINE int
+static inline int
 netaddr_cmp(const struct netaddr *a1, const struct netaddr *a2) {
   return memcmp(a1, a2, sizeof(*a1));
 }
@@ -283,7 +283,7 @@ netaddr_cmp(const struct netaddr *a1, const struct netaddr *a2) {
  * @param a2 address 2
  * @return >0 if a1>a2, <0 if a1<a2, 0 otherwise
  */
-static INLINE int
+static inline int
 netaddr_socket_cmp(const union netaddr_socket *s1, const union netaddr_socket *s2) {
   return memcmp(s1, s2, sizeof(*s1));
 }
@@ -292,7 +292,7 @@ netaddr_socket_cmp(const union netaddr_socket *s1, const union netaddr_socket *s
  * @param n pointer to netaddr
  * @return pointer to start of binary address
  */
-static INLINE const void *
+static inline const void *
 netaddr_get_binptr(const struct netaddr *n) {
   return &n->_addr[0];
 }
@@ -301,7 +301,7 @@ netaddr_get_binptr(const struct netaddr *n) {
  * @param n pointer to netaddr
  * @return number of bytes of binary address
  */
-static INLINE size_t
+static inline size_t
 netaddr_get_binlength(const struct netaddr *n) {
   return netaddr_get_maxprefix(n) >> 3;
 }
@@ -310,7 +310,7 @@ netaddr_get_binlength(const struct netaddr *n) {
  * @param n pointer to netaddr
  * @return address family
  */
-static INLINE uint8_t
+static inline uint8_t
 netaddr_get_address_family(const struct netaddr *n) {
   return n->_type;
 }
@@ -319,7 +319,7 @@ netaddr_get_address_family(const struct netaddr *n) {
  * @param n pointer to netaddr
  * @return prefix length
  */
-static INLINE uint8_t
+static inline uint8_t
 netaddr_get_prefix_length(const struct netaddr *n) {
   return n->_prefix_len;
 }
@@ -328,7 +328,7 @@ netaddr_get_prefix_length(const struct netaddr *n) {
  * @param n pointer to netaddr
  * @param prefix_length new prefix length
  */
-static INLINE void
+static inline void
 netaddr_set_prefix_length(struct netaddr *n, uint8_t prefix_len) {
   n->_prefix_len = prefix_len;
 }
@@ -337,7 +337,7 @@ netaddr_set_prefix_length(struct netaddr *n, uint8_t prefix_len) {
  * @param s pointer to netaddr socket
  * @return address family of socket
  */
-static INLINE sa_family_t
+static inline sa_family_t
 netaddr_socket_get_addressfamily(const union netaddr_socket *s) {
   return s->std.sa_family;
 }

@@ -115,7 +115,7 @@ EXPORT int strarray_cmp(const struct strarray *a1, const struct strarray *a2);
  * @param c character
  * @return true if character is printable, false otherwise
  */
-static INLINE bool
+static inline bool
 str_char_is_printable(char c) {
   unsigned char uc = (unsigned char) c;
   return !(uc < 32 || uc == 127 || uc == 255);
@@ -127,7 +127,7 @@ str_char_is_printable(char c) {
  * @param src constant source array
  * @return 0 if array was copied, -1 if an error happened
  */
-static INLINE int
+static inline int
 strarray_copy_c(struct strarray *dst, const struct const_strarray *src) {
   return strarray_copy(dst, (const struct strarray *)src);
 }
@@ -138,7 +138,7 @@ strarray_copy_c(struct strarray *dst, const struct const_strarray *src) {
  * @param idx index of string to be extracted
  * @return string at the specified index, NULL if not found
  */
-static INLINE const char *
+static inline const char *
 strarray_get_c(const struct const_strarray *array, size_t idx) {
   return strarray_get((const struct strarray *)array, idx);
 }
@@ -147,7 +147,7 @@ strarray_get_c(const struct const_strarray *array, size_t idx) {
  * @param array constant string array
  * @return number of strings in string array
  */
-static INLINE size_t
+static inline size_t
 strarray_get_count_c(const struct const_strarray *array) {
   return strarray_get_count((const struct strarray *)array);
 }
@@ -157,7 +157,7 @@ strarray_get_count_c(const struct const_strarray *array) {
  * Initialize string array object
  * @param array pointer to string array object
  */
-static INLINE void
+static inline void
 strarray_init(struct strarray *array) {
   memset(array, 0, sizeof(*array));
 }
@@ -166,7 +166,7 @@ strarray_init(struct strarray *array) {
  * Free memory of string array object
  * @param array pointer to string array object
  */
-static INLINE void
+static inline void
 strarray_free(struct strarray *array) {
   free(array->value);
   strarray_init(array);
@@ -176,7 +176,7 @@ strarray_free(struct strarray *array) {
  * @param array pointer to string array object
  * @return true if the array is empty, false otherwise
  */
-static INLINE bool
+static inline bool
 strarray_is_empty(const struct strarray *array) {
   return array->value == NULL;
 }
@@ -185,7 +185,7 @@ strarray_is_empty(const struct strarray *array) {
  * @param array pointer to constant string array object
  * @return true if the array is empty, false otherwise
  */
-static INLINE bool
+static inline bool
 strarray_is_empty_c(const struct const_strarray *array) {
   return array->value == NULL;
 }
@@ -195,7 +195,7 @@ strarray_is_empty_c(const struct const_strarray *array) {
  * @param array pointer to string array object
  * @param element an element to be removed from the array
  */
-static INLINE void
+static inline void
 strarray_remove(struct strarray *array, char *element) {
   strarray_remove_ext(array, element, true);
 }
@@ -204,7 +204,7 @@ strarray_remove(struct strarray *array, char *element) {
  * @param array pointer to strarray object
  * @return pointer to first string of string array
  */
-static INLINE char *
+static inline char *
 strarray_get_first(const struct strarray *array) {
   return array->value;
 }
@@ -213,7 +213,7 @@ strarray_get_first(const struct strarray *array) {
  * @param array pointer to constant strarray object
  * @return pointer to first string of string array
  */
-static INLINE const char *
+static inline const char *
 strarray_get_first_c(const struct const_strarray *array) {
   return array->value;
 }
@@ -224,7 +224,7 @@ strarray_get_first_c(const struct const_strarray *array) {
  * @param current pointer to a string in array
  * @return pointer to next string in string array
  */
-static INLINE char *
+static inline char *
 strarray_get_next(char *current) {
   return current + strlen(current) + 1;
 }
@@ -235,7 +235,7 @@ strarray_get_next(char *current) {
  * @param current pointer to a string in constant array
  * @return pointer to next string in string array
  */
-static INLINE const char *
+static inline const char *
 strarray_get_next_c(const char *current) {
   return current + strlen(current) + 1;
 }
@@ -246,7 +246,7 @@ strarray_get_next_c(const char *current) {
  * @return pointer to next string in string array,
  *   NULL if there is no further string
  */
-static INLINE char *
+static inline char *
 strarray_get_next_safe(const struct strarray *array, char *current) {
   char *next;
 
@@ -263,7 +263,7 @@ strarray_get_next_safe(const struct strarray *array, char *current) {
  * @return pointer to next string in string array,
  *   NULL if there is no further string
  */
-static INLINE const char *
+static inline const char *
 strarray_get_next_safe_c(const struct const_strarray *array,
     const char *current) {
   const char *next;
@@ -282,7 +282,7 @@ strarray_get_next_safe_c(const struct const_strarray *array,
  * @return <0 if a1 is 'smaller' than a2, >0 if a1 is 'larger' than a2,
  *   0 if both are the same.
  */
-static INLINE int
+static inline int
 strarray_cmp_c(const struct const_strarray *a1, const struct const_strarray *a2) {
   return strarray_cmp((const struct strarray *)a1, (const struct strarray *)a2);
 }

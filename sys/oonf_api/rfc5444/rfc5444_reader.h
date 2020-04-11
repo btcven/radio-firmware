@@ -319,7 +319,7 @@ EXPORT uint8_t *rfc5444_reader_get_tlv_value(
  * Call to set the do-not-forward flag in message context
  * @param context pointer to message context
  */
-static INLINE void
+static inline void
 rfc5444_reader_prevent_forwarding(struct rfc5444_reader_tlvblock_context *context) {
   context->_do_not_forward = true;
 }

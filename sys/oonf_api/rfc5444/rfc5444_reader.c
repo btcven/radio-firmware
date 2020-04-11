@@ -329,7 +329,7 @@ _consumer_avl_comp(const void *k1, const void *k2) {
  * @param entry pointer tlvblock entry
  * @return 256*type + exttype
  */
-static INLINE int
+static inline int
 _calc_tlvconsumer_intorder(struct rfc5444_reader_tlvblock_consumer_entry *entry) {
   return (((int)entry->type) << 8) | ((int)entry->type_ext);
 }
@@ -339,7 +339,7 @@ _calc_tlvconsumer_intorder(struct rfc5444_reader_tlvblock_consumer_entry *entry)
  * @param entry pointer tlvblock entry
  * @return 256*type + exttype
  */
-static INLINE int
+static inline int
 _calc_tlvblock_intorder(struct rfc5444_reader_tlvblock_entry *entry) {
   return (((int)entry->type) << 8) | ((int)entry->type_ext);
 }

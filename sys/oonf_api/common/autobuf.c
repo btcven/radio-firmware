@@ -64,7 +64,7 @@ int getpagesize(void) {
  * @param pow2 power of 2 (1024, 4096, ...)
  * @return multiple of pow2 which larger or equal val
  */
-static INLINE size_t
+static inline size_t
 ROUND_UP_TO_POWER_OF_2(size_t val, size_t pow2) {
   return (val + pow2 - 1) & ~(pow2 - 1);
 }

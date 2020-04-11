@@ -82,7 +82,7 @@
 /**
  * Helper function for NULL safe container_of macro
  */
-static INLINE void *
+static inline void *
 __container_of_if_notnull(void *ptr, size_t offset) {
   return ptr == NULL ? NULL : (((char *)ptr) - offset);
 }

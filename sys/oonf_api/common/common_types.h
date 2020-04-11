@@ -63,11 +63,11 @@
  * This force gcc to always inline, which prevents errors
  * with option -Os
  */
-#ifndef INLINE
+#ifndef inline
 #ifdef __GNUC__
-#define INLINE inline __attribute__((always_inline))
+#define inline inline __attribute__((always_inline))
 #else
-#define INLINE inline
+#define inline inline
 #endif
 #endif
 

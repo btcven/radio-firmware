@@ -468,7 +468,7 @@ void _rfc5444_writer_begin_packet(struct rfc5444_writer *writer, struct rfc5444_
  * @return RFC5444_OKAY if message was created and added to packet buffer,
  *   RFC5444_... otherwise
  */
-static INLINE enum rfc5444_result
+static inline enum rfc5444_result
 rfc5444_writer_create_message_singletarget(
     struct rfc5444_writer *writer, uint8_t msgid, struct rfc5444_writer_target *target) {
   return rfc5444_writer_create_message(writer, msgid, rfc5444_writer_singletarget_selector, target);
@@ -481,7 +481,7 @@ rfc5444_writer_create_message_singletarget(
  * @return RFC5444_OKAY if message was created and added to packet buffer,
  *   RFC5444_... otherwise
  */
-static INLINE enum rfc5444_result
+static inline enum rfc5444_result
 rfc5444_writer_create_message_alltarget(
     struct rfc5444_writer *writer, uint8_t msgid) {
   return rfc5444_writer_create_message(writer, msgid, rfc5444_writer_alltargets_selector, NULL);

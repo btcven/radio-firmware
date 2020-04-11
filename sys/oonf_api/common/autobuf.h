@@ -87,7 +87,7 @@ EXPORT void abuf_hexdump(struct autobuf *out,
  * Clears the content of an autobuf
  * @param autobuf
  */
-static INLINE void
+static inline void
 abuf_clear(struct autobuf *autobuf) {
   autobuf->_len = 0;
   autobuf->_error = false;
@@ -98,7 +98,7 @@ abuf_clear(struct autobuf *autobuf) {
  * @param autobuf pointer to autobuf
  * @return pointer to internal bufffer memory
  */
-static INLINE char *
+static inline char *
 abuf_getptr(struct autobuf *autobuf) {
   return autobuf->_buf;
 }
@@ -107,7 +107,7 @@ abuf_getptr(struct autobuf *autobuf) {
  * @param autobuf pointer to autobuf
  * @return number of bytes stored in autobuf
  */
-static INLINE size_t
+static inline size_t
 abuf_getlen(struct autobuf *autobuf) {
   return autobuf->_len;
 }
@@ -116,7 +116,7 @@ abuf_getlen(struct autobuf *autobuf) {
  * @param autobuf pointer to autobuf
  * @return number of bytes allocated in buffer
  */
-static INLINE size_t
+static inline size_t
 abuf_getmax(struct autobuf *autobuf) {
   return autobuf->_total;
 }
@@ -126,7 +126,7 @@ abuf_getmax(struct autobuf *autobuf) {
  * @param autobuf
  * @param len
  */
-static INLINE void
+static inline void
 abuf_setlen(struct autobuf * autobuf, size_t len) {
   if (autobuf->_total > len) {
     autobuf->_len = len;
@@ -141,7 +141,7 @@ abuf_setlen(struct autobuf * autobuf, size_t len) {
  * @param c byte to append
  * @return -1 if an error happened, 0 otherwise
  */
-static INLINE int
+static inline int
 abuf_append_uint8(struct autobuf *autobuf, const uint8_t c) {
   return abuf_memcpy(autobuf, &c, 1);
 }
@@ -152,7 +152,7 @@ abuf_append_uint8(struct autobuf *autobuf, const uint8_t c) {
  * @param s uint16 to append
  * @return -1 if an error happened, 0 otherwise
  */
-static INLINE int
+static inline int
 abuf_append_uint16(struct autobuf *autobuf, const uint16_t s) {
   return abuf_memcpy(autobuf, &s, 2);
 }
@@ -163,7 +163,7 @@ abuf_append_uint16(struct autobuf *autobuf, const uint16_t s) {
  * @param l uint32 to append
  * @return -1 if an error happened, 0 otherwise
  */
-static INLINE int
+static inline int
 abuf_append_uint32(struct autobuf *autobuf, const uint32_t l) {
   return abuf_memcpy(autobuf, &l, 4);
 }
@@ -173,7 +173,7 @@ abuf_append_uint32(struct autobuf *autobuf, const uint32_t l) {
  * @return true if an autobuf function failed
  *  since the last cleanup of the stream
  */
-static INLINE bool
+static inline bool
 abuf_has_failed(struct autobuf *autobuf) {
   return autobuf->_error;
 }

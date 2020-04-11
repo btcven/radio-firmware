@@ -67,7 +67,7 @@ static struct rfc5444_writer_addrtlv *_malloc_addrtlv_entry(void);
  * @param exttype TLV extension type
  * @return combined type
  */
-static INLINE int
+static inline int
 _get_fulltype(uint8_t type, uint8_t exttype) {
   return type * 256 + exttype;
 }

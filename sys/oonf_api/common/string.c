@@ -56,7 +56,7 @@ static const char *_isonumber_u64_to_string(char *out,
  * @param size minimum size of block
  * @return rounded up block size of STRARRAY_BLOCKSIZE
  */
-static INLINE size_t STRARRAY_MEMSIZE(const size_t b) {
+static inline size_t STRARRAY_MEMSIZE(const size_t b) {
   return (b + STRARRAY_BLOCKSIZE-1) & (~(STRARRAY_BLOCKSIZE - 1));
 }
 
