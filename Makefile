@@ -29,7 +29,6 @@ USEMODULE += auto_init_gnrc_netif
 
 USEMODULE += gnrc_ipv6_default
 USEMODULE += gnrc_udp
-USEMODULE += gnrc_sock_udp
 
 USEMODULE += manet
 USEMODULE += aodvv2
