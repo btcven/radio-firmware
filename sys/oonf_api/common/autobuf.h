@@ -66,21 +66,21 @@ struct autobuf {
   bool _error;
 };
 
-EXPORT int abuf_init(struct autobuf *autobuf);
-EXPORT void abuf_free(struct autobuf *autobuf);
-EXPORT int abuf_vappendf(struct autobuf *autobuf, const char *fmt,
+int abuf_init(struct autobuf *autobuf);
+void abuf_free(struct autobuf *autobuf);
+int abuf_vappendf(struct autobuf *autobuf, const char *fmt,
     va_list ap) __attribute__ ((format(printf, 2, 0)));
-EXPORT int abuf_appendf(struct autobuf *autobuf, const char *fmt,
+int abuf_appendf(struct autobuf *autobuf, const char *fmt,
     ...) __attribute__ ((format(printf, 2, 3)));
-EXPORT int abuf_puts(struct autobuf * autobuf, const char *s);
-EXPORT int abuf_strftime(struct autobuf * autobuf,
+int abuf_puts(struct autobuf * autobuf, const char *s);
+int abuf_strftime(struct autobuf * autobuf,
     const char *format, const struct tm * tm);
-EXPORT int abuf_memcpy(struct autobuf * autobuf,
+int abuf_memcpy(struct autobuf * autobuf,
     const void *p, const size_t len);
-EXPORT int abuf_memcpy_prepend(struct autobuf *autobuf,
+int abuf_memcpy_prepend(struct autobuf *autobuf,
     const void *p, const size_t len);
-EXPORT void abuf_pull(struct autobuf * autobuf, size_t len);
-EXPORT void abuf_hexdump(struct autobuf *out,
+void abuf_pull(struct autobuf * autobuf, size_t len);
+void abuf_hexdump(struct autobuf *out,
     const char *prefix, void *buffer, size_t length);
 
 /**

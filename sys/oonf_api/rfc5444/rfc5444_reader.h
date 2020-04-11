@@ -294,25 +294,25 @@ struct rfc5444_reader {
   void (*free_addrblock_entry)(void *);
 };
 
-EXPORT void rfc5444_reader_init(struct rfc5444_reader *);
-EXPORT void rfc5444_reader_cleanup(struct rfc5444_reader *);
-EXPORT void rfc5444_reader_add_packet_consumer(struct rfc5444_reader *parser,
+void rfc5444_reader_init(struct rfc5444_reader *);
+void rfc5444_reader_cleanup(struct rfc5444_reader *);
+void rfc5444_reader_add_packet_consumer(struct rfc5444_reader *parser,
     struct rfc5444_reader_tlvblock_consumer *consumer,
     struct rfc5444_reader_tlvblock_consumer_entry *entries, size_t entrycount);
-EXPORT void rfc5444_reader_add_message_consumer(struct rfc5444_reader *,
+void rfc5444_reader_add_message_consumer(struct rfc5444_reader *,
     struct rfc5444_reader_tlvblock_consumer *,
     struct rfc5444_reader_tlvblock_consumer_entry *,
     size_t entrycount);
 
-EXPORT void rfc5444_reader_remove_packet_consumer(
+void rfc5444_reader_remove_packet_consumer(
     struct rfc5444_reader *, struct rfc5444_reader_tlvblock_consumer *);
-EXPORT void rfc5444_reader_remove_message_consumer(
+void rfc5444_reader_remove_message_consumer(
     struct rfc5444_reader *, struct rfc5444_reader_tlvblock_consumer *);
 
-EXPORT enum rfc5444_result rfc5444_reader_handle_packet(
+enum rfc5444_result rfc5444_reader_handle_packet(
     struct rfc5444_reader *parser, uint8_t *buffer, size_t length);
 
-EXPORT uint8_t *rfc5444_reader_get_tlv_value(
+uint8_t *rfc5444_reader_get_tlv_value(
     struct rfc5444_reader_tlvblock_entry *tlv);
 
 /**

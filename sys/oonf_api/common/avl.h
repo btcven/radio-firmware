@@ -140,12 +140,12 @@ struct avl_tree {
   avl_tree_comp comp;
 };
 
-EXPORT void avl_init(struct avl_tree *, avl_tree_comp, bool);
-EXPORT struct avl_node *avl_find(const struct avl_tree *, const void *);
-EXPORT struct avl_node *avl_find_greaterequal(const struct avl_tree *tree, const void *key);
-EXPORT struct avl_node *avl_find_lessequal(const struct avl_tree *tree, const void *key);
-EXPORT int avl_insert(struct avl_tree *, struct avl_node *);
-EXPORT void avl_remove(struct avl_tree *, struct avl_node *);
+void avl_init(struct avl_tree *, avl_tree_comp, bool);
+struct avl_node *avl_find(const struct avl_tree *, const void *);
+struct avl_node *avl_find_greaterequal(const struct avl_tree *tree, const void *key);
+struct avl_node *avl_find_lessequal(const struct avl_tree *tree, const void *key);
+int avl_insert(struct avl_tree *, struct avl_node *);
+void avl_remove(struct avl_tree *, struct avl_node *);
 
 /**
  * @param tree pointer to avl-tree

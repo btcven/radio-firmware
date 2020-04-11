@@ -105,25 +105,25 @@ enum {
   INET6_PREFIXSTRLEN = INET6_ADDRSTRLEN + 4,
 };
 
-EXPORT int netaddr_from_binary_prefix(struct netaddr *dst,
+int netaddr_from_binary_prefix(struct netaddr *dst,
     const void *binary, size_t len, uint8_t addr_type, uint8_t prefix_len);
-EXPORT int netaddr_to_binary(void *dst, const struct netaddr *src, size_t len);
-EXPORT int netaddr_to_autobuf(struct autobuf *, const struct netaddr *src);
-EXPORT int netaddr_create_host_bin(struct netaddr *host, const struct netaddr *netmask,
+int netaddr_to_binary(void *dst, const struct netaddr *src, size_t len);
+int netaddr_to_autobuf(struct autobuf *, const struct netaddr *src);
+int netaddr_create_host_bin(struct netaddr *host, const struct netaddr *netmask,
     const void *number, size_t num_length);
-EXPORT const char *netaddr_to_prefixstring(
+const char *netaddr_to_prefixstring(
     struct netaddr_str *dst, const struct netaddr *src, bool forceprefix);
 
-EXPORT bool netaddr_isequal_binary(const struct netaddr *addr,
+bool netaddr_isequal_binary(const struct netaddr *addr,
     const void *bin, size_t len, uint16_t af, uint8_t prefix_len);
-EXPORT bool netaddr_is_in_subnet(const struct netaddr *subnet,
+bool netaddr_is_in_subnet(const struct netaddr *subnet,
     const struct netaddr *addr);
-EXPORT bool netaddr_binary_is_in_subnet(const struct netaddr *subnet,
+bool netaddr_binary_is_in_subnet(const struct netaddr *subnet,
     const void *bin, size_t len, uint8_t af_family);
 
-EXPORT uint8_t netaddr_get_af_maxprefix(const uint32_t);
+uint8_t netaddr_get_af_maxprefix(const uint32_t);
 
-EXPORT int netaddr_avlcmp(const void *, const void *);
+int netaddr_avlcmp(const void *, const void *);
 
 /**
  * Sets the address type of a netaddr object to AF_UNSPEC

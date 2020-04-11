@@ -44,11 +44,6 @@
 
 #include <stddef.h>
 
-/* support EXPORT macro of OONF */
-#ifndef EXPORT
-#  define EXPORT __attribute__((visibility ("default")))
-#endif
-
 /* give everyone an arraysize implementation */
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a)  (sizeof(a) / sizeof(*(a)))
