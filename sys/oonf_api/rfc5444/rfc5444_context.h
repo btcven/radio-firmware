@@ -41,7 +41,6 @@
 #ifndef RFC5444_CONTEXT_H_
 #define RFC5444_CONTEXT_H_
 
-#include "common/common_types.h"
 #include "rfc5444/rfc5444_api_config.h"
 
 /*

@@ -45,8 +45,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
-
-#include "common/common_types.h"
+#include <stdbool.h>
 
 /**
  * Auto-sized buffer handler, mostly used for generation of

@@ -43,8 +43,8 @@
 #define _AVL_H
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include "common/common_types.h"
 #include "common/container_of.h"
 #include "list.h"
 #include "kernel_defines.h"

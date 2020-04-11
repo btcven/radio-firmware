@@ -43,10 +43,10 @@
 #define LIST_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "kernel_defines.h"
 #include "common/container_of.h"
-#include "common/common_types.h"
 
 /**
  * this struct is used as list head and list elements.

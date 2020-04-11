@@ -43,7 +43,6 @@
 #define RFC5444_PARSER_H_
 
 #include "common/avl.h"
-#include "common/common_types.h"
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_context.h"
 

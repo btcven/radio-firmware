@@ -48,7 +48,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "common/common_types.h"
 #include "common/autobuf.h"
 
 /* Pseude address families for mac/eui64 */

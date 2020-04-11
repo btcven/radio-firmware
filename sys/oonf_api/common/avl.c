@@ -43,7 +43,6 @@
 #include <time.h>
 #include <string.h>
 
-#include "common/common_types.h"
 #include "common/list.h"
 #include "common/avl.h"
 

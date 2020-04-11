@@ -41,7 +41,6 @@
 
 #include <string.h>
 
-#include "common/common_types.h"
 #include "rfc5444/rfc5444_tlv_writer.h"
 #include "rfc5444/rfc5444_context.h"
 #include "rfc5444/rfc5444_api_config.h"

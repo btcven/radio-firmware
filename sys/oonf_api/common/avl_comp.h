@@ -42,8 +42,6 @@
 #ifndef AVL_COMP_H_
 #define AVL_COMP_H_
 
-#include "common/common_types.h"
-
 int avl_comp_uint32(const void *k1, const void *k2);
 int avl_comp_uint16(const void *k1, const void *k2);
 int avl_comp_uint8(const void *k1, const void *k2);

@@ -44,7 +44,6 @@
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
-#include "common/common_types.h"
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_api_config.h"
 

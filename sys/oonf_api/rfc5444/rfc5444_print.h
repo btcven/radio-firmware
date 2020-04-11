@@ -41,7 +41,6 @@
 #ifndef PRINT_RFC5444_H_
 #define PRINT_RFC5444_H_
 
-#include "common/common_types.h"
 #include "common/autobuf.h"
 #include "rfc5444/rfc5444_reader.h"
 

@@ -46,7 +46,6 @@
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
-#include "common/common_types.h"
 #include "common/list.h"
 #include "rfc5444/rfc5444_context.h"
 #include "rfc5444/rfc5444_writer.h"

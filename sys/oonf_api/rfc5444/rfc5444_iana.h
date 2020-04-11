@@ -42,7 +42,6 @@
 #ifndef RFC5444_IANA_H_
 #define RFC5444_IANA_H_
 
-#include "common/common_types.h"
 #include "common/netaddr.h"
 
 /*
