@@ -1,4 +1,0 @@
-/**
- * @defgroup        aodvv2
- * @brief           AODVv2 Routing Protocol implementation
- */

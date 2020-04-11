@@ -74,7 +74,7 @@ typedef struct unreachable_node {
  * @brief   Data about an OrigNode or TargNode, typically embedded in an
  *          aodvv2_packet_data_t struct.
  */
-typedef struct node_data {
+typedef struct {
     struct netaddr addr; /**< IP address of the node */
     uint8_t metric; /**< Metric value */
     aodvv2_seqnum_t seqnum; /**< Sequence Number */

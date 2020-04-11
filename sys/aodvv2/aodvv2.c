@@ -26,34 +26,28 @@
 
 #include "net/gnrc/udp.h"
 #include "net/sock/udp.h"
+#include "net/manet/manet.h"
 
-#include "reader.h"
+#include "read_messages.h"
+#include "write_messages.h"
 #include "routingtable.h"
 #include "seqnum.h"
 #include "utils.h"
-#include "writer.h"
+
+#include "rfc5444/rfc5444_print.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"
 
-#define RCV_MSG_Q_SIZE (32)
-#define UDP_BUFFER_SIZE (128) /** with respect to IEEE 802.15.4's MTU */
-
-ipv6_addr_t ipv6_addr_all_manet_routers_link_local =
-    IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL;
+#if ENABLE_DEBUG == 1
+#include "ps.h"
+#endif
 
 static struct netaddr na_all_manet_routers_link_local;
 
 static char _addr_str[IPV6_ADDR_MAX_STR_LEN];
 
-static char _send_stack[GNRC_UDP_STACK_SIZE];
-static char _recv_stack[THREAD_STACKSIZE_DEFAULT];
-
-static kernel_pid_t sender_pid;
-
 static gnrc_netif_t *_netif = NULL;
-
-static sock_udp_t _udp_sock;
 
 /**
  * @brief   Originator (our) address, as a netaddr.
@@ -62,7 +56,7 @@ static sock_udp_t _udp_sock;
  */
 static struct netaddr na_orig;
 
-/*static aodvv2_writer_target_t *wt;*/
+static struct autobuf _hexbuf;
 
 
 /**
@@ -93,7 +87,7 @@ static void _write_packet(struct rfc5444_writer *wr,
 static void _clean_msg_container(msg_container_t *mc);
 
 void aodvv2_init(gnrc_netif_t *netif) {
-    DEBUG("[aodvv2]: init\n");
+    DEBUG("aodvv2_init(%08lx)\n", (uint32_t)netif);
     _netif = netif;
 
     aodvv2_seqnum_init();
@@ -101,7 +95,10 @@ void aodvv2_init(gnrc_netif_t *netif) {
     aodvv2_client_init();
     aodvv2_rreqtable_init();
 
-    aodvv2_packet_writer_init(_write_packet);
+    if (aodvv2_packet_writer_init(_write_packet) < 0) {
+        DEBUG("aodvv2_init: couldn't initialize writer\n");
+        return;
+    }
     aodvv2_packet_reader_init();
 
     /* Initialize na_orig address */
@@ -111,7 +108,7 @@ void aodvv2_init(gnrc_netif_t *netif) {
                         0,
                         &orig_addr,
                         sizeof(orig_addr)) < 0) {
-        DEBUG("[aodvv2]: can't get iface IPv6 address\n");
+        DEBUG("aodvv2_init: can't get iface IPv6 address\n");
         return;
     }
     ipv6_addr_to_netaddr(&orig_addr, &na_orig);
@@ -124,15 +121,6 @@ void aodvv2_init(gnrc_netif_t *netif) {
     ipv6_addr_to_netaddr(&ipv6_addr_all_manet_routers_link_local,
                          &na_all_manet_routers_link_local);
 
-    /* Join LL-MANET-Routers multicast group */
-    gnrc_netapi_opt_t opt = {
-        .opt = NETOPT_IPV6_GROUP,
-        .context = 0,
-        .data = &ipv6_addr_all_manet_routers_link_local,
-        .data_len = sizeof(ipv6_addr_t),
-    };
-    gnrc_netif_set_from_netdev(_netif, &opt);
-
     /* Create UDP socket */
     sock_udp_ep_t udp_local = SOCK_IPV6_EP_ANY;
     udp_local.port = UDP_MANET_PROTOCOLS_1;
@@ -140,24 +128,6 @@ void aodvv2_init(gnrc_netif_t *netif) {
         DEBUG("[aodvv2]: couldn't create UDP socket\n");
         return;
     }
-
-    sender_pid = KERNEL_PID_UNDEF;
-    sender_pid = thread_create(_send_stack,
-                               sizeof(_send_stack),
-                               THREAD_PRIORITY_MAIN - 1,
-                               THREAD_CREATE_STACKTEST,
-                               _sender_thread,
-                               NULL,
-                               "aodvv2_sender_thread");
-
-    /* Start listening & enable sending */
-    thread_create(_recv_stack,
-                  sizeof(_recv_stack),
-                  THREAD_PRIORITY_MAIN - 1,
-                  THREAD_CREATE_STACKTEST,
-                  _receiver_thread,
-                  NULL,
-                  "_receiver_thread");
 }
 
 void aodvv2_find_route(ipv6_addr_t *target_addr)
@@ -298,9 +268,17 @@ static void _write_packet(struct rfc5444_writer *wr,
                           struct rfc5444_writer_target *iface,
                           void *buffer, size_t length)
 {
-    (void)wr;
+    DEBUG("_write_packet(%08lx, %08lx, %08lx, %d)\n", (uint32_t)wr,
+          (uint32_t)iface, (uint32_t)buffer, length);
 
-    DEBUG("[aodvv2]: write packet\n");
+#if ENABLE_DEBUG == 1
+    /* Generate hexdump of packet */
+    abuf_hexdump(&_hexbuf, "\t", buffer, length);
+    rfc5444_print_direct(&_hexbuf, buffer, length);
+
+    /* Print hexdump to console */
+    DEBUG("%s", abuf_getptr(&_hexbuf));
+#endif
 
     /* Get the aodvv2_writer_target_t from the rfc5444_writer_targe
      * pointer */
@@ -328,14 +306,18 @@ static void _write_packet(struct rfc5444_writer *wr,
     }
 
     if (sock_udp_send(&_udp_sock, buffer, length, &remote) < 0) {
-        DEBUG("[aodvv2]: error sending UDP packet");
+        DEBUG("_write_packet: error sending UDP packet");
         return;
     }
+
+#if ENABLE_DEBUG == 1
+    ps();
+#endif
 }
 
 static void *_receiver_thread(void *arg)
 {
-    (void)arg;
+    DEBUG("_receiver_thread(%08lx)", (uint32_t)arg);
 
     char recv_buf[UDP_BUFFER_SIZE];
     memset(recv_buf, 0, sizeof(recv_buf));
@@ -346,7 +328,7 @@ static void *_receiver_thread(void *arg)
 
         if ((res = sock_udp_recv(&_udp_sock, recv_buf, sizeof(recv_buf),
                                  SOCK_NO_TIMEOUT, &remote)) >= 0) {
-            DEBUG("[aodvv2]: received remote packet\n");
+            DEBUG("_receiver_thread: received remote packet\n");
 
             /* Convert to struct netaddr */
             struct netaddr na_sender;
@@ -355,7 +337,7 @@ static void *_receiver_thread(void *arg)
             memcpy(na_sender._addr, &remote.addr, sizeof(na_sender._addr));
 
             if (aodvv2_packet_reader_handle_packet(recv_buf, res, &na_sender) < 0) {
-                DEBUG("[aodvv2]: failed\n");
+                DEBUG("_receiver_thread: failed\n");
             }
         }
     }
@@ -365,7 +347,7 @@ static void *_receiver_thread(void *arg)
 
 static void _clean_msg_container(msg_container_t *mc)
 {
-    DEBUG("[aodvv2]: freeing up msg_container_t memory\n");
+    DEBUG("_clean_msg_container(%08lx)\n", (uint32_t)mc);
 
     switch (mc->type) {
         case RFC5444_MSGTYPE_RREQ:
@@ -388,7 +370,7 @@ static void _clean_msg_container(msg_container_t *mc)
             break;
 
         default:
-            DEBUG("[aodvv2]: fatal: unknown msg_container_t type\n");
+            DEBUG("_clean_msg_container: unknown msg_container_t type\n");
             break;
     }
 }

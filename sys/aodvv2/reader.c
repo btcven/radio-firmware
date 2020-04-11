@@ -43,16 +43,6 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(
 static enum rfc5444_result _cb_rrep_end_callback(
     struct rfc5444_reader_tlvblock_context *cont, bool dropped);
 
-/* helper functions */
-static uint8_t _get_link_cost(aodvv2_metric_t metric_type);
-static uint8_t _get_max_metric(aodvv2_metric_t metric_type);
-
-/* @brief   Calculate a metric's new value according to the specified
- *          MetricType (currently only implemented for
- *          AODVV2_DEFAULT_METRIC_TYPE (HopCt))
- */
-static void _update_metric(aodvv2_metric_t metric_type, uint8_t *metric);
-
 /* This is where we store data gathered from packets */
 static aodvv2_packet_data_t packet_data;
 //static struct unreachable_node unreachable_nodes[AODVV2_MAX_UNREACHABLE_NODES];
@@ -117,12 +107,6 @@ static struct rfc5444_reader_tlvblock_consumer_entry _rreq_rrep_address_consumer
     [RFC5444_MSGTLV_METRIC] = { .type = RFC5444_MSGTLV_METRIC }
 };
 
-/**
- * This block callback is called for every address
- *
- * @param cont
- * @return
- */
 static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(struct rfc5444_reader_tlvblock_context *cont)
 {
     DEBUG("%s()\n", __func__);
@@ -520,38 +504,4 @@ int aodvv2_packet_reader_handle_packet(void *buffer, size_t length, struct netad
     DEBUG("\t sender: %s\n", netaddr_to_string(&nbuf, &packet_data.sender));
 
     return rfc5444_reader_handle_packet(&reader, buffer, length);
-}
-
-/*============= HELPER FUNCTIONS =============================================*/
-
-/*
- * Cost(L): Get Cost of a Link regarding the specified metric.
- * (currently only AODVV2_DEFAULT_METRIC_TYPE (HopCt) implemented)
- * returns cost if metric is known, NULL otherwise
- */
-static uint8_t _get_link_cost(aodvv2_metric_t metric_type)
-{
-    if (metric_type == AODVV2_DEFAULT_METRIC_TYPE) {
-        return 1;
-    }
-    return 0;
-}
-
-/*
- * MAX_METRIC[MetricType]:
- * returns maximum value of the given metric if metric is known, NULL otherwise.
- */
-static uint8_t _get_max_metric(aodvv2_metric_t metric_type)
-{
-    if (metric_type == AODVV2_DEFAULT_METRIC_TYPE) {
-        return AODVV2_MAX_HOPCOUNT;
-    }
-    return 0;
-}
-
-static void _update_metric(aodvv2_metric_t metric_type, uint8_t *metric)
-{
-    if (metric_type == AODVV2_DEFAULT_METRIC_TYPE){
-        *metric = *metric + 1;
-    }
 }

@@ -22,7 +22,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/routingtable.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 static void _reset_entry_if_stale(uint8_t i);
@@ -34,15 +34,17 @@ static struct netaddr_str nbuf;
  */
 static aodvv2_routing_entry_t routing_table[CONFIG_AODVV2_MAX_ROUTING_ENTRIES];
 
-static timex_t null_time, max_seqnum_lifetime, active_interval, max_idletime, validity_t;
-timex_t now;
-
-#if ENABLE_DEBUG == 1
-static struct netaddr_str nbuf;
-#endif
+static timex_t null_time;
+static timex_t max_seqnum_lifetime;
+static timex_t active_interval;
+static timex_t max_idletime;
+static timex_t validity_t;
+static timex_t now;
 
 void aodvv2_routingtable_init(void)
 {
+    DEBUG("aodvv2_routingtable_init()\n");
+
     null_time = timex_set(0, 0);
     max_seqnum_lifetime = timex_set(CONFIG_AODVV2_MAX_SEQNUM_LIFETIME, 0);
     active_interval = timex_set(CONFIG_AODVV2_ACTIVE_INTERVAL, 0);
@@ -51,7 +53,6 @@ void aodvv2_routingtable_init(void)
                            CONFIG_AODVV2_MAX_IDLETIME, 0);
 
     memset(&routing_table, 0, sizeof(routing_table));
-    DEBUG("routing table initialized.\n");
 }
 
 struct netaddr *aodvv2_routingtable_get_next_hop(struct netaddr *dest, routing_metric_t metricType)

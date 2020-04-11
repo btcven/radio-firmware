@@ -24,7 +24,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/rreqtable.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data);
@@ -43,6 +43,7 @@ static struct netaddr_str nbuf;
 
 void aodvv2_rreqtable_init(void)
 {
+    DEBUG("aodvv2_rreqtable_init()\n");
     mutex_lock(&rreqt_mutex);
 
     _null_time = timex_set(0, 0);
@@ -50,7 +51,6 @@ void aodvv2_rreqtable_init(void)
 
     memset(&rreq_table, 0, sizeof(rreq_table));
     mutex_unlock(&rreqt_mutex);
-    DEBUG("RREQ table initialized.\n");
 }
 
 bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)

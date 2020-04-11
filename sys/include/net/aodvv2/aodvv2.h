@@ -1,0 +1,96 @@
+/*
+ * Copyright (C) 2014 Freie Universität Berlin
+ * Copyright (C) 2014 Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ * Copyright (C) 2020 Locha Inc
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     net_aodvv2
+ * @{
+ *
+ * @file
+ * @brief       AODVV2
+ *
+ * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ * @author      Gustavo Grisales <gustavosinbandera1@hotmail.com>
+ * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+ */
+
+#ifndef NET_AODVV2_AODVV2_H
+#define NET_AODVV2_AODVV2_H
+
+#include "net/aodvv2/rfc5444.h"
+#include "net/ipv6/addr.h"
+#include "net/gnrc.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief   Maximum lifetime for a sequence number in seconds
+ * @{
+ */
+#ifndef CONFIG_AODVV2_MAX_SEQNUM_LIFETIME
+#define CONFIG_AODVV2_MAX_SEQNUM_LIFETIME (300)
+#endif
+/** @} */
+
+/**
+ * @brief   Active interval value in seconds
+ * @{
+ */
+#ifndef CONFIG_AODVV2_ACTIVE_INTERVAL
+#define CONFIG_AODVV2_ACTIVE_INTERVAL (5U)
+#endif
+/** @} */
+
+/**
+ * @brief TODO: investigate what's this
+ * @{
+ */
+#ifndef CONFIG_AODVV2_MAX_IDLETIME
+#define CONFIG_AODVV2_MAX_IDLETIME (250U)
+#endif
+/** @} */
+
+/**
+ * @brief   AODVv2 prefix length
+ */
+#define AODVV2_PREFIX_LEN (128)
+
+/**
+ * @brief   IPC message to send a RREQ
+ */
+#define AODVV2_MSG_TYPE_SEND_RREQ (0x9000)
+
+/**
+ * @brief   IPC message to send a RREP
+ */
+#define AODVV2_MSG_TYPE_SEND_RREP (0x9001)
+
+typedef struct {
+    aodvv2_packet_data_t pkt; /**< Packet to send */
+    ipv6_addr_t next_hop; /**< Next hop */
+} aodvv2_msg_t;
+
+/**
+ * @brief   Initialize and start RFC5444
+ *
+ * @return PID of the RFC5444 thread
+ * @reutnr negative value on error
+ */
+int aodvv2_init(gnrc_netif_t *netif);
+
+int aodvv2_find_route(ipv6_addr_t *target_addr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* NET_AODVV2_AODVV2_H */
+/** @} */

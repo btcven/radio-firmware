@@ -14,8 +14,9 @@
 #include "shell.h"
 #include "msg.h"
 
+#include "net/aodvv2/aodvv2.h"
 #include "net/manet/manet.h"
-#include "aodvv2/aodvv2.h"
+
 #include "banner.h"
 
 /**
@@ -26,16 +27,15 @@
  */
 static gnrc_netif_t *_find_ieee802154_netif(void);
 
-/**
- * @brief   Find a route to a node using a IPv6 address.
- */
 static int find_route(int argc, char **argv);
+static int seqnum_get(int argc, char **argv);
 
 /**
  * @brief   Shell command array.
  */
 static const shell_command_t shell_commands[] = {
     { "find_route", "find a route to a node using IPv6 address", find_route },
+    { "seqnum_get", "get (and increment) a SeqNum", seqnum_get },
     { NULL, NULL, NULL }
 };
 
@@ -43,11 +43,15 @@ static const shell_command_t shell_commands[] = {
 int main(void)
 {
     gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
-    aodvv2_init(ieee802154_netif);
 
     /* Join LL-MANET-Routers multicast group */
     if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
         printf("Couldn't join MANET mcast group\n");
+    }
+
+    /* Initialize RFC5444 */
+    if (aodvv2_init(ieee802154_netif) < 0) {
+        printf("Couldn't initialize RFC5444\n");
     }
 
     printf("%s", banner);
@@ -90,6 +94,7 @@ static gnrc_netif_t *_find_ieee802154_netif(void)
     return NULL;
 }
 
+
 static int find_route(int argc, char **argv)
 {
     int res = 0;
@@ -100,7 +105,7 @@ static int find_route(int argc, char **argv)
         goto exit;
     }
 
-    /* Parse <target> address*/
+    /* Parse <target> */
     ipv6_addr_t target_addr;
     if (ipv6_addr_from_str(&target_addr, argv[1]) == NULL) {
         res = -1;
@@ -108,8 +113,26 @@ static int find_route(int argc, char **argv)
         goto exit;
     }
 
-    aodvv2_find_route(&target_addr);
+    res = aodvv2_find_route(&target_addr);
+    if (res < 0) {
+        printf("%s: failed!\n", argv[0]);
+        goto exit;
+    }
 
 exit:
     return res;
+}
+
+static int seqnum_get(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+    aodvv2_seqnum_t old = aodvv2_seqnum_get();
+    aodvv2_seqnum_inc();
+    aodvv2_seqnum_t new = aodvv2_seqnum_get();
+
+    printf("old = %d, new = %d\n", old, new);
+
+    return 0;
 }
