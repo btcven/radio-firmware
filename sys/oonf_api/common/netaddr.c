@@ -43,11 +43,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef RIOT_VERSION
-#include <net/if.h>
-#else
-#define DONT_HAVE_SIN6_SCOPE
-#endif
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
