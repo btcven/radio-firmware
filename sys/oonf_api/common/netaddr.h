@@ -157,7 +157,6 @@ EXPORT uint16_t netaddr_socket_get_port(const union netaddr_socket *sock);
 
 EXPORT const char *netaddr_to_prefixstring(
     struct netaddr_str *dst, const struct netaddr *src, bool forceprefix);
-EXPORT int netaddr_from_string(struct netaddr *, const char *) __attribute__((warn_unused_result));
 EXPORT const char *netaddr_socket_to_string(struct netaddr_str *, const union netaddr_socket *);
 
 EXPORT int netaddr_cmp_to_socket(const struct netaddr *, const union netaddr_socket *);
