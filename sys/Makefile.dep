@@ -6,8 +6,6 @@ endif
 
 ifneq (,$(filter oonf_rfc5444,$(USEMODULE)))
   USEMODULE += oonf_common
-  USEMODULE += oonf_regex
-  USEMODULE += oonf_config
 endif
 
 ifeq (,$(filter manet,$(USEMODULE)))
