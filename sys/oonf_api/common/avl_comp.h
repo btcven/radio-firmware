@@ -43,13 +43,11 @@
 #define AVL_COMP_H_
 
 #include "common/common_types.h"
-#include "common/netaddr.h"
 
 EXPORT int avl_comp_uint32(const void *k1, const void *k2);
 EXPORT int avl_comp_uint16(const void *k1, const void *k2);
 EXPORT int avl_comp_uint8(const void *k1, const void *k2);
 EXPORT int avl_comp_netaddr(const void *k1, const void *k2);
-EXPORT int avl_comp_netaddr_socket(const void *k1, const void *k2);
 EXPORT int avl_comp_strcasecmp(const void *, const void *);
 
 #endif /* AVL_COMP_H_ */

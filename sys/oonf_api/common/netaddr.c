@@ -137,66 +137,6 @@ netaddr_to_binary(void *dst, const struct netaddr *src, size_t len) {
 }
 
 /**
- * Reads the address and address-type part of an
- * netaddr_socket into a netaddr object
- * @param dst netaddr object
- * @param src netaddr_socket source
- * @return 0 if successful read binary data, -1 otherwise
- */
-int
-netaddr_from_socket(struct netaddr *dst, const union netaddr_socket *src) {
-  memset(dst->_addr, 0, sizeof(dst->_addr));
-  if (src->std.sa_family == AF_INET) {
-    /* ipv4 */
-    memcpy(dst->_addr, &src->v4.sin_addr, 4);
-    dst->_prefix_len = 32;
-  }
-  else if (src->std.sa_family == AF_INET6){
-    /* ipv6 */
-    memcpy(dst->_addr, &src->v6.sin6_addr, 16);
-    dst->_prefix_len = 128;
-  }
-  else {
-    /* unknown address type */
-    dst->_type = AF_UNSPEC;
-    return -1;
-  }
-  dst->_type = (uint8_t)src->std.sa_family;
-  return 0;
-}
-
-/**
- * Writes the address and address-type of a netaddr object
- * into a netaddr_socket.
- * @param dst pointer to netaddr_socket
- * @param src netaddr source
- * @return 0 if successful read binary data, -1 otherwise
- */
-int
-netaddr_to_socket(union netaddr_socket *dst, const struct netaddr *src) {
-  /* copy address type */
-  dst->std.sa_family = src->_type;
-
-  switch (src->_type) {
-    case AF_INET:
-      /* ipv4 */
-      memcpy(&dst->v4.sin_addr, src->_addr, 4);
-      break;
-    case AF_INET6:
-      /* ipv6 */
-      memcpy(&dst->v6.sin6_addr, src->_addr, 16);
-      break;
-    default:
-      /* unknown address type */
-      return -1;
-  }
-
-  /* copy address type */
-  dst->std.sa_family= src->_type;
-  return 0;
-}
-
-/**
  * Append binary address to autobuf
  * @param abuf pointer to target autobuf
  * @param src pointer to source address
@@ -274,62 +214,6 @@ netaddr_create_host_bin(struct netaddr *host, const struct netaddr *netmask,
 }
 
 /**
- * Initialize a netaddr_socket with a netaddr and a port number
- * @param combined pointer to netaddr_socket to be initialized
- * @param addr pointer to netaddr source
- * @param port port number for socket
- * @param if_index interface index for linklocal ipv6 sockets
- * @return 0 if successful read binary data, -1 otherwise
- */
-int
-netaddr_socket_init(union netaddr_socket *combined, const struct netaddr *addr,
-    uint16_t port, unsigned if_index) {
-  (void)if_index;
-
-  /* initialize memory block */
-  memset(combined, 0, sizeof(*combined));
-
-  switch (addr->_type) {
-    case AF_INET:
-      /* ipv4 */
-      memcpy(&combined->v4.sin_addr, addr->_addr, 4);
-      combined->v4.sin_port = htons(port);
-      break;
-    case AF_INET6:
-      /* ipv6 */
-      memcpy(&combined->v6.sin6_addr, addr->_addr, 16);
-      combined->v6.sin6_port = htons(port);
-#ifndef DONT_HAVE_SIN6_SCOPE
-      combined->v6.sin6_scope_id = if_index;
-#endif
-      break;
-    default:
-      /* unknown address type */
-      return -1;
-  }
-
-  /* copy address type */
-  combined->std.sa_family = addr->_type;
-  return 0;
-}
-
-/**
- * @param sock pointer to netaddr_socket
- * @return port of socket
- */
-uint16_t
-netaddr_socket_get_port(const union netaddr_socket *sock) {
-  switch (sock->std.sa_family) {
-    case AF_INET:
-      return ntohs(sock->v4.sin_port);
-    case AF_INET6:
-      return ntohs(sock->v6.sin6_port);
-    default:
-      return 0;
-  }
-}
-
-/**
  * Converts a netaddr into a string
  * @param dst target string buffer
  * @param src netaddr source
@@ -372,46 +256,6 @@ netaddr_to_prefixstring(struct netaddr_str *dst,
 }
 
 /**
- * Converts a netaddr_socket into a string
- * @param dst target string buffer
- * @param src netaddr_socket source
- * @return pointer to target buffer, NULL if an error happened
- */
-const char *
-netaddr_socket_to_string(struct netaddr_str *dst, const union netaddr_socket *src) {
-  struct netaddr_str buf;
-
-  if (src->std.sa_family == AF_INET) {
-    snprintf(dst->buf, sizeof(*dst), "%s:%d",
-        inet_ntop(AF_INET, &src->v4.sin_addr, buf.buf, sizeof(buf)),
-        ntohs(src->v4.sin_port));
-  }
-  else if (src->std.sa_family == AF_INET6) {
-#ifndef DONT_HAVE_SIN6_SCOPE
-    if (src->v6.sin6_scope_id) {
-      char scope_buf[IF_NAMESIZE];
-
-      snprintf(dst->buf, sizeof(*dst), "[%s]:%d%%%s",
-          inet_ntop(AF_INET6, &src->v6.sin6_addr, buf.buf, sizeof(buf)),
-          ntohs(src->v6.sin6_port),
-          if_indextoname(src->v6.sin6_scope_id, scope_buf));
-    }
-    else
-#endif
-    {
-      snprintf(dst->buf, sizeof(*dst), "[%s]:%d",
-          inet_ntop(AF_INET6, &src->v6.sin6_addr, buf.buf, sizeof(buf)),
-          ntohs(src->v6.sin6_port));
-    }
-  }
-  else {
-    snprintf(dst->buf, sizeof(*dst), "\"Unknown socket type: %d\"", src->std.sa_family);
-  }
-
-  return dst->buf;
-}
-
-/**
  * Compares two addresses in network byte order.
  * Address type will be compared last.
  *
@@ -424,51 +268,6 @@ netaddr_socket_to_string(struct netaddr_str *dst, const union netaddr_socket *sr
 int
 netaddr_avlcmp(const void *k1, const void *k2) {
   return netaddr_cmp(k1, k2);
-}
-
-/**
- * Compares two netaddr sockets.
- *
- * This function is compatible with the avl comparator
- * prototype.
- * @param k1 address 1
- * @param k2 address 2
- * @return >0 if k1>k2, <0 if k1<k2, 0 otherwise
- */
-int
-netaddr_socket_avlcmp(const void *k1, const void *k2) {
-  return netaddr_socket_cmp(k1, k2);
-}
-
-/**
- * Compares an netaddr object with the address part of
- * a netaddr_socket.
- * @param a1 address
- * @param a2 socket
- * @return >0 if k1>k2, <0 if k1<k2, 0 otherwise
- */
-int
-netaddr_cmp_to_socket(const struct netaddr *a1, const union netaddr_socket *a2) {
-  int result = 0;
-
-  result = (int)a1->_type - (int)a2->std.sa_family;
-  if (result) {
-    return result;
-  }
-
-  if (a1->_type == AF_INET) {
-    result = memcmp(a1->_addr, &a2->v4.sin_addr, 4);
-  }
-  else if (a1->_type == AF_INET6) {
-    /* ipv6 */
-    result = memcmp(a1->_addr, &a2->v6.sin6_addr, 16);
-  }
-
-  if (result) {
-    return result;
-  }
-
-  return (int)a1->_prefix_len - (a1->_type == AF_INET ? 32 : 128);
 }
 
 /**

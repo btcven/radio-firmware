@@ -95,14 +95,11 @@ struct netaddr {
 };
 
 /**
- * Representation of a sockaddr object. Allows access
- * to all variants without casting and compiler warnings.
+ * Buffer for writing string representation of netaddr
+ * and netaddr_socket objects
  */
-union netaddr_socket {
-  struct sockaddr_in v4;
-  struct sockaddr_in6 v6;
-  struct sockaddr std;
-  struct sockaddr_storage storage;
+struct netaddr_str {
+  char buf[INET6_ADDRSTRLEN+16];
 };
 
 /**
@@ -120,31 +117,15 @@ enum {
   INET6_PREFIXSTRLEN = INET6_ADDRSTRLEN + 4,
 };
 
-/**
- * Buffer for writing string representation of netaddr
- * and netaddr_socket objects
- */
-struct netaddr_str {
-  char buf[INET6_ADDRSTRLEN+16];
-};
-
 EXPORT int netaddr_from_binary_prefix(struct netaddr *dst,
     const void *binary, size_t len, uint8_t addr_type, uint8_t prefix_len);
 EXPORT int netaddr_to_binary(void *dst, const struct netaddr *src, size_t len);
-EXPORT int netaddr_from_socket(struct netaddr *dst, const union netaddr_socket *src);
-EXPORT int netaddr_to_socket(union netaddr_socket *dst, const struct netaddr *src);
 EXPORT int netaddr_to_autobuf(struct autobuf *, const struct netaddr *src);
 EXPORT int netaddr_create_host_bin(struct netaddr *host, const struct netaddr *netmask,
     const void *number, size_t num_length);
-EXPORT int netaddr_socket_init(union netaddr_socket *combined,
-    const struct netaddr *addr, uint16_t port, unsigned if_index);
-EXPORT uint16_t netaddr_socket_get_port(const union netaddr_socket *sock);
-
 EXPORT const char *netaddr_to_prefixstring(
     struct netaddr_str *dst, const struct netaddr *src, bool forceprefix);
-EXPORT const char *netaddr_socket_to_string(struct netaddr_str *, const union netaddr_socket *);
 
-EXPORT int netaddr_cmp_to_socket(const struct netaddr *, const union netaddr_socket *);
 EXPORT bool netaddr_isequal_binary(const struct netaddr *addr,
     const void *bin, size_t len, uint16_t af, uint8_t prefix_len);
 EXPORT bool netaddr_is_in_subnet(const struct netaddr *subnet,
@@ -155,7 +136,6 @@ EXPORT bool netaddr_binary_is_in_subnet(const struct netaddr *subnet,
 EXPORT uint8_t netaddr_get_af_maxprefix(const uint32_t);
 
 EXPORT int netaddr_avlcmp(const void *, const void *);
-EXPORT int netaddr_socket_avlcmp(const void *, const void *);
 
 /**
  * Sets the address type of a netaddr object to AF_UNSPEC
@@ -244,17 +224,6 @@ netaddr_cmp(const struct netaddr *a1, const struct netaddr *a2) {
 }
 
 /**
- * Compares two sockets.
- * @param a1 address 1
- * @param a2 address 2
- * @return >0 if a1>a2, <0 if a1<a2, 0 otherwise
- */
-static inline int
-netaddr_socket_cmp(const union netaddr_socket *s1, const union netaddr_socket *s2) {
-  return memcmp(s1, s2, sizeof(*s1));
-}
-
-/**
  * @param n pointer to netaddr
  * @return pointer to start of binary address
  */
@@ -297,15 +266,6 @@ netaddr_get_prefix_length(const struct netaddr *n) {
 static inline void
 netaddr_set_prefix_length(struct netaddr *n, uint8_t prefix_len) {
   n->_prefix_len = prefix_len;
-}
-
-/**
- * @param s pointer to netaddr socket
- * @return address family of socket
- */
-static inline sa_family_t
-netaddr_socket_get_addressfamily(const union netaddr_socket *s) {
-  return s->std.sa_family;
 }
 
 #endif /* NETADDR_H_ */
