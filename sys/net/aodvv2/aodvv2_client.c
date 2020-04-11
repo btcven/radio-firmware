@@ -21,7 +21,7 @@
  * @}
  */
 
-#include "aodvv2/client.h"
+#include "net/aodvv2/client.h"
 
 #include "mutex.h"
 

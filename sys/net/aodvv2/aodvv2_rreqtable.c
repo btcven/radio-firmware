@@ -9,7 +9,7 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @ingroup     net_aodvv2
  * @{
  *
  * @file
@@ -21,50 +21,35 @@
  * @}
  */
 
-#include <string.h>
-
-#include "utils.h"
+#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2/rreqtable.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"
 
-#include "constants.h"
-#include "seqnum.h"
-
-/* Some aodvv2 utilities (mostly tables) */
-static mutex_t rreqt_mutex;
-
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data);
-static void _add_rreq(aodvv2_packet_data_t *packet_data);
 static void _reset_entry_if_stale(uint8_t i);
+
+static mutex_t rreqt_mutex;
 
 static aodvv2_rreq_entry_t rreq_table[AODVV2_RREQ_BUF];
 
+static timex_t _null_time;
+static timex_t now;
+static timex_t _max_idletime;
+
 static struct netaddr_str nbuf;
-static timex_t null_time, now, _max_idletime;
-
-
-void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
-{
-    dst->_type = AF_INET6;
-    dst->_prefix_len = AODVV2_RIOT_PREFIXLEN;
-    memcpy(dst->_addr, src, sizeof(dst->_addr));
-}
-
-void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst)
-{
-    memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
-}
 
 void aodvv2_rreqtable_init(void)
 {
+    DEBUG("aodvv2_rreqtable_init()\n");
     mutex_lock(&rreqt_mutex);
-    null_time = timex_set(0, 0);
-    _max_idletime = timex_set(AODVV2_MAX_IDLETIME, 0);
+
+    _null_time = timex_set(0, 0);
+    _max_idletime = timex_set(CONFIG_AODVV2_MAX_IDLETIME, 0);
 
     memset(&rreq_table, 0, sizeof(rreq_table));
     mutex_unlock(&rreqt_mutex);
-    DEBUG("RREQ table initialized.\n");
 }
 
 bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
@@ -78,11 +63,12 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
 
     /* if there is no comparable rreq stored, add one and return false */
     if (comparable_rreq == NULL) {
-        _add_rreq(packet_data);
+        aodvv2_rreqtable_add(packet_data);
         result = false;
     }
     else {
-        int seqnum_comparison = aodvv2_seqnum_cmp(packet_data->origNode.seqnum, comparable_rreq->seqnum);
+        int seqnum_comparison = aodvv2_seqnum_cmp(packet_data->orig_node.seqnum,
+                                                  comparable_rreq->seqnum);
 
         /*
          * If two RREQs have the same
@@ -95,7 +81,7 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
 
         if (seqnum_comparison == 1) {
             /* Update RREQ table entry with new seqnum value */
-            comparable_rreq->seqnum = packet_data->origNode.seqnum;
+            comparable_rreq->seqnum = packet_data->orig_node.seqnum;
         }
 
         /*
@@ -103,11 +89,11 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
          * Metric value is not needed
          */
         if (seqnum_comparison == 0) {
-            if (comparable_rreq->metric <= packet_data->origNode.metric) {
+            if (comparable_rreq->metric <= packet_data->orig_node.metric) {
                 result = true;
             }
             /* Update RREQ table entry with new metric value */
-            comparable_rreq->metric = packet_data->origNode.metric;
+            comparable_rreq->metric = packet_data->orig_node.metric;
         }
 
         /* Since we've changed RREQ info, update the timestamp */
@@ -129,12 +115,12 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
  */
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data)
 {
-    for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
+    for (unsigned i = 0; i < ARRAY_SIZE(rreq_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->origNode.addr) &&
-            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targNode.addr) &&
-            rreq_table[i].metricType == packet_data->metricType) {
+        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->orig_node.addr) &&
+            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targ_node.addr) &&
+            rreq_table[i].metricType == packet_data->metric_type) {
             return &rreq_table[i];
         }
     }
@@ -142,22 +128,21 @@ static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_da
     return NULL;
 }
 
-
-static void _add_rreq(aodvv2_packet_data_t *packet_data)
+void aodvv2_rreqtable_add(aodvv2_packet_data_t *packet_data)
 {
     if (_get_comparable_rreq(packet_data)) {
         return;
     }
     /*find empty rreq and fill it with packet_data */
 
-    for (unsigned i = 0; i < AODVV2_RREQ_BUF; i++) {
+    for (unsigned i = 0; i < ARRAY_SIZE(rreq_table); i++) {
         if (!rreq_table[i].timestamp.seconds &&
             !rreq_table[i].timestamp.microseconds) {
-            rreq_table[i].origNode = packet_data->origNode.addr;
-            rreq_table[i].targNode = packet_data->targNode.addr;
-            rreq_table[i].metricType = packet_data->metricType;
-            rreq_table[i].metric = packet_data->origNode.metric;
-            rreq_table[i].seqnum = packet_data->origNode.seqnum;
+            rreq_table[i].origNode = packet_data->orig_node.addr;
+            rreq_table[i].targNode = packet_data->targ_node.addr;
+            rreq_table[i].metricType = packet_data->metric_type;
+            rreq_table[i].metric = packet_data->orig_node.metric;
+            rreq_table[i].seqnum = packet_data->orig_node.seqnum;
             rreq_table[i].timestamp = packet_data->timestamp;
             return;
         }
@@ -171,13 +156,15 @@ static void _reset_entry_if_stale(uint8_t i)
 {
     xtimer_now_timex(&now);
 
-    if (timex_cmp(rreq_table[i].timestamp, null_time) == 0) {
+    /* Null time means this entry is unused */
+    if (timex_cmp(rreq_table[i].timestamp, _null_time) == 0) {
         return;
     }
+
     timex_t expiration_time = timex_add(rreq_table[i].timestamp, _max_idletime);
     if (timex_cmp(expiration_time, now) < 0) {
         /* timestamp+expiration time is in the past: this entry is stale */
-        DEBUG("\treset rreq table entry %s\n",
+        DEBUG("_reset_entry_if_stale: entry %s is stale, resettings\n",
               netaddr_to_string(&nbuf, &rreq_table[i].origNode));
         memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }

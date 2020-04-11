@@ -31,10 +31,12 @@ USEMODULE += gnrc_ipv6_default
 USEMODULE += gnrc_udp
 USEMODULE += gnrc_sock_udp
 
+USEMODULE += manet
 USEMODULE += aodvv2
 
 USEMODULE += shell
 USEMODULE += shell_commands
+USEMODULE += ps
 
 USEMODULE += posix_inet
 

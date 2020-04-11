@@ -9,11 +9,11 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @ingroup     net_aodvv2
  * @{
  *
  * @file
- * @brief       AODVv2 routing protocol
+ * @brief       RFC5444 Utils
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  * @author      Gustavo Grisales <gustavosinbandera1@hotmail.com>
@@ -21,30 +21,23 @@
  * @}
  */
 
-#include "seqnum.h"
+#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2/rfc5444.h"
 
-static aodvv2_seqnum_t seqnum;
+#include <assert.h>
 
-void aodvv2_seqnum_init(void)
+void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 {
-    seqnum = 1;
+    assert(src != NULL && dst != NULL);
+
+    dst->_type = AF_INET6;
+    dst->_prefix_len = AODVV2_PREFIX_LEN;
+    memcpy(dst->_addr, src, sizeof(dst->_addr));
 }
 
-void aodvv2_seqnum_inc(void)
+void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst)
 {
-    /* The Sequence Number wraps at 65535 */
-    if (seqnum == 65535) {
-        seqnum = 1;
-    }
-    else if (seqnum == 0) {
-        seqnum = 1;
-    }
-    else {
-        seqnum += 1;
-    }
-}
+    assert(src != NULL && dst != NULL);
 
-aodvv2_seqnum_t aodvv2_seqnum_get(void)
-{
-    return seqnum;
+    memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
 }

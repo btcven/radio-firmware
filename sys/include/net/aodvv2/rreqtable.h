@@ -9,7 +9,7 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @ingroup     net_aodvv2
  * @{
  *
  * @file
@@ -20,38 +20,30 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_UTILS_H
-#define AODVV2_UTILS_H
+#ifndef NET_AODVV2_RREQTABLE_H
+#define NET_AODVV2_RREQTABLE_H
+
+#include "net/metric.h"
+#include "net/aodvv2/seqnum.h"
+#include "net/aodvv2/rfc5444.h"
 
 #include "common/netaddr.h"
-#include "net/ipv6.h"
 
-#include "aodvv2/aodvv2.h"
+#include "timex.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @brief   Multiple clients are currently not supported.
- */
-#define AODVV2_MAX_CLIENTS (1)
-
-/**
  * @brief   should be enough for now...
  */
-#define AODVV2_RREQ_BUF (128)
+#define AODVV2_RREQ_BUF (16)
 
 /**
  * @brief   RREQ wait time in seconds
  */
 #define AODVV2_RREQ_WAIT_TIME (2)
-
-/**
- * @brief   Prefix length of the IPv6 addresses used in the network served by
- *          AODVv2
- */
-#define AODVV2_RIOT_PREFIXLEN (128)
 
 /**
  * @brief   RREQ Table entry which stores all information about a RREQ that was
@@ -60,27 +52,11 @@ extern "C" {
 typedef struct {
     struct netaddr origNode; /**< Node which originated the RREQ*/
     struct netaddr targNode; /**< Target (destination) of the RREQ */
-    aodvv2_metric_t metricType; /**< Metric type of the RREQ */
+    routing_metric_t metricType; /**< Metric type of the RREQ */
     uint8_t metric; /**< Metric of the RREQ */
     aodvv2_seqnum_t seqnum; /**< Sequence number of the RREQ */
     timex_t timestamp; /**< Last time this entry was updated */
 } aodvv2_rreq_entry_t;
-
-/**
- * @brief   Convert an IP stored as an ipv6_addr_t to a netaddr
- *
- * @param[in]  src ipv6_addr_t to convert
- * @param[out] dst netaddr to convert into
- */
-void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst);
-
-/**
- * @brief   Convert an IP stored as a netaddr to an ipv6_addr_t
- *
- * @param[in]  src netaddr to convert into
- * @param[out] dst ipv6_addr_t to convert
- */
-void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst);
 
 /**
  * @brief   Initialize RREQ table.
@@ -99,8 +75,15 @@ void aodvv2_rreqtable_init(void);
  */
 bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data);
 
+/**
+ * @brief   Add a RREQ to the RREQ table
+ *
+ * @param[in] packet_data The packet to add.
+ */
+void aodvv2_rreqtable_add(aodvv2_packet_data_t *packet_data);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_UTILS_H */
+#endif /* NET_AODVV2_RREQTABLE_H */

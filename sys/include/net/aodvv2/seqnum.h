@@ -9,29 +9,33 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @ingroup     net_aodvv2
  * @{
  *
  * @file
- * @brief       AODVv2 routing protocol
+ * @brief       AODVv2 Node Sequence Number maintenace
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  * @author      Gustavo Grisales <gustavosinbandera1@hotmail.com>
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_SEQNUM_H
-#define AODVV2_SEQNUM_H
+#ifndef NET_AODVV2_SEQNUM_H
+#define NET_AODVV2_SEQNUM_H
 
-#include "aodvv2/aodvv2.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
+ * @brief  Sequence number type
+ */
+typedef uint16_t aodvv2_seqnum_t;
+
+/**
  * @brief   Initializ SeqNum.
- * @note Must be called only once during program initialization.
  */
 void aodvv2_seqnum_init(void);
 
