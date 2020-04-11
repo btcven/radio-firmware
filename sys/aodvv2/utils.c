@@ -32,19 +32,15 @@
 #include "seqnum.h"
 
 /* Some aodvv2 utilities (mostly tables) */
-static mutex_t clientt_mutex;
 static mutex_t rreqt_mutex;
 
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data);
 static void _add_rreq(aodvv2_packet_data_t *packet_data);
 static void _reset_entry_if_stale(uint8_t i);
 
-static struct netaddr client_table[AODVV2_MAX_CLIENTS];
 static aodvv2_rreq_entry_t rreq_table[AODVV2_RREQ_BUF];
 
-#if ENABLE_DEBUG == 1
 static struct netaddr_str nbuf;
-#endif
 static timex_t null_time, now, _max_idletime;
 
 
@@ -58,66 +54,6 @@ void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
 void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst)
 {
     memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
-}
-
-void aodvv2_clienttable_init(void)
-{
-    mutex_lock(&clientt_mutex);
-    memset(&client_table, 0, sizeof(client_table));
-    mutex_unlock(&clientt_mutex);
-
-    DEBUG("client table initialized.\n");
-}
-
-void aodvv2_clienttable_add_client(struct netaddr *addr)
-{
-    if (aodvv2_clienttable_is_client(addr)){
-        return;
-    }
-
-    /*find free spot in client table and place client address there */
-    mutex_lock(&clientt_mutex);
-    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
-        if ((client_table[i]._type == AF_UNSPEC) &&
-            (client_table[i]._prefix_len == 0)) {
-            client_table[i] = *addr;
-            DEBUG("clienttable: added client %s\n",
-                  netaddr_to_string(&nbuf, addr));
-            mutex_unlock(&clientt_mutex);
-            return;
-        }
-    }
-    DEBUG("Error: Client could not be added: Client table is full.\n");
-    mutex_unlock(&clientt_mutex);
-}
-
-bool aodvv2_clienttable_is_client(struct netaddr *addr)
-{
-    mutex_lock(&clientt_mutex);
-    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
-        if (!netaddr_cmp(&client_table[i], addr)) {
-            mutex_unlock(&clientt_mutex);
-            return true;
-        }
-    }
-    mutex_unlock(&clientt_mutex);
-    return false;
-}
-
-void aodvv2_clienttable_delete_client(struct netaddr *addr)
-{
-    if (!aodvv2_clienttable_is_client(addr)) {
-        return;
-    }
-
-    mutex_lock(&clientt_mutex);
-    for (unsigned i = 0; i < AODVV2_MAX_CLIENTS; i++) {
-        if (!netaddr_cmp(&client_table[i], addr)) {
-            memset(&client_table[i], 0, sizeof(client_table[i]));
-            mutex_unlock(&clientt_mutex);
-            return;
-        }
-    }
 }
 
 void aodvv2_rreqtable_init(void)

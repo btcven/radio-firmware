@@ -28,11 +28,11 @@
 
 #include "seqnum.h"
 
-static void _cb_addMessageHeader(struct rfc5444_writer *wr,
-                                 struct rfc5444_writer_message *message);
+static void _cb_add_message_header(struct rfc5444_writer *wr,
+                                   struct rfc5444_writer_message *message);
 
-static void _cb_rreq_addAddresses(struct rfc5444_writer *wr);
-static void _cb_rrep_addAddresses(struct rfc5444_writer *wr);
+static void _cb_rreq_add_addresses(struct rfc5444_writer *wr);
+static void _cb_rrep_add_addresses(struct rfc5444_writer *wr);
 
 static mutex_t writer_mutex;
 
@@ -52,7 +52,7 @@ static struct rfc5444_writer_message *_rrep_msg;
 static struct rfc5444_writer_content_provider _rreq_message_content_provider =
 {
     .msg_type = RFC5444_MSGTYPE_RREQ,
-    .addAddresses = _cb_rreq_addAddresses,
+    .addAddresses = _cb_rreq_add_addresses,
 };
 
 /* declaration of all address TLVs added to the RREQ message */
@@ -72,7 +72,7 @@ static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] =
 static struct rfc5444_writer_content_provider _rrep_message_content_provider =
 {
     .msg_type = RFC5444_MSGTYPE_RREP,
-    .addAddresses = _cb_rrep_addAddresses,
+    .addAddresses = _cb_rrep_add_addresses,
 };
 
 /* declaration of all address TLVs added to the RREP message */
@@ -101,13 +101,12 @@ static void _cb_addMessageHeader(struct rfc5444_writer *wr,
 /**
  * Callback to add addresses and address TLVs to a RFC5444 RREQ message
  */
-static void _cb_rreq_addAddresses(struct rfc5444_writer *wr)
+static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
 {
-    struct rfc5444_writer_address *origNode_addr;
-
     /* add origNode address (has no address tlv); is mandatory address */
-    origNode_addr = rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                    &_target.packet_data.origNode.addr, true);
+    struct rfc5444_writer_address *orig_node_addr =
+        rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
+                                   &_target.packet_data.origNode.addr, true);
 
     /* add targNode address (has no address tlv); is mandatory address */
     rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
@@ -115,50 +114,55 @@ static void _cb_rreq_addAddresses(struct rfc5444_writer *wr)
 
     /* add SeqNum TLV and metric TLV to origNode */
     /* TODO: allow_dup true or false? */
-    rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
                                &_target.packet_data.origNode.seqnum,
-                               sizeof(_target.packet_data.origNode.seqnum), false);
-    /* cppcheck: suppress false positive on non-trivially initialized arrays.
-     *           this is a known bug: http://trac.cppcheck.net/ticket/5497 */
-    /* cppcheck-suppress arrayIndexOutOfBounds */
-    rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
+                               sizeof(_target.packet_data.origNode.seqnum),
+                               false);
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
                                &_target.packet_data.origNode.metric,
-                               sizeof(_target.packet_data.origNode.metric), false);
+                               sizeof(_target.packet_data.origNode.metric),
+                               false);
 }
 
 /**
  * Callback to add addresses and address TLVs to a RFC5444 RREQ message
  */
-static void
-_cb_rrep_addAddresses(struct rfc5444_writer *wr)
+static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
 {
-    struct rfc5444_writer_address *origNode_addr, *targNode_addr;
-
-    uint16_t origNode_seqnum = _target.packet_data.origNode.seqnum;
-
-    uint16_t targNode_seqnum = aodvv2_seqnum_get();
+    uint16_t orig_node_seqnum = _target.packet_data.origNode.seqnum;
+    uint16_t targ_node_seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
 
-    uint8_t targNode_hopCt = _target.packet_data.targNode.metric;
+    uint8_t targ_node_hopct = _target.packet_data.targNode.metric;
 
     /* add origNode address (has no address tlv); is mandatory address */
-    origNode_addr = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                               &_target.packet_data.origNode.addr, true);
+    struct rfc5444_writer_address *orig_node_addr =
+        rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
+                                   &_target.packet_data.origNode.addr, true);
 
     /* add targNode address (has no address tlv); is mandatory address */
-    targNode_addr = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                               &_target.packet_data.targNode.addr, true);
+    struct rfc5444_writer_address *targ_node_addr =
+        rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
+                                   &_target.packet_data.targNode.addr, true);
 
     /* add OrigNode and TargNode SeqNum TLVs */
     /* TODO: allow_dup true or false? */
-    rfc5444_writer_add_addrtlv(wr, origNode_addr, &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
-                               &origNode_seqnum, sizeof(origNode_seqnum), false);
-    rfc5444_writer_add_addrtlv(wr, targNode_addr, &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM],
-                               &targNode_seqnum, sizeof(targNode_seqnum), false);
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
+                               &orig_node_seqnum, sizeof(orig_node_seqnum),
+                               false);
+    rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM],
+                               &targ_node_seqnum, sizeof(targ_node_seqnum),
+                               false);
 
     /* Add Metric TLV to targNode Address */
-    rfc5444_writer_add_addrtlv(wr, targNode_addr, &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
-                               &targNode_hopCt, sizeof(targNode_hopCt), false);
+    rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
+                               &targ_node_hopct, sizeof(targ_node_hopct),
+                               false);
 }
 
 void aodvv2_packet_writer_init(write_packet_func_ptr ptr)
@@ -185,10 +189,14 @@ void aodvv2_packet_writer_init(write_packet_func_ptr ptr)
     rfc5444_writer_register_target(&writer, &_target.interface);
 
     /* register a message content providers for RREQ and RREP */
-    rfc5444_writer_register_msgcontentprovider(&writer, &_rreq_message_content_provider,
-                                               _rreq_addrtlvs, ARRAYSIZE(_rreq_addrtlvs));
-    rfc5444_writer_register_msgcontentprovider(&writer, &_rrep_message_content_provider,
-                                               _rrep_addrtlvs, ARRAYSIZE(_rrep_addrtlvs));
+    rfc5444_writer_register_msgcontentprovider(&writer,
+                                               &_rreq_message_content_provider,
+                                               _rreq_addrtlvs,
+                                               ARRAY_SIZE(_rreq_addrtlvs));
+    rfc5444_writer_register_msgcontentprovider(&writer,
+                                               &_rrep_message_content_provider,
+                                               _rrep_addrtlvs,
+                                               ARRAY_SIZE(_rrep_addrtlvs));
 
     /* register rreq and rrep messages with 16 byte (ipv6) addresses.
      * AddPacketHeader & addMessageHeader callbacks are triggered here. */
@@ -197,33 +205,30 @@ void aodvv2_packet_writer_init(write_packet_func_ptr ptr)
     _rrep_msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_RREP,
                                                 false, RFC5444_MAX_ADDRLEN);
 
-    _rreq_msg->addMessageHeader = _cb_addMessageHeader;
-    _rrep_msg->addMessageHeader = _cb_addMessageHeader;
+    _rreq_msg->addMessageHeader = _cb_add_message_header;
+    _rrep_msg->addMessageHeader = _cb_add_message_header;
 }
 
 void aodvv2_packet_writer_send_rreq(aodvv2_packet_data_t *packet_data,
                                     struct netaddr *next_hop)
 {
-    (void)packet_data;
-    (void)next_hop;
+    assert(packet_data != NULL && next_hop != NULL);
 
     DEBUG("[aodvv2_writer]: send rreq\n");
 
-    if ((packet_data == NULL) || (next_hop == NULL)) {
-        return;
-    }
-
-    // /* Make sure no other thread is using the writer right now */
+    /* Make sure no other thread is using the writer right now */
     mutex_lock(&writer_mutex);
+
     memcpy(&_target.packet_data, packet_data, sizeof(aodvv2_packet_data_t));
     _target.type = RFC5444_MSGTYPE_RREQ;
     _target.packet_data.hoplimit = packet_data->hoplimit;
 
-    // /* set address to which the write_packet callback should send our RREQ */
-    memcpy(&_target.target_addr, next_hop, sizeof (struct netaddr));
+    /* set address to which the write_packet callback should send our RREQ */
+    memcpy(&_target.target_addr, next_hop, sizeof(struct netaddr));
 
     rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREQ);
     rfc5444_writer_flush(&writer, &_target.interface, false);
+
     mutex_unlock(&writer_mutex);
 }
 
@@ -236,12 +241,11 @@ void aodvv2_packet_writer_send_rreq(aodvv2_packet_data_t *packet_data,
 void aodvv2_packet_writer_send_rrep(aodvv2_packet_data_t *packet_data,
                                     struct netaddr *next_hop)
 {
-    if ((packet_data == NULL) || (next_hop == NULL)) {
-        return;
-    }
+    assert(packet_data != NULL && next_hop != NULL);
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&writer_mutex);
+
     memcpy(&_target.packet_data, packet_data, sizeof(aodvv2_packet_data_t));
     _target.type = RFC5444_MSGTYPE_RREP;
     _target.packet_data.hoplimit = AODVV2_MAX_HOPCOUNT;
@@ -251,5 +255,6 @@ void aodvv2_packet_writer_send_rrep(aodvv2_packet_data_t *packet_data,
 
     rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_RREP);
     rfc5444_writer_flush(&writer, &_target.interface, false);
+
     mutex_unlock(&writer_mutex);
 }

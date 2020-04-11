@@ -83,40 +83,6 @@ void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst);
 void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst);
 
 /**
- * @brief   Initialize table of clients that the router currently serves.
- */
-void aodvv2_clienttable_init(void);
-
-/**
- * @brief   Add client to the list of clients that the router currently serves.
- *
- * @param[in] addr Address of the client (Since the current version doesn't
- *                 offer support for Client Networks, the prefixlen is
- *                 currently ignored).
- */
-void aodvv2_clienttable_add_client(struct netaddr *addr);
-
-/**
- * @brief   Find out if a client is in the list of clients that the router
- *          currently serves.
- *
- * @param[in] addr Address of the client in question (Since the current version
- *                 doesn't offer support for Client Networks, the prefixlen is
- *                 currently ignored.)
- */
-bool aodvv2_clienttable_is_client(struct netaddr *addr);
-
-/**
- * @brief   Delete a client from the list of clients that the router currently
- *          serves.
- *
- * @param[in] addr Address of the client to delete (Since the current version
- *                 doesn't offer support for Client Networks, the prefixlen is
- *                 currently ignored).
- */
-void aodvv2_clienttable_delete_client(struct netaddr *addr);
-
-/**
  * @brief   Initialize RREQ table.
  */
 void aodvv2_rreqtable_init(void);
