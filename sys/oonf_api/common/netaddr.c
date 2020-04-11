@@ -61,38 +61,6 @@ static int _read_hexdigit(const char c);
 static bool _binary_is_in_subnet(const struct netaddr *subnet,
     const void *bin);
 
-/* predefined network prefixes */
-const struct netaddr NETADDR_UNSPEC = { {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_UNSPEC, 0 };
-
-const struct netaddr NETADDR_IPV4_ANY = { {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET, 0 };
-const struct netaddr NETADDR_IPV6_ANY = { {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET6, 0 };
-
-const struct netaddr NETADDR_IPV4_MULTICAST = { { 224,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET, 4 };
-const struct netaddr NETADDR_IPV6_MULTICAST = { { 0xff,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET6, 8 };
-
-const struct netaddr NETADDR_IPV4_LINKLOCAL = { { 169,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET, 16 };
-const struct netaddr NETADDR_IPV6_LINKLOCAL = { { 0xfe,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET6, 10 };
-
-const struct netaddr NETADDR_IPV6_ULA = { { 0xfc,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET6, 7 };
-
-const struct netaddr NETADDR_IPV6_IPV4COMPATIBLE = { {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET6, 96 };
-const struct netaddr NETADDR_IPV6_IPV4MAPPED = { {0,0,0,0,0,0,0,0,0,0,0xff,0xff,0,0,0,0}, AF_INET6, 96 };
-
-const struct netaddr NETADDR_IPV4_LOOPBACK_NET = { {127,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0}, AF_INET, 8 };
-const struct netaddr NETADDR_IPV6_LOOPBACK = { {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}, AF_INET6, 128 };
-
-/* List of predefined address prefixes */
-const struct {
-  const char *name;
-  const struct netaddr *prefix;
-} _known_prefixes[] = {
-  { NETADDR_STR_ANY4, &NETADDR_IPV4_ANY },
-  { NETADDR_STR_ANY6, &NETADDR_IPV6_ANY },
-  { NETADDR_STR_LINKLOCAL4, &NETADDR_IPV4_LINKLOCAL },
-  { NETADDR_STR_LINKLOCAL6, &NETADDR_IPV6_LINKLOCAL },
-  { NETADDR_STR_ULA, &NETADDR_IPV6_ULA },
-};
-
 /**
  * Read the binary representation of an address into a netaddr object
  * @param dst pointer to netaddr object
@@ -587,86 +555,6 @@ netaddr_get_af_maxprefix(uint32_t af_type) {
       return 0;
   }
 }
-
-#ifdef WIN32
-/**
- * Helper function for windows
- * @param dst
- * @param bin
- * @param dst_size
- * @param bin_size
- * @param separator
- * @return
- */
-const char *
-inet_ntop(int af, const void *src, char *dst, socklen_t cnt)
-{
-  if (af == AF_INET) {
-    struct sockaddr_in in;
-    memset(&in, 0, sizeof(in));
-    in.sin_family = AF_INET;
-    memcpy(&in.sin_addr, src, sizeof(struct in_addr));
-    getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in),
-        dst, cnt, NULL, 0, NI_NUMERICHOST);
-    return dst;
-  }
-  else if (af == AF_INET6) {
-    struct sockaddr_in6 in;
-    memset(&in, 0, sizeof(in));
-    in.sin6_family = AF_INET6;
-    memcpy(&in.sin6_addr, src, sizeof(struct in_addr6));
-    getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in6),
-        dst, cnt, NULL, 0, NI_NUMERICHOST);
-    return dst;
-  }
-  return NULL;
-}
-
-/**
- * Helper function for windows
- * @param dst
- * @param bin
- * @param dst_size
- * @param bin_size
- * @param separator
- * @return
- */
-int
-inet_pton(int af, const char *src, void *dst)
-{
-  struct addrinfo hints, *res;
-  union netaddr_socket *sock;
-
-  if (af != AF_INET && af != AF_INET6) {
-    return -1;
-  }
-
-  memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = af;
-  hints.ai_flags = AI_NUMERICHOST;
-
-  if (getaddrinfo(src, NULL, &hints, &res) != 0)
-  {
-    return -1;
-  }
-
-  if (res == NULL) {
-    return 0;
-  }
-
-  sock = (union netaddr_socket *)res->ai_addr;
-  if (af == AF_INET) {
-    memcpy(dst, &sock->v4.sin_addr, 4);
-  }
-  else {
-    memcpy(dst, &sock->v6.sin6_addr, 16);
-  }
-
-  freeaddrinfo(res);
-  return 1;
-}
-
-#endif
 
 /**
  * Converts a binary mac address into a string representation

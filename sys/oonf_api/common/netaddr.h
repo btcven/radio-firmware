@@ -128,21 +128,6 @@ struct netaddr_str {
   char buf[INET6_ADDRSTRLEN+16];
 };
 
-EXPORT extern const struct netaddr NETADDR_UNSPEC;
-
-EXPORT extern const struct netaddr NETADDR_IPV4_ANY;
-EXPORT extern const struct netaddr NETADDR_IPV4_MULTICAST;
-EXPORT extern const struct netaddr NETADDR_IPV4_LINKLOCAL;
-EXPORT extern const struct netaddr NETADDR_IPV4_LOOPBACK_NET;
-
-EXPORT extern const struct netaddr NETADDR_IPV6_ANY;
-EXPORT extern const struct netaddr NETADDR_IPV6_MULTICAST;
-EXPORT extern const struct netaddr NETADDR_IPV6_LINKLOCAL;
-EXPORT extern const struct netaddr NETADDR_IPV6_ULA;
-EXPORT extern const struct netaddr NETADDR_IPV6_IPV4COMPATIBLE;
-EXPORT extern const struct netaddr NETADDR_IPV6_IPV4MAPPED;
-EXPORT extern const struct netaddr NETADDR_IPV6_LOOPBACK;
-
 EXPORT int netaddr_from_binary_prefix(struct netaddr *dst,
     const void *binary, size_t len, uint8_t addr_type, uint8_t prefix_len);
 EXPORT int netaddr_to_binary(void *dst, const struct netaddr *src, size_t len);
@@ -171,11 +156,6 @@ EXPORT uint8_t netaddr_get_af_maxprefix(const uint32_t);
 
 EXPORT int netaddr_avlcmp(const void *, const void *);
 EXPORT int netaddr_socket_avlcmp(const void *, const void *);
-
-#ifdef WIN32
-EXPORT const char *inet_ntop(int af, const void* src, char* dst, int cnt);
-EXPORT int inet_pton(int af, const char *cp, void * buf);
-#endif
 
 /**
  * Sets the address type of a netaddr object to AF_UNSPEC
@@ -221,19 +201,6 @@ netaddr_create_host(struct netaddr *host, const struct netaddr *netmask,
     const struct netaddr *host_number) {
   return netaddr_create_host_bin(host, netmask, host_number->_addr,
       netaddr_get_maxprefix(host_number));
-}
-
-/**
- * Embed an IPv4 address into an IPv6 IPv4-compatible address
- * @param dst target IPv6 address
- * @param src source IPv4 address
- */
-static inline void
-netaddr_embed_ipv4_compatible(struct netaddr *dst, const struct netaddr *src) {
-  memcpy(&dst->_addr[0], &NETADDR_IPV6_IPV4COMPATIBLE._addr[0], 12);
-  memcpy(&dst->_addr[12], &src->_addr[0], 4);
-  dst->_type = AF_INET6;
-  dst->_prefix_len = src->_prefix_len + 96;
 }
 
 /**
