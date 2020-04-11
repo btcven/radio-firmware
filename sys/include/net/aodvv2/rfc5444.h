@@ -159,13 +159,22 @@ void aodvv2_rfc5444_reader_rrep_register(struct rfc5444_reader *reader);
 void aodvv2_rfc5444_reader_rreq_register(struct rfc5444_reader *reader);
 
 /**
- * @brief   Register RREQ message writer
+ * @brief   Sets the sender address
+ *
+ * @notes MUST be called before starting to parse the packet.
+ *
+ * @param[in] sender The address of the sender.
+ */
+void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
+
+/**
+ * @brief   Register AODVv2 message writer
  *
  * @param[in] writer Pointer to the writer context.
  * @param[in] target Pointer to the writer target.
  */
-void aodvv2_rfc5444_writer_rreq_register(struct rfc5444_writer *writer,
-                                         aodvv2_writer_target_t *target);
+void aodvv2_rfc5444_writer_register(struct rfc5444_writer *writer,
+                                    aodvv2_writer_target_t *target);
 
 /**
  * @brief   `ipv6_addr_t` to `struct netaddr`.

@@ -75,6 +75,13 @@ void aodvv2_rreqtable_init(void);
  */
 bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data);
 
+/**
+ * @brief   Add a RREQ to the RREQ table
+ *
+ * @param[in] packet_data The packet to add.
+ */
+void aodvv2_rreqtable_add(aodvv2_packet_data_t *packet_data);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

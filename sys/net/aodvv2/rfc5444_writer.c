@@ -30,6 +30,7 @@
 static void _cb_add_message_header(struct rfc5444_writer *wr,
                                    struct rfc5444_writer_message *message);
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr);
+static void _cb_rrep_add_addresses(struct rfc5444_writer *wr);
 
 /*
  * message content provider that will add message TLVs,
@@ -51,7 +52,29 @@ static struct rfc5444_writer_tlvtype _rreq_addrtlvs[] =
     },
 };
 
+/*
+ * message content provider that will add message TLVs,
+ * addresses and address block TLVs to all messages of type RREQ.
+ */
+static struct rfc5444_writer_content_provider _rrep_message_content_provider =
+{
+    .msg_type = RFC5444_MSGTYPE_RREP,
+    .addAddresses = _cb_rrep_add_addresses,
+};
+
+/* declaration of all address TLVs added to the RREP message */
+static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] =
+{
+    [RFC5444_MSGTLV_ORIGSEQNUM] = { .type = RFC5444_MSGTLV_ORIGSEQNUM},
+    [RFC5444_MSGTLV_TARGSEQNUM] = { .type = RFC5444_MSGTLV_TARGSEQNUM},
+    [RFC5444_MSGTLV_METRIC] = {
+        .type = RFC5444_MSGTLV_METRIC,
+        .exttype = CONFIG_AODVV2_DEFAULT_METRIC
+    },
+};
+
 static struct rfc5444_writer_message *_rreq_msg;
+static struct rfc5444_writer_message *_rrep_msg;
 
 static aodvv2_writer_target_t *_target;
 
@@ -74,20 +97,14 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
                                    &_target->packet_data.orig_node.addr, true);
 
-    if (orig_node_addr == NULL) {
-        DEBUG("rfc5444_writer_rreq: couldn't add OrigNode address\n");
-        return;
-    }
+    assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
     targ_node_addr =
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
                                    &_target->packet_data.targ_node.addr, true);
 
-    if (targ_node_addr == NULL) {
-        DEBUG("rfc5444_writer_rreq: couldn't add TargNode address\n");
-        return;
-    }
+    assert(targ_node_addr != NULL);
 
     /* add SeqNum TLV and metric TLV to OrigNode */
     res =
@@ -96,10 +113,8 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
                                    &_target->packet_data.orig_node.seqnum,
                                    sizeof(_target->packet_data.orig_node.seqnum),
                                    false);
-    if (res != RFC5444_OKAY) {
-        DEBUG("rfc5444_writer_rreq: couldn't add SeqNum to OrigNode.\n");
-        return;
-    }
+
+    assert(res == RFC5444_OKAY);
 
     res =
         rfc5444_writer_add_addrtlv(wr, orig_node_addr,
@@ -108,35 +123,105 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
                                    sizeof(_target->packet_data.orig_node.metric),
                                    false);
 
-    if (res != RFC5444_OKAY) {
-        DEBUG("rfc5444_writer_rreq: couldn't add Metric to OrigNode.\n");
-        return;
-    }
+    assert(res == RFC5444_OKAY);
 }
 
-void aodvv2_rfc5444_writer_rreq_register(struct rfc5444_writer *writer,
-                                         aodvv2_writer_target_t *target)
+static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
 {
+    enum rfc5444_result res;
+    struct rfc5444_writer_address *orig_node_addr;
+    struct rfc5444_writer_address *targ_node_addr;
+
+    uint16_t orig_node_seqnum = _target->packet_data.orig_node.seqnum;
+    uint16_t targ_node_seqnum = aodvv2_seqnum_get();
+    aodvv2_seqnum_inc();
+    uint8_t targ_node_hopct = _target->packet_data.targ_node.metric;
+
+    /* add orig_node address (has no address tlv); is mandatory address */
+    orig_node_addr =
+        rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
+                                   &_target->packet_data.orig_node.addr, true);
+
+    assert(orig_node_addr != NULL);
+
+    /* add targ_node address (has no address tlv); is mandatory address */
+    targ_node_addr =
+        rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
+                                   &_target->packet_data.targ_node.addr, true);
+
+    assert(targ_node_addr != NULL);
+
+    /* add OrigNode and TargNode SeqNum TLVs */
+    /* TODO: allow_dup true or false? */
+    res =
+        rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                                   &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
+                                   &orig_node_seqnum, sizeof(orig_node_seqnum),
+                                   false);
+
+    assert(res == RFC5444_OKAY);
+
+    res =
+        rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                                   &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM],
+                                   &targ_node_seqnum, sizeof(targ_node_seqnum),
+                                   false);
+
+    assert(res == RFC5444_OKAY);
+
+    /* Add Metric TLV to targ_node Address */
+    res =
+        rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                                   &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
+                                   &targ_node_hopct, sizeof(targ_node_hopct),
+                                   false);
+
+    assert(res == RFC5444_OKAY);
+}
+
+void aodvv2_rfc5444_writer_register(struct rfc5444_writer *writer,
+                                    aodvv2_writer_target_t *target)
+{
+    int res;
+
     assert(writer != NULL && target != NULL);
 
     _target = target;
 
-    int res =
+    res =
         rfc5444_writer_register_msgcontentprovider(writer,
                                                    &_rreq_message_content_provider,
                                                    _rreq_addrtlvs,
                                                    ARRAY_SIZE(_rreq_addrtlvs));
     if (res < 0) {
-        DEBUG("rfc5444_writer_rreq: couldn't reigster RREQ message provider\n");
+        DEBUG("rfc5444_writer: couldn't reigster RREQ message provider\n");
+        return;
+    }
+
+    res =
+        rfc5444_writer_register_msgcontentprovider(writer,
+                                                   &_rrep_message_content_provider,
+                                                   _rrep_addrtlvs,
+                                                   ARRAY_SIZE(_rrep_addrtlvs));
+    if (res < 0) {
+        DEBUG("rfc5444_writer: couldn't reigster RREQ message provider\n");
         return;
     }
 
     _rreq_msg = rfc5444_writer_register_message(writer, RFC5444_MSGTYPE_RREQ,
                                                 false, RFC5444_MAX_ADDRLEN);
     if (_rreq_msg == NULL) {
-        DEBUG("rfc5444_writer_rreq: couldn't reigster RREQ message\n");
+        DEBUG("rfc5444_writer: couldn't reigster RREQ message\n");
+        return;
+    }
+
+    _rrep_msg = rfc5444_writer_register_message(writer, RFC5444_MSGTYPE_RREP,
+                                                false, RFC5444_MAX_ADDRLEN);
+    if (_rrep_msg == NULL) {
+        DEBUG("rfc5444_writer: couldn't reigster RREP message\n");
         return;
     }
 
     _rreq_msg->addMessageHeader = _cb_add_message_header;
+    _rrep_msg->addMessageHeader = _cb_add_message_header;
 }

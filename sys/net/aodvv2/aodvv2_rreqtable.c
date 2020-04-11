@@ -28,7 +28,6 @@
 #include "debug.h"
 
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data);
-static void _add_rreq(aodvv2_packet_data_t *packet_data);
 static void _reset_entry_if_stale(uint8_t i);
 
 static mutex_t rreqt_mutex;
@@ -64,7 +63,7 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
 
     /* if there is no comparable rreq stored, add one and return false */
     if (comparable_rreq == NULL) {
-        _add_rreq(packet_data);
+        aodvv2_rreqtable_add(packet_data);
         result = false;
     }
     else {
@@ -129,8 +128,7 @@ static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_da
     return NULL;
 }
 
-
-static void _add_rreq(aodvv2_packet_data_t *packet_data)
+void aodvv2_rreqtable_add(aodvv2_packet_data_t *packet_data)
 {
     if (_get_comparable_rreq(packet_data)) {
         return;

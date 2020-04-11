@@ -81,11 +81,46 @@ typedef struct {
 /**
  * @brief   Initialize and start RFC5444
  *
+ * @pre @p netif != NULL
+ *
  * @return PID of the RFC5444 thread
  * @reutnr negative value on error
  */
 int aodvv2_init(gnrc_netif_t *netif);
 
+/**
+ * @brief   Send a RREQ
+ *
+ * @pre (@p pkt != NULL) && (@p next_hop != NULL)
+ *
+ * @param[in] pkt      The RREQ packet.
+ * @param[in] next_hop Where to send the packet.
+ *
+ * @return Negative number on failure, otherwise succeed.
+ */
+int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
+                     ipv6_addr_t *next_hop);
+
+/**
+ * @brief   Send a RREP
+ *
+ * @pre @p netif != NULL
+ *
+ * @param[in] pkt      The RREQ packet.
+ * @param[in] next_hop Where to send the packet.
+ *
+ * @return Negative number on failure, otherwise succeed.
+ */
+int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
+                     ipv6_addr_t *next_hop);
+
+/**
+ * @brief   Initiate a route discovery process to find the given address.
+ *
+ * @param[in] target_addr The IP address where we want a route to.
+ *
+ * @return Negative number on failure, otherwise succeed.
+ */
 int aodvv2_find_route(ipv6_addr_t *target_addr);
 
 #ifdef __cplusplus

@@ -95,10 +95,34 @@ static void _send_rreq(aodvv2_packet_data_t *packet_data,
     _writer_context.type = RFC5444_MSGTYPE_RREQ;
     _writer_context.packet_data.hoplimit = packet_data->hoplimit;
 
-    /* set address to which the write_packet callback should send our RREQ */
+    /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
 
     rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREQ);
+    rfc5444_writer_flush(&_writer, &_writer_context.target, false);
+
+    mutex_unlock(&_writer_lock);
+}
+
+static void _send_rrep(aodvv2_packet_data_t *packet_data,
+                       ipv6_addr_t *next_hop)
+{
+    assert(packet_data != NULL && next_hop != NULL);
+
+    /* Make sure no other thread is using the writer right now */
+    mutex_lock(&_writer_lock);
+
+    /* Copy packet */
+    memcpy(&_writer_context.packet_data, packet_data,
+           sizeof(aodvv2_packet_data_t));
+
+    _writer_context.type = RFC5444_MSGTYPE_RREP;
+    _writer_context.packet_data.hoplimit = packet_data->hoplimit;
+
+    /* set address to which the _send_packet callback should send our RREQ */
+    memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
+
+    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREP);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
 
     mutex_unlock(&_writer_lock);
@@ -169,6 +193,39 @@ static void _send_packet(struct rfc5444_writer *writer,
     }
 }
 
+static void _receive(gnrc_pktsnip_t *pkt)
+{
+    assert(pkt != NULL && pkt->data != NULL && pkt->size > 0);
+
+#if ENABLE_DEBUG == 1
+    static struct autobuf hexbuf;
+
+    /* Generate hexdump of packet */
+    abuf_hexdump(&hexbuf, "\t", pkt->data, pkt->size);
+    rfc5444_print_direct(&hexbuf, pkt->data, pkt->size);
+
+    /* Print hexdump to console */
+    DEBUG("%s", abuf_getptr(&hexbuf));
+
+    abuf_free(&hexbuf);
+#endif
+
+    /* Find sender address on IPv6 header */
+    ipv6_addr_t sender;
+    ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
+    assert(ipv6_hdr != NULL);
+    memcpy(&sender, &ipv6_hdr->src, sizeof(ipv6_addr_t));
+
+    mutex_lock(&_reader_lock);
+    aodvv2_rfc5444_handle_packet_prepare(&sender);
+    if (rfc5444_reader_handle_packet(&_reader, pkt->data, pkt->size) != RFC5444_OKAY) {
+        DEBUG("aodvv2: couldn't handle packet!\n");
+    }
+    mutex_unlock(&_reader_lock);
+
+    gnrc_pktbuf_release(pkt);
+}
+
 static void *_event_loop(void *arg)
 {
     (void)arg;
@@ -199,11 +256,18 @@ static void *_event_loop(void *arg)
 
             case AODVV2_MSG_TYPE_SEND_RREP:
                 DEBUG("AODVV2_MSG_TYPE_SEND_RREP\n");
+                {
+                    aodvv2_msg_t m;
+                    memcpy(&m, (aodvv2_msg_t *)msg.content.ptr, sizeof(m));
+                    free(msg.content.ptr);
+
+                    _send_rrep(&m.pkt, &m.next_hop);
+                }
                 break;
 
             case GNRC_NETAPI_MSG_TYPE_RCV:
                 DEBUG("GNRC_NETAPI_MSG_TYPE_RCV\n");
-                gnrc_pktbuf_release(msg.content.ptr);
+                _receive((gnrc_pktsnip_t *)msg.content.ptr);
                 break;
 
             case GNRC_NETAPI_MSG_TYPE_GET:
@@ -264,6 +328,10 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_client_init();
     aodvv2_rreqtable_init();
 
+    /* Every node is it's own cllient */
+    aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
+                      CONFIG_AODVV2_DEFAULT_METRIC);
+
     /* Register netreg */
     gnrc_netreg_entry_init_pid(&netreg, CONFIG_AODVV2_RFC5444_PROTOCOL_PORT,
                                _pid);
@@ -302,15 +370,15 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Register a target (for sending messages to) in writer */
     rfc5444_writer_register_target(&_writer, &_writer_context.target);
 
-    aodvv2_rfc5444_writer_rreq_register(&_writer,
-                                        &_writer_context);
+    aodvv2_rfc5444_writer_register(&_writer, &_writer_context);
 
     mutex_unlock(&_writer_lock);
 
     return _pid;
 }
 
-int aodvv2_find_route(ipv6_addr_t *target_addr)
+int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
+                     ipv6_addr_t *next_hop)
 {
     aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
     if (msg == NULL) {
@@ -318,34 +386,74 @@ int aodvv2_find_route(ipv6_addr_t *target_addr)
         return -1;
     }
 
-    /* Set metric information */
-    if (CONFIG_AODVV2_DEFAULT_METRIC == METRIC_HOP_COUNT) {
-        msg->pkt.hoplimit = aodvv2_metric_max(METRIC_HOP_COUNT);
-    }
-    msg->pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
+    /* Set destination address */
+    memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
 
-    /* Set OrigNode information */
-    memcpy(&msg->pkt.orig_node.addr, &_na_netif, sizeof(struct netaddr));
-    msg->pkt.orig_node.metric = 0;
-    msg->pkt.orig_node.seqnum = aodvv2_seqnum_get();
-    aodvv2_seqnum_inc();
+    /* Copy RREQ packet */
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
 
-    /* Set TargNode information */
-    ipv6_addr_to_netaddr(target_addr, &msg->pkt.targ_node.addr);
-    msg->pkt.targ_node.metric = 0;
-    msg->pkt.targ_node.seqnum = 0;
-
-    /* Send RREQ as multicast */
-    memcpy(&msg->next_hop, &ipv6_addr_all_manet_routers_link_local,
-           sizeof(ipv6_addr_t));
-
+    /* Prepare and send IPC message */
     msg_t ipc_msg;
     ipc_msg.content.ptr = msg;
     ipc_msg.type = AODVV2_MSG_TYPE_SEND_RREQ;
+
     if (msg_send(&ipc_msg, _pid) < 1) {
         DEBUG("aodvv2: couldn't send RREQ.\n");
         return -1;
     }
 
     return 0;
+}
+
+int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
+                     ipv6_addr_t *next_hop)
+{
+    aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
+    if (msg == NULL) {
+        DEBUG("aodvv2: out of memory!\n");
+        return -1;
+    }
+
+    /* Set destination address */
+    memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
+
+    /* Copy RREQ packet */
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
+
+    /* Prepare and send IPC message */
+    msg_t ipc_msg;
+    ipc_msg.content.ptr = msg;
+    ipc_msg.type = AODVV2_MSG_TYPE_SEND_RREP;
+
+    if (msg_send(&ipc_msg, _pid) < 1) {
+        DEBUG("aodvv2: couldn't send RREQ.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+int aodvv2_find_route(ipv6_addr_t *target_addr)
+{
+    aodvv2_packet_data_t pkt;
+
+    /* Set metric information */
+    pkt.hoplimit = aodvv2_metric_max(METRIC_HOP_COUNT);
+    pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
+
+    /* Set OrigNode information */
+    memcpy(&pkt.orig_node.addr, &_na_netif, sizeof(struct netaddr));
+    pkt.orig_node.metric = 0;
+    pkt.orig_node.seqnum = aodvv2_seqnum_get();
+    aodvv2_seqnum_inc();
+
+    /* Set TargNode information */
+    ipv6_addr_to_netaddr(target_addr, &pkt.targ_node.addr);
+    pkt.targ_node.metric = 0;
+    pkt.targ_node.seqnum = 0;
+
+    /* Add RREQ to rreqtable */
+    aodvv2_rreqtable_add(&pkt);
+
+    return aodvv2_send_rreq(&pkt, &ipv6_addr_all_manet_routers_link_local);
 }
