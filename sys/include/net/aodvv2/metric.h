@@ -24,6 +24,7 @@
 #define NET_AODVV2_METRIC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "net/metric.h"
 
@@ -52,13 +53,30 @@ extern "C" {
 #define AODVV2_METRIC_HOP_COUNT_COST (1) /**< Cost for "Hop Count" metric */
 
 /**
- * @brief   Link cost for the given metric type
+ * @brief   Link cost for the given metric type. Cost(L)
  *
  * @param[in] metric_type Metric type.
  *
  * @return Cost associated with the metric.
  */
 uint8_t aodvv2_metric_link_cost(routing_metric_t metric_type);
+
+/**
+ * @brief   Analyzes if a route is loop free given the metric. LoopFree(R1, R2)
+ *
+ * @see <a href="https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-5">
+ *          draft-perkins-manet-aodvv2-03, section 5. "Metrics"
+ *      </a>
+ *
+ * @param[in] metric_type Metric type.
+ * @param[in] a           Cost(R1) to check.
+ * @param[in] b           Cost(R2) to check.
+ *
+ * @return true  Free of loops.
+ * @return false Possibly a loop.
+ */
+bool aodvv2_metric_loop_free(routing_metric_t metric_type, uint8_t a,
+                             uint8_t b);
 
 /**
  * @brief   Maximum value for the given metric type
