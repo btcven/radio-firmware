@@ -42,7 +42,6 @@
 #ifndef RFC5444_IANA_H_
 #define RFC5444_IANA_H_
 
-#include "common/common_types.h"
 #include "common/netaddr.h"
 
 /*
@@ -55,8 +54,8 @@ enum rfc5444_iana {
   RFC5444_MANET_UDP_PORT = 269,
 };
 
-EXPORT extern const struct netaddr RFC5444_MANET_MULTICAST_V4;
-EXPORT extern const struct netaddr RFC5444_MANET_MULTICAST_V6;
+extern const struct netaddr RFC5444_MANET_MULTICAST_V4;
+extern const struct netaddr RFC5444_MANET_MULTICAST_V6;
 
 /*
  * text variants of the constants above for defaults in

@@ -38,7 +38,6 @@
  * the copyright holders.
  *
  */
-#include "common/common_types.h"
 #include "common/netaddr.h"
 
 #include "rfc5444/rfc5444_iana.h"

@@ -43,9 +43,10 @@
 #define LIST_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 
+#include "kernel_defines.h"
 #include "common/container_of.h"
-#include "common/common_types.h"
 
 /**
  * this struct is used as list head and list elements.
@@ -69,7 +70,7 @@ struct oonf_list_entity {
  * initialize a list-head
  * @param pointer to list-head
  */
-static INLINE void
+static inline void
 oonf_list_init_head(struct oonf_list_entity *head) {
   head->next = head->prev = head;
 }
@@ -78,7 +79,7 @@ oonf_list_init_head(struct oonf_list_entity *head) {
  * initialize a list-node
  * @param pointer to list-node
  */
-static INLINE void
+static inline void
 oonf_list_init_node(struct oonf_list_entity *entity) {
   entity->next = entity->prev = NULL;
 }
@@ -89,7 +90,7 @@ oonf_list_init_node(struct oonf_list_entity *entity) {
  * @param next node after the insertion point
  * @param new node which will be added to the list between 'prev' and 'next'
  */
-static INLINE void
+static inline void
 __oonf_list_add(struct oonf_list_entity *prev, struct oonf_list_entity *next, struct oonf_list_entity *new) {
   new->next = next;
   new->prev = prev;
@@ -102,7 +103,7 @@ __oonf_list_add(struct oonf_list_entity *prev, struct oonf_list_entity *next, st
  * @param head pointer to list head
  * @param new node which will be added to the list
  */
-static INLINE void
+static inline void
 oonf_list_add_head(struct oonf_list_entity *head, struct oonf_list_entity *new) {
   __oonf_list_add(head, head->next, new);
 }
@@ -112,7 +113,7 @@ oonf_list_add_head(struct oonf_list_entity *head, struct oonf_list_entity *new) 
  * @param head pointer to list head
  * @param new node which will be added to the list
  */
-static INLINE void
+static inline void
 oonf_list_add_tail(struct oonf_list_entity *head, struct oonf_list_entity *new) {
   __oonf_list_add(head->prev, head, new);
 }
@@ -122,7 +123,7 @@ oonf_list_add_tail(struct oonf_list_entity *head, struct oonf_list_entity *new) 
  * @param before reference node in the list
  * @param new node which will be added to the list
  */
-static INLINE void
+static inline void
 oonf_list_add_before(struct oonf_list_entity *before, struct oonf_list_entity *new) {
   __oonf_list_add(before->prev, before, new);
 }
@@ -132,7 +133,7 @@ oonf_list_add_before(struct oonf_list_entity *before, struct oonf_list_entity *n
  * @param before reference node in the list
  * @param new node which will be added to the list
  */
-static INLINE void
+static inline void
 oonf_list_add_after(struct oonf_list_entity *after, struct oonf_list_entity *new) {
   __oonf_list_add(after, after->next, new);
 }
@@ -142,7 +143,7 @@ oonf_list_add_after(struct oonf_list_entity *after, struct oonf_list_entity *new
  * @param prev node before the removed part of the list
  * @param next node after the removed part of the list
  */
-static INLINE void
+static inline void
 __oonf_list_remove(struct oonf_list_entity *prev, struct oonf_list_entity *next) {
   prev->next = next;
   next->prev = prev;
@@ -152,7 +153,7 @@ __oonf_list_remove(struct oonf_list_entity *prev, struct oonf_list_entity *next)
  * removes a node from a list and clears node pointers
  * @param entity node to remove from the list
  */
-static INLINE void
+static inline void
 oonf_list_remove(struct oonf_list_entity *entity) {
   __oonf_list_remove(entity->prev, entity->next);
   oonf_list_init_node(entity);
@@ -163,7 +164,7 @@ oonf_list_remove(struct oonf_list_entity *entity) {
  * @param head pointer to list head
  * @return true if list is empty, false otherwise
  */
-static INLINE bool
+static inline bool
 oonf_list_is_empty(struct oonf_list_entity *head) {
   return head->next == head && head->prev == head;
 }
@@ -174,7 +175,7 @@ oonf_list_is_empty(struct oonf_list_entity *head) {
  * @return true if both pointers of the node are initialized,
  *   false otherwise
  */
-static INLINE bool
+static inline bool
 oonf_list_is_node_added(struct oonf_list_entity *node) {
   return node->next != NULL && node->prev != NULL;
 }
@@ -185,7 +186,7 @@ oonf_list_is_node_added(struct oonf_list_entity *node) {
  * @param entity pointer to node
  * @return true if node is first element of list, false otherwise
  */
-static INLINE bool
+static inline bool
 oonf_list_is_first(const struct oonf_list_entity *head, const struct oonf_list_entity *entity) {
   return head->next == entity;
 }
@@ -196,7 +197,7 @@ oonf_list_is_first(const struct oonf_list_entity *head, const struct oonf_list_e
  * @param entity pointer to node
  * @return true if node is last element of list, false otherwise
  */
-static INLINE bool
+static inline bool
 oonf_list_is_last(const struct oonf_list_entity *head, const struct oonf_list_entity *entity) {
   return head->prev == entity;
 }
@@ -207,7 +208,7 @@ oonf_list_is_last(const struct oonf_list_entity *head, const struct oonf_list_en
  * @param remove_from head of the list which elements will be added after the elements
  *   of the first one
  */
-static INLINE void
+static inline void
 oonf_list_merge(struct oonf_list_entity *add_to, struct oonf_list_entity *remove_from) {
   if (oonf_list_is_empty(remove_from)) {
     return;

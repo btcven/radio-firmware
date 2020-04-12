@@ -46,7 +46,6 @@
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
-#include "common/common_types.h"
 #include "common/list.h"
 #include "rfc5444/rfc5444_context.h"
 #include "rfc5444/rfc5444_writer.h"
@@ -67,7 +66,7 @@ static struct rfc5444_writer_addrtlv *_malloc_addrtlv_entry(void);
  * @param exttype TLV extension type
  * @return combined type
  */
-static INLINE int
+static inline int
 _get_fulltype(uint8_t type, uint8_t exttype) {
   return type * 256 + exttype;
 }

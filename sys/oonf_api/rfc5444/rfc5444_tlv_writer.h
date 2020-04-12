@@ -42,7 +42,8 @@
 #ifndef RFC5444_TLV_WRITER_H_
 #define RFC5444_TLV_WRITER_H_
 
-#include "common/common_types.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 struct rfc5444_tlv_writer_data {
   uint8_t *buffer;

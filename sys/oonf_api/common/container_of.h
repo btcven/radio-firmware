@@ -43,7 +43,6 @@
 #define CONTAINER_OF_H_
 
 #include <stddef.h>
-#include "common/common_types.h"
 
 /* allow compilation with c99 mode */
 #ifndef typeof
@@ -51,50 +50,23 @@
 #endif
 
 /**
- * casts an embedded element of a struct into the surrounding struct
- * this macro returns bad results if ptr is NULL
- * @param ptr pointer to embedded element
- * @param type data type of surrounding struct
- * @param member name of node inside struct
- * @return pointer to surrounding struct
+ * @brief   Helper function for NULL safe container_of macro
  */
-#ifndef container_of
-#if __STDC_VERSION__ >= 201112L
-#   define container_of(PTR, TYPE, MEMBER) \
-        (_Generic((PTR), \
-            const __typeof__ (((TYPE *) 0)->MEMBER) *: \
-                ((TYPE *) ((char *) (PTR) - offsetof(TYPE, MEMBER))), \
-            __typeof__ (((TYPE *) 0)->MEMBER) *: \
-                ((TYPE *) ((char *) (PTR) - offsetof(TYPE, MEMBER))) \
-        ))
-#elif defined __GNUC__
-#   define container_of(PTR, TYPE, MEMBER) \
-        (__extension__ ({ \
-            __extension__ const __typeof__ (((TYPE *) 0)->MEMBER) *__m____ = (PTR); \
-            ((TYPE *) ((char *) __m____ - offsetof(TYPE, MEMBER))); \
-        }))
-#else
-#   define container_of(PTR, TYPE, MEMBER) \
-        ((TYPE *) ((char *) (PTR) - offsetof(TYPE, MEMBER)))
-#endif
-#endif
-
-/**
- * Helper function for NULL safe container_of macro
- */
-static INLINE void *
-__container_of_if_notnull(void *ptr, size_t offset) {
-  return ptr == NULL ? NULL : (((char *)ptr) - offset);
+static inline void *__container_of_if_notnull(void *ptr, size_t offset) {
+    return ptr == NULL ? NULL : (((char *)ptr) - offset);
 }
 
 /**
- * casts an embedded node of a list/tree into the surrounding struct
- * this macro returns bad results if ptr is NULL
- * @param ptr pointer to node
- * @param type data type of surrounding struct
- * @param member name of node inside struct
- * @return pointer to surrounding struct
+ * @brief   Casts an embedded node of a list/tree into the surrounding struct
+ *          this macro returns bad results if ptr is NULL
+ *
+ * @param[in] ptr    Pointer to node
+ * @param[in] type   Data type of surrounding struct
+ * @param[in] member Name of node inside struct
+ *
+ * @return Pointer to surrounding struct
  */
-#define container_of_if_notnull(ptr, type, member) ((type *)__container_of_if_notnull(ptr, offsetof(type, member)))
+#define container_of_if_notnull(ptr, type, member) \
+    ((type *)__container_of_if_notnull(ptr, offsetof(type, member)))
 
 #endif /* CONTAINER_OF_H_ */

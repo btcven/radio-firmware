@@ -41,7 +41,6 @@
 #ifndef RFC5444_CONTEXT_H_
 #define RFC5444_CONTEXT_H_
 
-#include "common/common_types.h"
 #include "rfc5444/rfc5444_api_config.h"
 
 /*
@@ -118,7 +117,7 @@ enum rfc5444_result {
   RFC5444_RESULT_MIN           = -15,
 };
 
-EXPORT const char *rfc5444_strerror(enum rfc5444_result result);
+const char *rfc5444_strerror(enum rfc5444_result result);
 
 /* maximum address length */
 enum { RFC5444_MAX_ADDRLEN = 16 };

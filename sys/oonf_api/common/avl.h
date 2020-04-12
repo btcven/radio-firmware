@@ -43,10 +43,11 @@
 #define _AVL_H
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include "common/common_types.h"
+#include "common/container_of.h"
 #include "list.h"
-#include "container_of.h"
+#include "kernel_defines.h"
 
 /**
  * This element is a member of a avl-tree. It must be contained in all
@@ -139,19 +140,19 @@ struct avl_tree {
   avl_tree_comp comp;
 };
 
-EXPORT void avl_init(struct avl_tree *, avl_tree_comp, bool);
-EXPORT struct avl_node *avl_find(const struct avl_tree *, const void *);
-EXPORT struct avl_node *avl_find_greaterequal(const struct avl_tree *tree, const void *key);
-EXPORT struct avl_node *avl_find_lessequal(const struct avl_tree *tree, const void *key);
-EXPORT int avl_insert(struct avl_tree *, struct avl_node *);
-EXPORT void avl_remove(struct avl_tree *, struct avl_node *);
+void avl_init(struct avl_tree *, avl_tree_comp, bool);
+struct avl_node *avl_find(const struct avl_tree *, const void *);
+struct avl_node *avl_find_greaterequal(const struct avl_tree *tree, const void *key);
+struct avl_node *avl_find_lessequal(const struct avl_tree *tree, const void *key);
+int avl_insert(struct avl_tree *, struct avl_node *);
+void avl_remove(struct avl_tree *, struct avl_node *);
 
 /**
  * @param tree pointer to avl-tree
  * @param node pointer to node of the tree
  * @return true if node is the first one of the tree, false otherwise
  */
-static INLINE bool
+static inline bool
 avl_is_first(struct avl_tree *tree, struct avl_node *node) {
   return tree->oonf_list_head.next == &node->list;
 }
@@ -161,7 +162,7 @@ avl_is_first(struct avl_tree *tree, struct avl_node *node) {
  * @param node pointer to node of the tree
  * @return true if node is the last one of the tree, false otherwise
  */
-static INLINE bool
+static inline bool
 avl_is_last(struct avl_tree *tree, struct avl_node *node) {
   return tree->oonf_list_head.prev == &node->list;
 }
@@ -170,7 +171,7 @@ avl_is_last(struct avl_tree *tree, struct avl_node *node) {
  * @param tree pointer to avl-tree
  * @return true if the tree is empty, false otherwise
  */
-static INLINE bool
+static inline bool
 avl_is_empty(struct avl_tree *tree) {
   return tree->count == 0;
 }
@@ -179,7 +180,7 @@ avl_is_empty(struct avl_tree *tree) {
  * @param node pointer to avl node
  * @return true if node is currently in a tree, false otherwise
  */
-static INLINE bool
+static inline bool
 avl_is_node_added(struct avl_node *node) {
   return oonf_list_is_node_added(&node->list);
 }
@@ -194,7 +195,7 @@ avl_is_node_added(struct avl_node *node) {
  * @param tree pointer to tree
  * @param node pointer to node
  */
-static INLINE void __attribute__((deprecated))
+static inline void __attribute__((deprecated))
 avl_delete(struct avl_tree *tree, struct avl_node *node) {
   avl_remove(tree, node);
 }
