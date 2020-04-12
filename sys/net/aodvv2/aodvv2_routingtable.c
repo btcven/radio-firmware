@@ -30,7 +30,7 @@ static void _reset_entry_if_stale(uint8_t i);
 /**
  * @brief   Memory for the Routing Entries Set
  */
-static aodvv2_routing_entry_t routing_table[CONFIG_AODVV2_MAX_ROUTING_ENTRIES];
+static aodvv2_local_route_t routing_table[CONFIG_AODVV2_MAX_ROUTING_ENTRIES];
 
 static timex_t null_time;
 static timex_t max_seqnum_lifetime;
@@ -55,14 +55,14 @@ void aodvv2_routingtable_init(void)
 
 struct netaddr *aodvv2_routingtable_get_next_hop(struct netaddr *dest, routing_metric_t metricType)
 {
-    aodvv2_routing_entry_t *entry = aodvv2_routingtable_get_entry(dest, metricType);
+    aodvv2_local_route_t *entry = aodvv2_routingtable_get_entry(dest, metricType);
     if (!entry) {
         return NULL;
     }
     return (&entry->next_hop);
 }
 
-void aodvv2_routingtable_add_entry(aodvv2_routing_entry_t *entry)
+void aodvv2_routingtable_add_entry(aodvv2_local_route_t *entry)
 {
     /* only add if we don't already know the address */
     if (aodvv2_routingtable_get_entry(&(entry->addr), entry->metricType)) {
@@ -71,13 +71,13 @@ void aodvv2_routingtable_add_entry(aodvv2_routing_entry_t *entry)
     /*find free spot in RT and place rt_entry there */
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         if (routing_table[i].addr._type == AF_UNSPEC) {
-            memcpy(&routing_table[i], entry, sizeof(aodvv2_routing_entry_t));
+            memcpy(&routing_table[i], entry, sizeof(aodvv2_local_route_t));
             return;
         }
     }
 }
 
-aodvv2_routing_entry_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
+aodvv2_local_route_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
                                                       routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
@@ -161,7 +161,7 @@ static void _reset_entry_if_stale(uint8_t i)
     }
 }
 
-bool aodvv2_routingtable_offers_improvement(aodvv2_routing_entry_t *rt_entry,
+bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
                                             node_data_t *node_data)
 {
     /* Check if new info is stale */
@@ -181,7 +181,7 @@ bool aodvv2_routingtable_offers_improvement(aodvv2_routing_entry_t *rt_entry,
 }
 
 void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_routing_entry_t *rt_entry,
+                                                 aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost)
 {
     rt_entry->addr = packet_data->orig_node.addr;
@@ -195,7 +195,7 @@ void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_da
 }
 
 void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_routing_entry_t *rt_entry,
+                                                 aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost)
 {
     rt_entry->addr = packet_data->targ_node.addr;
