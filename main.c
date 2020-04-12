@@ -56,7 +56,6 @@ int main(void)
         printf("Couldn't initialize RFC5444\n");
     }
 
-    printf("%s", banner);
     puts("Welcome to Turpial CC1312 Radio!");
 
     /* Start shell */
