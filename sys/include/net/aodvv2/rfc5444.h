@@ -38,15 +38,6 @@ extern "C" {
 #endif
 
 /**
- * @brief   RFC5444 protocol port number
- * @{
- */
-#ifndef CONFIG_AODVV2_RFC5444_PROTOCOL_PORT
-#define CONFIG_AODVV2_RFC5444_PROTOCOL_PORT (UDP_MANET_PROTOCOLS_1)
-#endif
-/** @} */
-
-/**
  * @name    RFC5444 thread stack size
  * @{
  */
