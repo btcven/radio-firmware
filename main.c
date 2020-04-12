@@ -27,6 +27,7 @@
  */
 static gnrc_netif_t *_find_ieee802154_netif(void);
 
+extern int udp_cmd(int argc, char **argv);
 static int find_route(int argc, char **argv);
 static int seqnum_get(int argc, char **argv);
 
@@ -36,6 +37,7 @@ static int seqnum_get(int argc, char **argv);
 static const shell_command_t shell_commands[] = {
     { "find_route", "find a route to a node using IPv6 address", find_route },
     { "seqnum_get", "get (and increment) a SeqNum", seqnum_get },
+    { "udp", "send data over UDP and listen on UDP ports", udp_cmd },
     { NULL, NULL, NULL }
 };
 
