@@ -62,10 +62,10 @@ typedef struct {
     struct netaddr addr; /**< IP address of this route's destination */
     aodvv2_seqnum_t seqnum; /**< The Sequence Number obtained from the
                                  last packet that updated the entry */
-    struct netaddr nextHopAddr; /**< IP address of the the next hop towards the
+    struct netaddr next_hop; /**< IP address of the the next hop towards the
                                      destination */
-    timex_t lastUsed; /**< IP address of this route's destination */
-    timex_t expirationTime; /**< Time at which this route expires */
+    timex_t last_used; /**< IP address of this route's destination */
+    timex_t expiration_time; /**< Time at which this route expires */
     routing_metric_t metricType; /**< Metric type of this route */
     uint8_t metric; /**< Metric value of this route*/
     uint8_t state; /**< State of this route (i.e. one of

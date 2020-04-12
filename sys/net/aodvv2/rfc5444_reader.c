@@ -274,7 +274,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         ipv6_addr_t next_hop;
 
         memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
 
         gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
 
@@ -494,7 +494,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         ipv6_addr_t next_hop;
 
         memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
 
         gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
 
