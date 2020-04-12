@@ -27,8 +27,6 @@
 
 static void _reset_entry_if_stale(uint8_t i);
 
-static struct netaddr_str nbuf;
-
 /**
  * @brief   Memory for the Routing Entries Set
  */
@@ -87,7 +85,6 @@ aodvv2_routing_entry_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
 
         if (!netaddr_cmp(&routing_table[i].addr, addr)
             && routing_table[i].metricType == metricType) {
-            DEBUG("[routing] found entry for %s :", netaddr_to_string(&nbuf, addr));
             return &routing_table[i];
         }
     }
@@ -135,8 +132,6 @@ static void _reset_entry_if_stale(uint8_t i)
 
     if ((state == ROUTE_STATE_ACTIVE) &&
         (timex_cmp(timex_sub(now, active_interval), lastUsed) == 1)) {
-        DEBUG("\t[routing] route towards %s Idle\n",
-              netaddr_to_string(&nbuf, &routing_table[i].addr));
         routing_table[i].state = ROUTE_STATE_IDLE;
         routing_table[i].lastUsed = now; /* mark the time entry was set to Idle */
     }
@@ -152,8 +147,6 @@ static void _reset_entry_if_stale(uint8_t i)
 
     if ((state == ROUTE_STATE_IDLE) &&
         (timex_cmp(expirationTime, now) < 1)) {
-        DEBUG("\t[routing] route towards %s Expired\n",
-              netaddr_to_string(&nbuf, &routing_table[i].addr));
         DEBUG("\t expirationTime: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n",
               expirationTime.seconds, expirationTime.microseconds,
               now.seconds, now.microseconds);
@@ -164,8 +157,6 @@ static void _reset_entry_if_stale(uint8_t i)
     /* After that time, old sequence number information is considered no longer
      * valuable and the Expired route MUST BE expunged */
     if (timex_cmp(timex_sub(now, lastUsed), max_seqnum_lifetime) >= 0) {
-        DEBUG("\t[routing] reset routing table entry for %s at %i\n",
-              netaddr_to_string(&nbuf, &routing_table[i].addr), i);
         memset(&routing_table[i], 0, sizeof(routing_table[i]));
     }
 }
