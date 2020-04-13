@@ -40,15 +40,16 @@ static gnrc_netreg_entry_t server = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX
                                                                KERNEL_PID_UNDEF);
 
 
-static void send(char *addr_str, char *port_str, char *data, unsigned int num,
+static void send(char *dest_addr_str, char *src_addr_str, char *port_str, char *data, unsigned int num,
                  unsigned int delay)
 {
     gnrc_netif_t *netif = NULL;
     char *iface;
     uint16_t port;
-    ipv6_addr_t addr;
+    ipv6_addr_t dest_addr;
+    ipv6_addr_t src_addr;
 
-    iface = ipv6_addr_split_iface(addr_str);
+    iface = ipv6_addr_split_iface(dest_addr_str);
     if ((!iface) && (gnrc_netif_numof() == 1)) {
         netif = gnrc_netif_iter(NULL);
     }
@@ -57,8 +58,14 @@ static void send(char *addr_str, char *port_str, char *data, unsigned int num,
     }
 
     /* parse destination address */
-    if (ipv6_addr_from_str(&addr, addr_str) == NULL) {
+    if (ipv6_addr_from_str(&dest_addr, dest_addr_str) == NULL) {
         puts("Error: unable to parse destination address");
+        return;
+    }
+
+    /* parse source address */
+    if (ipv6_addr_from_str(&src_addr, src_addr_str) == NULL) {
+        puts("Error: unable to parse source address");
         return;
     }
     /* parse port */
@@ -87,7 +94,7 @@ static void send(char *addr_str, char *port_str, char *data, unsigned int num,
             return;
         }
         /* allocate IPv6 header */
-        ip = gnrc_ipv6_hdr_build(udp, NULL, &addr);
+        ip = gnrc_ipv6_hdr_build(udp, &src_addr, &dest_addr);
         if (ip == NULL) {
             puts("Error: unable to allocate IPv6 header");
             gnrc_pktbuf_release(udp);
@@ -108,8 +115,7 @@ static void send(char *addr_str, char *port_str, char *data, unsigned int num,
         }
         /* access to `payload` was implicitly given up with the send operation above
          * => use temporary variable for output */
-        printf("Success: sent %u byte(s) to [%s]:%u\n", payload_size, addr_str,
-               port);
+        printf("Success: sent %u byte(s) to [%s]:%u\n", payload_size, dest_addr_str,port);
         xtimer_usleep(delay);
     }
 }
@@ -160,18 +166,18 @@ int udp_cmd(int argc, char **argv)
     if (strcmp(argv[1], "send") == 0) {
         uint32_t num = 1;
         uint32_t delay = 1000000;
-        if (argc < 5) {
-            printf("usage: %s send <addr> <port> <data> [<num> [<delay in us>]]\n",
+        if (argc < 6) {
+            printf("usage: %s send <dest_addr> <src_addr> <port> <data> [<num> [<delay in us>]]\n",
                    argv[0]);
             return 1;
         }
-        if (argc > 5) {
-            num = atoi(argv[5]);
-        }
         if (argc > 6) {
-            delay = atoi(argv[6]);
+            num = atoi(argv[6]);
         }
-        send(argv[2], argv[3], argv[4], num, delay);
+        if (argc > 7) {
+            delay = atoi(argv[7]);
+        }
+        send(argv[2], argv[3], argv[4], argv[5], num, delay);
     }
     else if (strcmp(argv[1], "server") == 0) {
         if (argc < 3) {
