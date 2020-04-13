@@ -34,6 +34,7 @@ USEMODULE += gnrc_pktdump
 
 USEMODULE += manet
 USEMODULE += aodvv2
+USEMODULE += shell_extended
 
 USEMODULE += shell
 USEMODULE += shell_commands

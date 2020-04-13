@@ -7,7 +7,7 @@
  */
 
 /**
- * @ingroup     examples
+ * @ingroup     shell_extended
  * @{
  *
  * @file
@@ -18,6 +18,10 @@
  *
  * @}
  */
+
+#include "kernel_defines.h"
+
+#if IS_USED(MODULE_GNRC_UDP)
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -193,3 +197,5 @@ int udp_cmd(int argc, char **argv)
     }
     return 0;
 }
+
+#endif

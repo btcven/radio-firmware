@@ -17,7 +17,9 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/manet/manet.h"
 
-#include "banner.h"
+#if IS_USED(MODULE_SHELL_EXTENDED)
+#include "shell_extended.h"
+#endif
 
 /**
  * @brief   Find a IEEE 802.15.4 networ interface.
@@ -27,41 +29,33 @@
  */
 static gnrc_netif_t *_find_ieee802154_netif(void);
 
-extern int udp_cmd(int argc, char **argv);
-static int find_route(int argc, char **argv);
-static int seqnum_get(int argc, char **argv);
-
-/**
- * @brief   Shell command array.
- */
-static const shell_command_t shell_commands[] = {
-    { "find_route", "find a route to a node using IPv6 address", find_route },
-    { "seqnum_get", "get (and increment) a SeqNum", seqnum_get },
-    { "udp", "send data over UDP and listen on UDP ports", udp_cmd },
-    { NULL, NULL, NULL }
-};
-
-
 int main(void)
 {
     gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
 
-    /* Join LL-MANET-Routers multicast group */
-    if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
-        printf("Couldn't join MANET mcast group\n");
+    if (IS_USED(MODULE_MANET)) {
+        /* Join LL-MANET-Routers multicast group */
+        if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
+            printf("Couldn't join MANET mcast group\n");
+        }
     }
 
-    /* Initialize RFC5444 */
-    if (aodvv2_init(ieee802154_netif) < 0) {
-        printf("Couldn't initialize RFC5444\n");
+    if (IS_USED(MODULE_AODVV2)) {
+        /* Initialize RFC5444 */
+        if (aodvv2_init(ieee802154_netif) < 0) {
+            printf("Couldn't initialize RFC5444\n");
+        }
     }
 
-    printf("%s", banner);
     puts("Welcome to Turpial CC1312 Radio!");
 
-    /* Start shell */
     char line_buf[SHELL_DEFAULT_BUFSIZE];
-    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+    /* Start shell */
+#if IS_USED(MODULE_SHELL_EXTENDED)
+    shell_run(shell_extended_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+#else
+    shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
+#endif
 
     /* Should be never reached */
     return 0;
@@ -94,47 +88,4 @@ static gnrc_netif_t *_find_ieee802154_netif(void)
     }
 
     return NULL;
-}
-
-
-static int find_route(int argc, char **argv)
-{
-    int res = 0;
-
-    if (argc < 2) {
-        puts("find_route <target>");
-        puts("find a route using AODVv2 protocol to <target>");
-        goto exit;
-    }
-
-    /* Parse <target> */
-    ipv6_addr_t target_addr;
-    if (ipv6_addr_from_str(&target_addr, argv[1]) == NULL) {
-        res = -1;
-        printf("%s: invalid <target>!\n", argv[0]);
-        goto exit;
-    }
-
-    res = aodvv2_find_route(&target_addr);
-    if (res < 0) {
-        printf("%s: failed!\n", argv[0]);
-        goto exit;
-    }
-
-exit:
-    return res;
-}
-
-static int seqnum_get(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-    aodvv2_seqnum_t old = aodvv2_seqnum_get();
-    aodvv2_seqnum_inc();
-    aodvv2_seqnum_t new = aodvv2_seqnum_get();
-
-    printf("old = %d, new = %d\n", old, new);
-
-    return 0;
 }
