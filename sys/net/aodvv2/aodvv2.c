@@ -34,7 +34,7 @@
 
 #include "mutex.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #if ENABLE_DEBUG == 1
@@ -101,6 +101,49 @@ static int _find_netif_global_addr(ipv6_addr_t *addr)
 
     /* No address was found */
     return -1;
+}
+
+static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
+                        const void *ctx)
+{
+    switch (type) {
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_UNDEF:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_UNDEF\n");
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RRQ:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RRQ\n");
+            {
+                gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)ctx;
+                ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
+
+                if (aodvv2_client_find(&ipv6_hdr->src) != NULL) {
+                    if (aodvv2_buffer_pkt_add(ctx_addr, pkt) == 0) {
+                        DEBUG("aodvv2: finding route\n");
+                        aodvv2_find_route(&ipv6_hdr->src, ctx_addr);
+                    }
+                    else {
+                        DEBUG("aodvv2: couldn't buffer packet!\n");
+                    }
+                }
+                else {
+                    DEBUG("aodvv2: src is not our client!\n");
+                }
+            }
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RN:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RN\n");
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_NSC:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_NSC\n");
+            break;
+
+        default:
+            DEBUG("aodvv2: unknown route info!\n");
+            break;
+    }
 }
 
 static void _send_rreq(aodvv2_packet_data_t *packet_data,
@@ -338,6 +381,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_routingtable_init();
     aodvv2_client_init();
     aodvv2_rreqtable_init();
+    aodvv2_buffer_init();
 
     /* Save our IPv6 address */
     ipv6_addr_t netif_addr;
@@ -389,6 +433,11 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_rfc5444_writer_register(&_writer, &_writer_context);
 
     mutex_unlock(&_writer_lock);
+
+    /* Install route info callback, this is called from the NIB when a route is
+     * needed, this is what needs to be used for reactive protocols like AODVv2
+     */
+    _netif->ipv6.route_info_cb = _route_info;
 
     return _pid;
 }
@@ -449,8 +498,11 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
     return 0;
 }
 
-int aodvv2_find_route(ipv6_addr_t *target_addr)
+int aodvv2_find_route(const ipv6_addr_t *orig_addr,
+                      const ipv6_addr_t *target_addr)
 {
+    assert(orig_addr != NULL && target_addr != NULL);
+
     aodvv2_packet_data_t pkt;
 
     /* Set metric information */
@@ -458,13 +510,7 @@ int aodvv2_find_route(ipv6_addr_t *target_addr)
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    ipv6_addr_t orig_addr;
-    if (_find_netif_global_addr(&orig_addr) < 0) {
-        DEBUG("aodvv2: no global address found\n");
-        return -1;
-    }
-
-    ipv6_addr_to_netaddr(&orig_addr, &pkt.orig_node.addr);
+    ipv6_addr_to_netaddr(orig_addr, &pkt.orig_node.addr);
     pkt.orig_node.metric = 0;
     pkt.orig_node.seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();

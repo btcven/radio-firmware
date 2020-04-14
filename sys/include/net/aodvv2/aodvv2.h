@@ -117,11 +117,38 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
 /**
  * @brief   Initiate a route discovery process to find the given address.
  *
+ * @pre @p target_addr != NULL && @p orig_addr != NULL
+ *
  * @param[in] target_addr The IP address where we want a route to.
  *
  * @return Negative number on failure, otherwise succeed.
  */
-int aodvv2_find_route(ipv6_addr_t *target_addr);
+int aodvv2_find_route(const ipv6_addr_t *orig_addr,
+                      const ipv6_addr_t *target_addr);
+
+/**
+ * @brief   Initialize the AODVv2 packer buffering code.
+ */
+void aodvv2_buffer_init(void);
+
+/**
+ * @brief   Add a packet to the packet buffer
+ *
+ * @pre @p dst != NULL && @p pkt != NULL
+ *
+ * @brief[in] dst Packet destination address.
+ * @brief[in] pkt Packet.
+ */
+int aodvv2_buffer_pkt_add(const ipv6_addr_t *dst, gnrc_pktsnip_t *pkt);
+
+/**
+ * @brief   Dispatch buffered packets to `targ_addr`
+ *
+ * @notes Only call this when a route to `targ_addr` is on the NIB
+ *
+ * @param[in] targ_addr Target address to dispatch packets.
+ */
+void aodvv2_buffer_dispatch(const ipv6_addr_t *targ_addr);
 
 #ifdef __cplusplus
 } /* extern "C" */

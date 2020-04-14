@@ -169,7 +169,7 @@ void aodvv2_rfc5444_writer_register(struct rfc5444_writer *writer,
  * @param[in] src  Source.
  * @param[out] dst Destination.
  */
-void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst);
+void ipv6_addr_to_netaddr(const ipv6_addr_t *src, struct netaddr *dst);
 
 /**
  * @brief   `struct netaddr` to `ipv6_addr_t`.

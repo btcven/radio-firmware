@@ -26,7 +26,7 @@
 
 #include <assert.h>
 
-void ipv6_addr_to_netaddr(ipv6_addr_t *src, struct netaddr *dst)
+void ipv6_addr_to_netaddr(const ipv6_addr_t *src, struct netaddr *dst)
 {
     assert(src != NULL && dst != NULL);
 

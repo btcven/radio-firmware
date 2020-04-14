@@ -30,8 +30,8 @@ int find_route_cmd(int argc, char **argv)
 {
     int res = 0;
 
-    if (argc < 2) {
-        puts("find_route <target>");
+    if (argc < 3) {
+        puts("find_route <target> <orig>");
         puts("find a route using AODVv2 protocol to <target>");
         goto exit;
     }
@@ -44,7 +44,14 @@ int find_route_cmd(int argc, char **argv)
         goto exit;
     }
 
-    res = aodvv2_find_route(&target_addr);
+    ipv6_addr_t orig_addr;
+    if (ipv6_addr_from_str(&orig_addr, argv[2]) == NULL) {
+        res = -1;
+        printf("%s: invalid <orig>!\n", argv[0]);
+        goto exit;
+    }
+
+    res = aodvv2_find_route(&orig_addr, &target_addr);
     if (res < 0) {
         printf("%s: failed!\n", argv[0]);
         goto exit;
