@@ -24,7 +24,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/rreqtable.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_data);

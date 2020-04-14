@@ -33,7 +33,7 @@
 
 #include "xtimer.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #define AODVV2_ROUTE_LIFETIME \
