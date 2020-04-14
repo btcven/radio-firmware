@@ -40,8 +40,8 @@ static gnrc_netreg_entry_t server = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX
                                                                KERNEL_PID_UNDEF);
 
 
-static void send(char *dest_addr_str, char *src_addr_str, char *port_str, char *data, unsigned int num,
-                 unsigned int delay)
+static void send(char *dest_addr_str, char *src_addr_str, char *port_str,
+                 char *data, unsigned int num)
 {
     gnrc_netif_t *netif = NULL;
     char *iface;
@@ -116,7 +116,6 @@ static void send(char *dest_addr_str, char *src_addr_str, char *port_str, char *
         /* access to `payload` was implicitly given up with the send operation above
          * => use temporary variable for output */
         printf("Success: sent %u byte(s) to [%s]:%u\n", payload_size, dest_addr_str,port);
-        xtimer_usleep(delay);
     }
 }
 
@@ -165,19 +164,15 @@ int udp_cmd(int argc, char **argv)
 
     if (strcmp(argv[1], "send") == 0) {
         uint32_t num = 1;
-        uint32_t delay = 1000000;
         if (argc < 6) {
-            printf("usage: %s send <dest_addr> <src_addr> <port> <data> [<num> [<delay in us>]]\n",
+            printf("usage: %s send <dest_addr> <src_addr> <port> <data> [<num>]\n",
                    argv[0]);
             return 1;
         }
         if (argc > 6) {
             num = atoi(argv[6]);
         }
-        if (argc > 7) {
-            delay = atoi(argv[7]);
-        }
-        send(argv[2], argv[3], argv[4], argv[5], num, delay);
+        send(argv[2], argv[3], argv[4], argv[5], num);
     }
     else if (strcmp(argv[1], "server") == 0) {
         if (argc < 3) {
