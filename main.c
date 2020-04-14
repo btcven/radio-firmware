@@ -40,11 +40,31 @@ int main(void)
         }
     }
 
+    /* Add global address */
+    eui64_t iid;
+    if (gnrc_netif_ipv6_get_iid(ieee802154_netif, &iid) == sizeof(uint64_t)) {
+        ipv6_addr_t addr = {{ 0x20, 0x01, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00 }};
+        ipv6_addr_init_iid(&addr, (uint8_t *)&iid, 64);
+
+        if (gnrc_netif_ipv6_addr_add(ieee802154_netif, &addr, 128, 0) != sizeof(ipv6_addr_t)) {
+            printf("Couln't setup global address\n");
+        }
+    }
+
     if (IS_USED(MODULE_AODVV2)) {
         /* Initialize RFC5444 */
         if (aodvv2_init(ieee802154_netif) < 0) {
             printf("Couldn't initialize RFC5444\n");
         }
+    }
+
+
+    /* Initialize RFC5444 */
+    if (aodvv2_init(ieee802154_netif) < 0) {
+        printf("Couldn't initialize RFC5444\n");
     }
 
     puts("Welcome to Turpial CC1312 Radio!");

@@ -56,7 +56,6 @@ static char _stack[CONFIG_AODVV2_RFC5444_STACK_SIZE];
  * @brief   Network interface to use
  */
 static gnrc_netif_t *_netif;
-static struct netaddr _na_netif;
 
 /**
  * @brief   Netreg
@@ -79,6 +78,30 @@ static uint8_t _writer_msg_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static uint8_t _writer_msg_addrtlvs[CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE];
 static uint8_t _writer_pkt_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static mutex_t _writer_lock;
+
+static int _find_netif_global_addr(ipv6_addr_t *addr)
+{
+    assert(addr != NULL);
+
+    ipv6_addr_t addrs[CONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF];
+
+    int numof = gnrc_netif_ipv6_addrs_get(_netif, addrs, sizeof(addrs));
+    if (numof < 0) {
+        DEBUG("aodvv2: couldn't get IPv6 addresses for iface\n");
+        return -1;
+    }
+
+    for (unsigned i = 0; i < (numof / sizeof(ipv6_addr_t)); i++) {
+        /* Pick up the first global address */
+        if (ipv6_addr_is_global(&addrs[i])) {
+            memcpy(addr, &addrs[i], sizeof(ipv6_addr_t));
+            return 0;
+        }
+    }
+
+    /* No address was found */
+    return -1;
+}
 
 static void _send_rreq(aodvv2_packet_data_t *packet_data,
                        ipv6_addr_t *next_hop)
@@ -310,23 +333,18 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Save netif for later reference */
     _netif = netif;
 
-    /* Save our IPv6 address */
-    ipv6_addr_t netif_addr;
-    if (gnrc_netapi_get(_netif->pid,
-                        NETOPT_IPV6_ADDR,
-                        0,
-                        &netif_addr,
-                        sizeof(netif_addr)) < 0) {
-        DEBUG("aodvv2_init: can't get iface IPv6 address\n");
-        return -1;
-    }
-    ipv6_addr_to_netaddr(&netif_addr, &_na_netif);
-
     /* Initialize AODVv2 internal structures */
     aodvv2_seqnum_init();
     aodvv2_routingtable_init();
     aodvv2_client_init();
     aodvv2_rreqtable_init();
+
+    /* Save our IPv6 address */
+    ipv6_addr_t netif_addr;
+    if (_find_netif_global_addr(&netif_addr) < 0) {
+        DEBUG("aodvv2: no global address found\n");
+        return -1;
+    }
 
     /* Every node is it's own cllient */
     aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
@@ -441,7 +459,13 @@ int aodvv2_find_route(ipv6_addr_t *target_addr)
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    memcpy(&pkt.orig_node.addr, &_na_netif, sizeof(struct netaddr));
+    ipv6_addr_t orig_addr;
+    if (_find_netif_global_addr(&orig_addr) < 0) {
+        DEBUG("aodvv2: no global address found\n");
+        return -1;
+    }
+
+    ipv6_addr_to_netaddr(&orig_addr, &pkt.orig_node.addr);
     pkt.orig_node.metric = 0;
     pkt.orig_node.seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
