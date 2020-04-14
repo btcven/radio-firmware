@@ -229,14 +229,14 @@ static enum rfc5444_result _cb_rrep_end_callback(
     searches its route table to see if there is a route table entry with the
     same MetricType of the RteMsg, matching RteMsg.Addr. */
 
-    aodvv2_routing_entry_t *rt_entry =
+    aodvv2_local_route_t *rt_entry =
         aodvv2_routingtable_get_entry(&packet_data.targ_node.addr,
                                       packet_data.metric_type);
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
 
-        aodvv2_routing_entry_t tmp = {0};
+        aodvv2_local_route_t tmp = {0};
         aodvv2_routingtable_fill_routing_entry_rrep(&packet_data,
                                                     &tmp,
                                                     link_cost);
@@ -274,7 +274,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         ipv6_addr_t next_hop;
 
         memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
 
         gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
 
@@ -448,14 +448,14 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * searches its route table to see if there is a route table entry with the
      * same MetricType of the RteMsg, matching RteMsg.Addr.
      */
-    aodvv2_routing_entry_t *rt_entry =
+    aodvv2_local_route_t *rt_entry =
         aodvv2_routingtable_get_entry(&packet_data.orig_node.addr,
                                       packet_data.metric_type);
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
 
-        aodvv2_routing_entry_t tmp = {0};
+        aodvv2_local_route_t tmp = {0};
 
         /* Add this RREQ to routing table*/
         aodvv2_routingtable_fill_routing_entry_rreq(&packet_data, &tmp, link_cost);
@@ -494,7 +494,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         ipv6_addr_t next_hop;
 
         memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->nextHopAddr._addr, sizeof(ipv6_addr_t));
+        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
 
         gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
 

@@ -62,15 +62,15 @@ typedef struct {
     struct netaddr addr; /**< IP address of this route's destination */
     aodvv2_seqnum_t seqnum; /**< The Sequence Number obtained from the
                                  last packet that updated the entry */
-    struct netaddr nextHopAddr; /**< IP address of the the next hop towards the
+    struct netaddr next_hop; /**< IP address of the the next hop towards the
                                      destination */
-    timex_t lastUsed; /**< IP address of this route's destination */
-    timex_t expirationTime; /**< Time at which this route expires */
+    timex_t last_used; /**< IP address of this route's destination */
+    timex_t expiration_time; /**< Time at which this route expires */
     routing_metric_t metricType; /**< Metric type of this route */
     uint8_t metric; /**< Metric value of this route*/
     uint8_t state; /**< State of this route (i.e. one of
                         aodvv2_routing_states) */
-} aodvv2_routing_entry_t;
+} aodvv2_local_route_t;
 
 /**
  * @brief     Initialize routing table.
@@ -94,7 +94,7 @@ struct netaddr *aodvv2_routingtable_get_next_hop(struct netaddr *dest,
  *
  * @param[in] entry        The routing table entry to add
  */
-void aodvv2_routingtable_add_entry(aodvv2_routing_entry_t *entry);
+void aodvv2_routingtable_add_entry(aodvv2_local_route_t *entry);
 
 /**
  * @brief     Retrieve pointer to a routing table entry.
@@ -105,7 +105,7 @@ void aodvv2_routingtable_add_entry(aodvv2_routing_entry_t *entry);
  * @param[in] metricType    Metric Type of the desired route
  * @return                  Routing table entry if it exists, NULL otherwise
  */
-aodvv2_routing_entry_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
+aodvv2_local_route_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
                                                       routing_metric_t metricType);
 
 /**
@@ -127,7 +127,7 @@ void aodvv2_routingtable_delete_entry(struct netaddr *addr, routing_metric_t met
  *                            TargNode's data (i.e. packet_data.targNode) must
  *                            be passed.
  */
-bool aodvv2_routingtable_offers_improvement(aodvv2_routing_entry_t *rt_entry,
+bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
                                             node_data_t *node_data);
 
 /**
@@ -137,7 +137,7 @@ bool aodvv2_routingtable_offers_improvement(aodvv2_routing_entry_t *rt_entry,
  * @param link_cost           the link cost for this RREQ
  */
 void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_routing_entry_t *rt_entry,
+                                                 aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost);
 
 /**
@@ -147,7 +147,7 @@ void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_da
  * @param link_cost           the link cost for this RREP
  */
 void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_routing_entry_t *rt_entry,
+                                                 aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost);
 
 #ifdef __cplusplus

@@ -36,6 +36,19 @@ uint8_t aodvv2_metric_link_cost(routing_metric_t metric_type)
     }
 }
 
+bool aodvv2_metric_loop_free(routing_metric_t metric_type, uint8_t a,
+                             uint8_t b)
+{
+    switch (metric_type) {
+        case METRIC_HOP_COUNT:
+            return a <= b;
+
+        /* Undefined for other metric types */
+        default:
+            return false;
+    }
+}
+
 uint8_t aodvv2_metric_max(routing_metric_t metric_type)
 {
     switch (metric_type) {
