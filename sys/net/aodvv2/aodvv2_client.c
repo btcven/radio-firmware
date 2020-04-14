@@ -105,9 +105,11 @@ aodvv2_client_entry_t *aodvv2_client_find(const ipv6_addr_t *addr)
 
     mutex_lock(&_set_mutex);
     for (unsigned i = 0; i < ARRAY_SIZE(_client_set); i++) {
-        if (ipv6_addr_equal(&_client_set[i].ip_address, addr)) {
-            mutex_unlock(&_set_mutex);
-            return &_client_set[i];
+        if (_client_set[i]._used) {
+            if (ipv6_addr_equal(&_client_set[i].ip_address, addr)) {
+                mutex_unlock(&_set_mutex);
+                return &_client_set[i];
+            }
         }
     }
     mutex_unlock(&_set_mutex);
