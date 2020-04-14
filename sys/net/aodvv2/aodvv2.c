@@ -449,8 +449,11 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
     return 0;
 }
 
-int aodvv2_find_route(ipv6_addr_t *target_addr)
+int aodvv2_find_route(const ipv6_addr_t *orig_addr,
+                      const ipv6_addr_t *target_addr)
 {
+    assert(orig_addr != NULL && target_addr != NULL);
+
     aodvv2_packet_data_t pkt;
 
     /* Set metric information */
@@ -458,13 +461,7 @@ int aodvv2_find_route(ipv6_addr_t *target_addr)
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    ipv6_addr_t orig_addr;
-    if (_find_netif_global_addr(&orig_addr) < 0) {
-        DEBUG("aodvv2: no global address found\n");
-        return -1;
-    }
-
-    ipv6_addr_to_netaddr(&orig_addr, &pkt.orig_node.addr);
+    ipv6_addr_to_netaddr(orig_addr, &pkt.orig_node.addr);
     pkt.orig_node.metric = 0;
     pkt.orig_node.seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();

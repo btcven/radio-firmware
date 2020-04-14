@@ -117,11 +117,14 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
 /**
  * @brief   Initiate a route discovery process to find the given address.
  *
+ * @pre @p target_addr != NULL && @p orig_addr != NULL
+ *
  * @param[in] target_addr The IP address where we want a route to.
  *
  * @return Negative number on failure, otherwise succeed.
  */
-int aodvv2_find_route(ipv6_addr_t *target_addr);
+int aodvv2_find_route(const ipv6_addr_t *orig_addr,
+                      const ipv6_addr_t *target_addr);
 
 #ifdef __cplusplus
 } /* extern "C" */
