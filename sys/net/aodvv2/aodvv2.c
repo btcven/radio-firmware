@@ -103,6 +103,49 @@ static int _find_netif_global_addr(ipv6_addr_t *addr)
     return -1;
 }
 
+static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
+                        const void *ctx)
+{
+    switch (type) {
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_UNDEF:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_UNDEF\n");
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RRQ:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RRQ\n");
+            {
+                gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)ctx;
+                ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
+
+                if (aodvv2_client_find(&ipv6_hdr->src) != NULL) {
+                    if (aodvv2_buffer_pkt_add(ctx_addr, pkt) == 0) {
+                        DEBUG("aodvv2: finding route\n");
+                        aodvv2_find_route(&ipv6_hdr->src, ctx_addr);
+                    }
+                    else {
+                        DEBUG("aodvv2: couldn't buffer packet!\n");
+                    }
+                }
+                else {
+                    DEBUG("aodvv2: src is not our client!\n");
+                }
+            }
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RN:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_RN\n");
+            break;
+
+        case GNRC_IPV6_NIB_ROUTE_INFO_TYPE_NSC:
+            DEBUG("aodvv2: GNRC_IPV6_NIB_ROUTE_INFO_TYPE_NSC\n");
+            break;
+
+        default:
+            DEBUG("aodvv2: unknown route info!\n");
+            break;
+    }
+}
+
 static void _send_rreq(aodvv2_packet_data_t *packet_data,
                        ipv6_addr_t *next_hop)
 {
@@ -338,6 +381,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_routingtable_init();
     aodvv2_client_init();
     aodvv2_rreqtable_init();
+    aodvv2_buffer_init();
 
     /* Save our IPv6 address */
     ipv6_addr_t netif_addr;
@@ -389,6 +433,11 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_rfc5444_writer_register(&_writer, &_writer_context);
 
     mutex_unlock(&_writer_lock);
+
+    /* Install route info callback, this is called from the NIB when a route is
+     * needed, this is what needs to be used for reactive protocols like AODVv2
+     */
+    _netif->ipv6.route_info_cb = _route_info;
 
     return _pid;
 }

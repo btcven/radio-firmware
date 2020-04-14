@@ -298,6 +298,12 @@ static enum rfc5444_result _cb_rrep_end_callback(
               packet_data.orig_node.seqnum);
         DEBUG("rfc5444_reader: We are done here, thanks %s!\n",
               netaddr_to_string(&nbuf, &packet_data.targ_node.addr));
+
+        ipv6_addr_t targ_addr;
+        netaddr_to_ipv6_addr(&packet_data.targ_node.addr, &targ_addr);
+
+        /* Send buffered packets for this address */
+        aodvv2_buffer_dispatch(&targ_addr);
     }
     else {
         /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
