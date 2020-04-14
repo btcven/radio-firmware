@@ -40,22 +40,22 @@ extern "C" {
                                                   0x00, 0x00, 0x00, 0x6d }}
 
 /**
- * @brief   UDP Port for MANET Protocols 1 (udp/269).
+ * @brief   UDP Port for MANET Protocols (udp/269).
  *
  * @see <a href="https://tools.ietf.org/html/rfc5498#section-6">
  *          RFC 5498, section 6
  *      </a>
  */
-#define UDP_MANET_PROTOCOLS_1 (269)
+#define UDP_MANET_PORT (269)
 
 /**
- * @brief   UDP Port for MANET Protocols 2 (udp/138).
+ * @brief   IP Port for MANET Protocols (138).
  *
  * @see <a href="https://tools.ietf.org/html/rfc5498#section-6">
  *          RFC 5498, section 6
  *      </a>
  */
-#define UDP_MANET_PROTOCOLS_2 (138)
+#define IP_MANET_PROTOCOLS (138)
 
 /**
  * @see @ref IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL

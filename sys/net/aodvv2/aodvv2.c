@@ -185,7 +185,7 @@ static void _send_packet(struct rfc5444_writer *writer,
     }
 
     /* Build UDP packet */
-    uint16_t port = CONFIG_AODVV2_RFC5444_PROTOCOL_PORT;
+    uint16_t port = UDP_MANET_PORT;
     udp = gnrc_udp_hdr_build(payload, port, port);
     if (udp == NULL) {
         DEBUG("aodvv2: unable to allocate UDP header\n");
@@ -351,8 +351,7 @@ int aodvv2_init(gnrc_netif_t *netif)
                       CONFIG_AODVV2_DEFAULT_METRIC);
 
     /* Register netreg */
-    gnrc_netreg_entry_init_pid(&netreg, CONFIG_AODVV2_RFC5444_PROTOCOL_PORT,
-                               _pid);
+    gnrc_netreg_entry_init_pid(&netreg, UDP_MANET_PORT, _pid);
     gnrc_netreg_register(GNRC_NETTYPE_UDP, &netreg);
 
     /* Initialize RFC5444 reader */
