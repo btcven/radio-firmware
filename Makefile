@@ -36,6 +36,8 @@ USEMODULE += manet
 USEMODULE += aodvv2
 USEMODULE += shell_extended
 
+USEMODULE += chat
+
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps

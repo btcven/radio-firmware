@@ -73,6 +73,7 @@ static int _parse_msg_content(CborValue *map_it, const char *key,
     }
 
     /* Copy byte string */
+    content->len = len;
     cbor_value_copy_byte_string(&content_it, content->buf, &len, NULL);
     return 0;
 }
