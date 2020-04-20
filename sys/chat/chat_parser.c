@@ -119,8 +119,6 @@ int chat_parse_msg(chat_msg_t *msg, uint8_t *buffer, size_t len)
         return -1;
     }
 
-    cbor_value_to_json(stdout, &it, 0);
-
     if (!cbor_value_is_map(&it)) {
         DEBUG("chat: not a map\n");
         return -1;
