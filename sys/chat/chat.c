@@ -52,6 +52,8 @@ static kernel_pid_t _udp_pid;
 static uint8_t _isrpipe_buf_mem[CONFIG_CHAT_RX_BUF_SIZE];
 isrpipe_t chat_serial_isrpipe = ISRPIPE_INIT(_isrpipe_buf_mem);
 
+static uint8_t _chat_buf[512];
+
 chat_id_t chat_id_unspecified = {{ 0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
@@ -60,6 +62,7 @@ chat_id_t chat_id_unspecified = {{ 0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff }};
+
 static void _dump_hex(uint8_t *buffer, size_t len)
 {
     DEBUG("chat: ");
@@ -163,7 +166,6 @@ static void *_serial_read_loop(void *arg)
 {
     (void)arg;
 
-    uint8_t chat_buf[256];
     chat_msg_t chat_msg;
     int state = STATE_LENGTH;
     uint8_t total_len = 0;
@@ -195,7 +197,7 @@ static void *_serial_read_loop(void *arg)
                     size_t remaining = ((size_t)total_len) - bytes_read;
                     DEBUG("chat: total len = %d, bytes_read = %d, remaining = %d\n",
                           (size_t)total_len, bytes_read, remaining);
-                    ssize_t count = _serial_read(chat_buf + bytes_read,
+                    ssize_t count = _serial_read(_chat_buf + bytes_read,
                                                  remaining);
                     bytes_read += count;
                     if (bytes_read < total_len) {
@@ -212,16 +214,16 @@ static void *_serial_read_loop(void *arg)
 
             case STATE_FINISHED:
                 DEBUG("chat: finished\n");
-                _dump_hex(chat_buf, total_len);
+                _dump_hex(_chat_buf, total_len);
                 /* Parse message */
-                if (chat_parse_msg(&chat_msg, chat_buf, (size_t)total_len) < 0) {
+                if (chat_parse_msg(&chat_msg, _chat_buf, (size_t)total_len) < 0) {
                     DEBUG("chat: invalid message!\n");
                 }
                 else {
                     chat_send_msg(&chat_msg);
                 }
                 /* Reset buffer & message */
-                memset(chat_buf, 0, sizeof(chat_buf));
+                memset(_chat_buf, 0, sizeof(_chat_buf));
                 memset(&chat_msg, 0, sizeof(chat_msg));
                 state = STATE_LENGTH;
                 continue;
