@@ -47,18 +47,27 @@ static gnrc_netif_t *_netif;
 static gnrc_netreg_entry_t netreg = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL,
                                                                KERNEL_PID_UNDEF);
 
+static kernel_pid_t _udp_pid;
+
 static uint8_t _isrpipe_buf_mem[CONFIG_CHAT_RX_BUF_SIZE];
 isrpipe_t chat_serial_isrpipe = ISRPIPE_INIT(_isrpipe_buf_mem);
 
-chat_id_t chat_id_unspecified = {{ 0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00 }};
-
+chat_id_t chat_id_unspecified = {{ 0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff,
+                                   0xff, 0xff, 0xff, 0xff }};
+static void _dump_hex(uint8_t *buffer, size_t len)
+{
+    DEBUG("chat: ");
+    for (unsigned i = 0; i < len; i++) {
+        DEBUG("%02x ", buffer[i]);
+    }
+    DEBUG("\n");
+}
 
 static void _serial_init(void)
 {
@@ -144,32 +153,83 @@ void chat_send_msg(chat_msg_t *msg)
     }
 }
 
+enum {
+    STATE_LENGTH,
+    STATE_PAYLOAD,
+    STATE_FINISHED,
+};
+
 static void *_serial_read_loop(void *arg)
 {
     (void)arg;
 
     uint8_t chat_buf[256];
     chat_msg_t chat_msg;
+    int state = STATE_LENGTH;
+    uint8_t total_len = 0;
+    size_t bytes_read = 0;
     while (1) {
-        /* Read length */
-        uint8_t len = 0;
-        _serial_read(&len, sizeof(len));
+        switch (state) {
+            case STATE_LENGTH:
+                DEBUG("chat: reading length\n");
+                {
+                    /* Read length */
+                    ssize_t count = _serial_read(&total_len, sizeof(total_len));
+                    if (count != sizeof(total_len)) {
+                        DEBUG("chat: wtf is this\n");
+                    }
+                    DEBUG("chat: total len = %d\n", (size_t)total_len);
+                    /* 0 is not a valid length */
+                    if (total_len != 0) {
+                        state = STATE_PAYLOAD;
+                    }
+                    else {
+                        state = STATE_LENGTH;
+                    }
+                }
+                continue;
 
-        DEBUG("chat: len = %d", len);
+            case STATE_PAYLOAD:
+                DEBUG("chat: reading payload\n");
+                {
+                    size_t remaining = ((size_t)total_len) - bytes_read;
+                    DEBUG("chat: total len = %d, bytes_read = %d, remaining = %d\n",
+                          (size_t)total_len, bytes_read, remaining);
+                    ssize_t count = _serial_read(chat_buf + bytes_read,
+                                                 remaining);
+                    bytes_read += count;
+                    if (bytes_read < total_len) {
+                        DEBUG("chat: partial read, only readed %08lx bytes\n", (uint32_t)count);
+                        state = STATE_PAYLOAD;
+                    }
+                    else {
+                        DEBUG("chat: ok, all read, moving to finished\n");
+                        /* Finished reading here */
+                        state = STATE_FINISHED;
+                    }
+                }
+                continue;
 
-        /* Rest of the payload */
-        _serial_read(chat_buf, (size_t)len);
+            case STATE_FINISHED:
+                DEBUG("chat: finished\n");
+                _dump_hex(chat_buf, total_len);
+                /* Parse message */
+                if (chat_parse_msg(&chat_msg, chat_buf, (size_t)total_len) < 0) {
+                    DEBUG("chat: invalid message!\n");
+                }
+                else {
+                    chat_send_msg(&chat_msg);
+                }
+                /* Reset buffer & message */
+                memset(chat_buf, 0, sizeof(chat_buf));
+                memset(&chat_msg, 0, sizeof(chat_msg));
+                state = STATE_LENGTH;
+                continue;
 
-        /* Parse message */
-        if (chat_parse_msg(&chat_msg, chat_buf, (size_t)len) < 0) {
-            DEBUG("chat: invalid message!\n");
+            default:
+                DEBUG("wut?\n");
+                break;
         }
-
-        chat_send_msg(&chat_msg);
-
-        /* Reset buffer & message */
-        memset(chat_buf, 0, sizeof(chat_buf));
-        memset(&chat_msg, 0, sizeof(chat_msg));
     }
 
     /* Never reached */
@@ -185,6 +245,10 @@ static void *_udp_event_loop(void *arg)
 
     /* Initialize message queue */
     msg_init_queue(msg_queue, 32);
+
+    /* Register netreg */
+    gnrc_netreg_entry_init_pid(&netreg, CONFIG_CHAT_UDP_PORT, _udp_pid);
+    gnrc_netreg_register(GNRC_NETTYPE_UDP, &netreg);
 
     reply.content.value = (uint32_t)(-ENOTSUP);
     reply.type = GNRC_NETAPI_MSG_TYPE_ACK;
@@ -239,18 +303,13 @@ int chat_init(gnrc_netif_t *netif)
                   THREAD_PRIORITY_MAIN + 2, THREAD_CREATE_STACKTEST,
                   _serial_read_loop, NULL, "chat_serial_read");
 
-    kernel_pid_t udp_pid = thread_create(_udp_stack, sizeof(_udp_stack),
-                                         THREAD_PRIORITY_MAIN + 1,
-                                         THREAD_CREATE_STACKTEST,
-                                         _udp_event_loop, NULL, "chat_udp");
-    if (udp_pid < 0) {
+    _udp_pid = thread_create(_udp_stack, sizeof(_udp_stack),
+                             THREAD_PRIORITY_MAIN + 1, THREAD_CREATE_STACKTEST,
+                             _udp_event_loop, NULL, "chat_udp");
+    if (_udp_pid < 0) {
         DEBUG("chat: couldn't create chat_udp\n");
         return -1;
     }
-
-    /* Register netreg */
-    gnrc_netreg_entry_init_pid(&netreg, CONFIG_CHAT_UDP_PORT, udp_pid);
-    gnrc_netreg_register(GNRC_NETTYPE_UDP, &netreg);
 
     return 0;
 }
