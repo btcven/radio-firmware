@@ -18,6 +18,7 @@
  */
 
 #include "chat.h"
+#include "board.h"
 
 #include "net/gnrc/udp.h"
 #include "net/gnrc/netif/hdr.h"
@@ -54,6 +55,28 @@ isrpipe_t chat_serial_isrpipe = ISRPIPE_INIT(_isrpipe_buf_mem);
 
 static uint8_t _chat_buf[512];
 
+static void gpio_fade(gpio_t pin)
+{
+    volatile uint32_t i;
+    uint32_t k;
+    uint32_t j;
+    uint32_t pivot = 1600;
+    uint32_t pivot_half = pivot / 2;
+
+    for (k = 0; k < pivot; ++k) {
+        j = (k > pivot_half) ? pivot - k : k;
+
+        gpio_set(pin);
+        for(i = 0; i < j; ++i) {
+            __asm__ __volatile__ ("nop");
+        }
+        gpio_clear(pin);
+        for(i = 0; i < pivot_half - j; ++i) {
+            __asm__ __volatile__ ("nop");
+        }
+    }
+}
+
 chat_id_t chat_id_unspecified = {{ 0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
@@ -62,6 +85,30 @@ chat_id_t chat_id_unspecified = {{ 0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff,
                                    0xff, 0xff, 0xff, 0xff }};
+
+static int _find_netif_local_addr(ipv6_addr_t *addr)
+{
+    assert(addr != NULL);
+
+    ipv6_addr_t addrs[CONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF];
+
+    int numof = gnrc_netif_ipv6_addrs_get(_netif, addrs, sizeof(addrs));
+    if (numof < 0) {
+        DEBUG("aodvv2: couldn't get IPv6 addresses for iface\n");
+        return -1;
+    }
+
+    for (unsigned i = 0; i < (numof / sizeof(ipv6_addr_t)); i++) {
+        /* Pick up the first global address */
+        if (ipv6_addr_is_link_local(&addrs[i])) {
+            memcpy(addr, &addrs[i], sizeof(ipv6_addr_t));
+            return 0;
+        }
+    }
+
+    /* No address was found */
+    return -1;
+}
 
 static void _dump_hex(uint8_t *buffer, size_t len)
 {
@@ -89,6 +136,8 @@ static ssize_t _serial_read(void *buffer, size_t count)
 
 static ssize_t _serial_write(const void *buffer, size_t len)
 {
+
+    gpio_fade(LED0_PIN);
     uart_write(CONFIG_CHAT_UART_DEV, (const uint8_t *)buffer, len);
     return (ssize_t)len;
 }
@@ -97,14 +146,20 @@ void chat_send_msg(chat_msg_t *msg)
 {
     DEBUG("chat: sending message\n");
 
+    ipv6_addr_t src_addr;
+    if (_find_netif_local_addr(&src_addr) < 0) {
+        DEBUG("chat: no link local?\n");
+        return;
+    }
+
     ipv6_addr_t target_addr;
     if (chat_id_is_unspecified(&msg->to_uid)) {
-        DEBUG("chat: sending message as multicast\n");
+        DEBUG("chat: multicast\n");
         /* Send as multicast to neighbor nodes */
         target_addr = ipv6_addr_all_nodes_link_local;
     }
     else {
-        DEBUG("chat: sending message as unicast\n");
+        DEBUG("chat: unicast\n");
         /* Send a unicast message to our node with the generated global IPv6
          * address */
         chat_id_to_ipv6(&target_addr, &msg->to_uid);
@@ -112,6 +167,7 @@ void chat_send_msg(chat_msg_t *msg)
 
     uint8_t buffer[256];
     size_t length = chat_encode_msg(msg, buffer, sizeof(buffer));
+    _dump_hex(buffer, length);
 
     gnrc_pktsnip_t *payload;
     gnrc_pktsnip_t *udp;
@@ -134,7 +190,7 @@ void chat_send_msg(chat_msg_t *msg)
     }
 
     /* Build IPv6 header */
-    ip = gnrc_ipv6_hdr_build(udp, NULL, &target_addr);
+    ip = gnrc_ipv6_hdr_build(udp, &src_addr, &target_addr);
     if (ip == NULL) {
         DEBUG("chat: unable to allocate IPv6 header\n");
         gnrc_pktbuf_release(udp);
@@ -146,10 +202,12 @@ void chat_send_msg(chat_msg_t *msg)
     gnrc_netif_hdr_set_netif(netif_hdr->data, _netif);
     LL_PREPEND(ip, netif_hdr);
 
+    gpio_fade(LED1_PIN);
+
     /* Send packet */
     int res = gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP,
                                         GNRC_NETREG_DEMUX_CTX_ALL, ip);
-    if (res < 1) {
+    if (!res) {
         DEBUG("aodvv2: unable to locate UDP thread\n");
         gnrc_pktbuf_release(ip);
         return;
@@ -232,6 +290,8 @@ static void *_serial_read_loop(void *arg)
                 DEBUG("wut?\n");
                 break;
         }
+
+        gpio_fade(LED0_PIN);
     }
 
     /* Never reached */
@@ -257,6 +317,8 @@ static void *_udp_event_loop(void *arg)
 
     while (1) {
         msg_receive(&msg);
+
+        gpio_fade(LED1_PIN);
 
         switch (msg.type) {
             case GNRC_NETAPI_MSG_TYPE_RCV:

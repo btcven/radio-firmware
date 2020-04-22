@@ -148,6 +148,13 @@ int chat_parse_msg(chat_msg_t *msg, uint8_t *buffer, size_t len);
  */
 size_t chat_encode_msg(chat_msg_t *msg, uint8_t *buffer, size_t len);
 
+/**
+ * @brief   Send a message to our peers.
+ *
+ * @param[in] msg Message to send.
+ */
+void chat_send_msg(chat_msg_t *msg);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
