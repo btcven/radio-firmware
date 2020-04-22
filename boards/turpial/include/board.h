@@ -34,7 +34,6 @@ extern "C" {
 #define XTIMER_ISR_BACKOFF  (20)
 /** @} */
 
-#if MIMIC_LAUNCHPAD == 1
 /**
  * @name    On-board button configuration
  * @{
@@ -61,7 +60,6 @@ extern "C" {
 #define LED1_OFF            gpio_clear(LED1_PIN)
 #define LED1_TOGGLE         gpio_toggle(LED1_PIN)
 /** @} */
-#endif /* MIMIC_LAUNCHPAD */
 
 /**
  * @brief   Initialize board specific hardware
