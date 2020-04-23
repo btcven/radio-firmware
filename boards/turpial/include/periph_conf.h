@@ -87,18 +87,16 @@ static const uart_conf_t uart_config[] = {
 #endif
      .intn = UART0_IRQN
  },
-#if ADDITIONAL_UART == 1
  {
      .regs = UART1,
-     .tx_pin = 3,
-     .rx_pin = 2,
+     .tx_pin = 11,
+     .rx_pin = 12,
 #ifdef MODULE_PERIPH_UART_HW_FC
      .rts_pin = 0,
      .cts_pin = 0,
 #endif
      .intn = UART1_IRQN
  }
-#endif /* ADDITIONAL_UART */
 };
 #define UART_NUMOF          ARRAY_SIZE(uart_config)
 /** @} */

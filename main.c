@@ -21,6 +21,8 @@
 #include "shell_extended.h"
 #endif
 
+#include "chat.h"
+
 /**
  * @brief   Find a IEEE 802.15.4 networ interface.
  *
@@ -33,11 +35,9 @@ int main(void)
 {
     gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
 
-    if (IS_USED(MODULE_MANET)) {
-        /* Join LL-MANET-Routers multicast group */
-        if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
-            printf("Couldn't join MANET mcast group\n");
-        }
+    /* Join LL-MANET-Routers multicast group */
+    if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
+        printf("Couldn't join MANET mcast group\n");
     }
 
     /* Add global address */
@@ -54,18 +54,12 @@ int main(void)
         }
     }
 
-    if (IS_USED(MODULE_AODVV2)) {
-        /* Initialize RFC5444 */
-        if (aodvv2_init(ieee802154_netif) < 0) {
-            printf("Couldn't initialize RFC5444\n");
-        }
-    }
-
-
     /* Initialize RFC5444 */
     if (aodvv2_init(ieee802154_netif) < 0) {
         printf("Couldn't initialize RFC5444\n");
     }
+
+    chat_init(ieee802154_netif);
 
     puts("Welcome to Turpial CC1312 Radio!");
 
