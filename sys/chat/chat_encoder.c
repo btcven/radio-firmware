@@ -38,7 +38,7 @@ size_t chat_encode_msg(chat_msg_t *msg, uint8_t *buffer, size_t len)
     cbor_encode_byte_string(&map_encoder, msg->to_uid.u8, sizeof(chat_id_t));
 
     cbor_encode_text_stringz(&map_encoder, "msgID");
-    cbor_encode_byte_string(&map_encoder, msg->to_uid.u8, sizeof(chat_id_t));
+    cbor_encode_byte_string(&map_encoder, msg->msg_id.u8, sizeof(chat_id_t));
 
     cbor_encode_text_stringz(&map_encoder, "msg");
     cbor_encode_byte_string(&map_encoder, msg->msg.buf, msg->msg.len);
