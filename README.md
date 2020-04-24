@@ -84,7 +84,7 @@ git clone https://github.com/btcven/radio-firmware.git
 
 cd radio-firmware
 
-git submodule --init --recursive
+git submodule update --init --recursive
 ```
 
 Next you need to install the necessary tools to build and correctly flash
