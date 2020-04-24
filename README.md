@@ -82,7 +82,9 @@ First start by cloning the repository:
 ```bash
 git clone https://github.com/btcven/radio-firmware.git
 
-git submodule update --init --recursive
+cd radio-firmware
+
+git submodule --init --recursive
 ```
 
 Next you need to install the necessary tools to build and correctly flash
