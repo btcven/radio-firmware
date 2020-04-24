@@ -82,6 +82,8 @@ First start by cloning the repository:
 ```bash
 git clone https://github.com/btcven/radio-firmware.git
 
+cd radio-firmware
+
 git submodule update --init --recursive
 ```
 
