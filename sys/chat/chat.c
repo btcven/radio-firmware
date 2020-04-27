@@ -272,6 +272,9 @@ static void *_serial_read_loop(void *arg)
 
             case STATE_FINISHED:
                 DEBUG("chat: finished\n");
+                /* Fade LED on successful reception of data */
+                gpio_fade(LED0_PIN);
+
                 _dump_hex(_chat_buf, total_len);
                 /* Parse message */
                 if (chat_parse_msg(&chat_msg, _chat_buf, (size_t)total_len) < 0) {
@@ -283,6 +286,8 @@ static void *_serial_read_loop(void *arg)
                 /* Reset buffer & message */
                 memset(_chat_buf, 0, sizeof(_chat_buf));
                 memset(&chat_msg, 0, sizeof(chat_msg));
+                total_len = 0;
+                bytes_read = 0;
                 state = STATE_LENGTH;
                 continue;
 
@@ -290,8 +295,6 @@ static void *_serial_read_loop(void *arg)
                 DEBUG("wut?\n");
                 break;
         }
-
-        gpio_fade(LED0_PIN);
     }
 
     /* Never reached */
