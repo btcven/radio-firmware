@@ -25,7 +25,7 @@
 #include "net/aodvv2/client.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rfc5444.h"
-#include "net/aodvv2/routingtable.h"
+#include "net/aodvv2/lrs.h"
 #include "net/aodvv2/rreqtable.h"
 #include "net/manet/manet.h"
 
