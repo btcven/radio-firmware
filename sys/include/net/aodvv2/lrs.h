@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  * Copyright (C) 2014 Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ * Copyright (C) 2020 Locha Inc
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -8,17 +9,17 @@
  */
 
 /**
- * @ingroup     aodvv2
+ * @ingroup     net_aodvv2
  * @{
  *
- * @file        routingtable.h
- * @brief       Cobbled-together routing table.
+ * @brief       AODVv2 Local Route Set
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
+ * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_ROUTINGTABLE_H
-#define AODVV2_ROUTINGTABLE_H
+#ifndef AODVV2_LRS_H
+#define AODVV2_LRS_H
 
 #include <string.h>
 
@@ -154,4 +155,4 @@ void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_da
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_ROUTINGTABLE_H  */
+#endif /* AODVV2_LRS_H  */
