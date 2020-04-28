@@ -41,7 +41,6 @@ static void _pkt_del(unsigned i)
     buffered_pkt_t *entry = &_buffered_pkts[i];
     if (entry->used) {
         entry->used = false;
-        gnrc_pktbuf_release(entry->pkt);
         entry->pkt = NULL;
         entry->dst = ipv6_addr_unspecified;
     }
