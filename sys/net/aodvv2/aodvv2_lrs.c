@@ -39,9 +39,9 @@ static timex_t max_idletime;
 static timex_t validity_t;
 static timex_t now;
 
-void aodvv2_routingtable_init(void)
+void aodvv2_lrs_init(void)
 {
-    DEBUG("aodvv2_routingtable_init()\n");
+    DEBUG("aodvv2_lrs_init()\n");
 
     null_time = timex_set(0, 0);
     max_seqnum_lifetime = timex_set(CONFIG_AODVV2_MAX_SEQNUM_LIFETIME, 0);
@@ -53,19 +53,19 @@ void aodvv2_routingtable_init(void)
     memset(&routing_table, 0, sizeof(routing_table));
 }
 
-struct netaddr *aodvv2_routingtable_get_next_hop(struct netaddr *dest, routing_metric_t metricType)
+struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest, routing_metric_t metricType)
 {
-    aodvv2_local_route_t *entry = aodvv2_routingtable_get_entry(dest, metricType);
+    aodvv2_local_route_t *entry = aodvv2_lrs_get_entry(dest, metricType);
     if (!entry) {
         return NULL;
     }
     return (&entry->next_hop);
 }
 
-void aodvv2_routingtable_add_entry(aodvv2_local_route_t *entry)
+void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry)
 {
     /* only add if we don't already know the address */
-    if (aodvv2_routingtable_get_entry(&(entry->addr), entry->metricType)) {
+    if (aodvv2_lrs_get_entry(&(entry->addr), entry->metricType)) {
         return;
     }
     /*find free spot in RT and place rt_entry there */
@@ -77,7 +77,7 @@ void aodvv2_routingtable_add_entry(aodvv2_local_route_t *entry)
     }
 }
 
-aodvv2_local_route_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
+aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
                                                       routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
@@ -91,7 +91,7 @@ aodvv2_local_route_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
     return NULL;
 }
 
-void aodvv2_routingtable_delete_entry(struct netaddr *addr, routing_metric_t metricType)
+void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
@@ -161,7 +161,7 @@ static void _reset_entry_if_stale(uint8_t i)
     }
 }
 
-bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
+bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
                                             node_data_t *node_data)
 {
     /* Check if new info is stale */
@@ -180,7 +180,7 @@ bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
     return true;
 }
 
-void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
+void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
                                                  aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost)
 {
@@ -194,7 +194,7 @@ void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_da
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
-void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
+void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
                                                  aodvv2_local_route_t *rt_entry,
                                                  uint8_t link_cost)
 {
