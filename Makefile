@@ -48,4 +48,16 @@ USEMODULE += posix_inet
 
 USEMODULE += timex
 
+USEMODULE += slipdev
+
+# set slip parameters to default values if unset
+SLIP_UART     ?= "UART_NUMOF-1"
+SLIP_BAUDRATE ?= 115200
+
+# export slip parameters
+CFLAGS += -DSLIP_UART="UART_DEV($(SLIP_UART))"
+CFLAGS += -DSLIP_BAUDRATE=$(SLIP_BAUDRATE)
+
+CFLAGS += -I$(CURDIR)
+
 include $(RIOTBASE)/Makefile.include
