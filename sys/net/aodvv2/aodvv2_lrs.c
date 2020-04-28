@@ -165,7 +165,7 @@ bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
                                             node_data_t *node_data)
 {
     /* Check if new info is stale */
-    if (aodvv2_seqnum_cmp(node_data->seqnum, rt_entry->seqnum) == -1) {
+    if (aodvv2_seqnum_cmp(node_data->seqnum, rt_entry->seqnum) < 0) {
         return false;
     }
     /* Check if new info is more costly */

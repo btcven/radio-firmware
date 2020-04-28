@@ -75,11 +75,11 @@ bool aodvv2_rreqtable_is_redundant(aodvv2_packet_data_t *packet_data)
          * metric type and OrigNode and Targnode addresses, the information from
          * the one with the older Sequence Number is not needed in the table
          */
-        if (seqnum_comparison == -1) {
+        if (seqnum_comparison < 0) {
             result = true;
         }
 
-        if (seqnum_comparison == 1) {
+        if (seqnum_comparison > 0) {
             /* Update RREQ table entry with new seqnum value */
             comparable_rreq->seqnum = packet_data->orig_node.seqnum;
         }
