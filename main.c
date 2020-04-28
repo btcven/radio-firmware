@@ -59,7 +59,10 @@ int main(void)
         printf("Couldn't initialize RFC5444\n");
     }
 
+    /* Initialize chat */
+#if IS_USED(MODULE_CHAT)
     chat_init(ieee802154_netif);
+#endif
 
     puts("Welcome to Turpial CC1312 Radio!");
 
