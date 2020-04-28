@@ -28,9 +28,20 @@
 static void _reset_entry_if_stale(uint8_t i);
 
 /**
+ * @brief   Container for @ref aodvv2_local_route_t
+ *
+ * This wraps the Local Route and adds an `used` field to check if the entry is
+ * in use on the storage array.
+ */
+typedef struct {
+    aodvv2_local_route_t route; /**< Local Route */
+    bool used; /**< Is this entry used? */
+} lrs_entry_t;
+
+/**
  * @brief   Memory for the Routing Entries Set
  */
-static aodvv2_local_route_t routing_table[CONFIG_AODVV2_MAX_ROUTING_ENTRIES];
+static lrs_entry_t routing_table[CONFIG_AODVV2_MAX_ROUTING_ENTRIES];
 
 static timex_t null_time;
 static timex_t max_seqnum_lifetime;
@@ -53,7 +64,8 @@ void aodvv2_lrs_init(void)
     memset(&routing_table, 0, sizeof(routing_table));
 }
 
-struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest, routing_metric_t metricType)
+struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest,
+                                        routing_metric_t metricType)
 {
     aodvv2_local_route_t *entry = aodvv2_lrs_get_entry(dest, metricType);
     if (!entry) {
@@ -70,22 +82,22 @@ void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry)
     }
     /*find free spot in RT and place rt_entry there */
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
-        if (routing_table[i].addr._type == AF_UNSPEC) {
-            memcpy(&routing_table[i], entry, sizeof(aodvv2_local_route_t));
+        if (!routing_table[i].used) {
+            memcpy(&routing_table[i].route, entry, sizeof(aodvv2_local_route_t));
             return;
         }
     }
 }
 
 aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
-                                                      routing_metric_t metricType)
+                                           routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].addr, addr)
-            && routing_table[i].metricType == metricType) {
-            return &routing_table[i];
+        if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
+            routing_table[i].route.metricType == metricType) {
+            return &routing_table[i].route;
         }
     }
     return NULL;
@@ -96,9 +108,10 @@ void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType)
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].addr, addr)
-                && routing_table[i].metricType == metricType) {
-            memset(&routing_table[i], 0, sizeof(routing_table[i]));
+        if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
+            routing_table[i].route.metricType == metricType) {
+            memset(&routing_table[i].route, 0, sizeof(aodvv2_local_route_t));
+            routing_table[i].used = false;
             return;
         }
     }
@@ -114,13 +127,13 @@ static void _reset_entry_if_stale(uint8_t i)
     xtimer_now_timex(&now);
     timex_t last_used, expiration_time;
 
-    if (timex_cmp(routing_table[i].expiration_time, null_time) == 0) {
+    if (timex_cmp(routing_table[i].route.expiration_time, null_time) == 0) {
         return;
     }
 
-    int state = routing_table[i].state;
-    last_used = routing_table[i].last_used;
-    expiration_time = routing_table[i].expiration_time;
+    int state = routing_table[i].route.state;
+    last_used = routing_table[i].route.last_used;
+    expiration_time = routing_table[i].route.expiration_time;
 
     /* an Active route is considered to remain Active as long as it is used at least once
      * during every ACTIVE_INTERVAL. When a route is no longer Active, it becomes an Idle route. */
@@ -132,8 +145,8 @@ static void _reset_entry_if_stale(uint8_t i)
 
     if ((state == ROUTE_STATE_ACTIVE) &&
         (timex_cmp(timex_sub(now, active_interval), last_used) == 1)) {
-        routing_table[i].state = ROUTE_STATE_IDLE;
-        routing_table[i].last_used = now; /* mark the time entry was set to Idle */
+        routing_table[i].route.state = ROUTE_STATE_IDLE;
+        routing_table[i].route.last_used = now; /* mark the time entry was set to Idle */
     }
 
     /* After an idle route remains Idle for MAX_IDLETIME, it becomes an Expired route.
@@ -150,19 +163,19 @@ static void _reset_entry_if_stale(uint8_t i)
         DEBUG("\t expiration_time: %"PRIu32":%"PRIu32" , now: %"PRIu32":%"PRIu32"\n",
               expiration_time.seconds, expiration_time.microseconds,
               now.seconds, now.microseconds);
-        routing_table[i].state = ROUTE_STATE_EXPIRED;
-        routing_table[i].last_used = now; /* mark the time entry was set to Expired */
+        routing_table[i].route.state = ROUTE_STATE_EXPIRED;
+        routing_table[i].route.last_used = now; /* mark the time entry was set to Expired */
     }
 
     /* After that time, old sequence number information is considered no longer
      * valuable and the Expired route MUST BE expunged */
     if (timex_cmp(timex_sub(now, last_used), max_seqnum_lifetime) >= 0) {
-        memset(&routing_table[i], 0, sizeof(routing_table[i]));
+        memset(&routing_table[i].route, 0, sizeof(aodvv2_local_route_t));
     }
 }
 
 bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
-                                            node_data_t *node_data)
+                                   node_data_t *node_data)
 {
     /* Check if new info is stale */
     if (aodvv2_seqnum_cmp(node_data->seqnum, rt_entry->seqnum) < 0) {
@@ -181,8 +194,8 @@ bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
 }
 
 void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_local_route_t *rt_entry,
-                                                 uint8_t link_cost)
+                                        aodvv2_local_route_t *rt_entry,
+                                        uint8_t link_cost)
 {
     rt_entry->addr = packet_data->orig_node.addr;
     rt_entry->seqnum = packet_data->orig_node.seqnum;
