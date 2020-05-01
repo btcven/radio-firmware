@@ -22,7 +22,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 static void _reset_entry_if_stale(uint8_t i);
