@@ -105,7 +105,7 @@ typedef enum {
  * @brief   Data about an OrigNode or TargNode.
  */
 typedef struct {
-    struct netaddr addr; /**< IP address of the node */
+    ipv6_addr_t addr; /**< IP address of the node */
     uint8_t metric; /**< Metric value */
     aodvv2_seqnum_t seqnum; /**< Sequence Number */
 } node_data_t;
@@ -115,8 +115,8 @@ typedef struct {
  */
 typedef struct {
     uint8_t hoplimit; /**< Hop limit */
-    struct netaddr sender; /**< IP address of the neighboring router
-                                which sent the RREQ/RREP*/
+    ipv6_addr_t sender; /**< IP address of the neighboring router which sent the
+                             RREQ/RREP*/
     routing_metric_t metric_type; /**< Metric type */
     node_data_t orig_node; /**< Data about the originating node */
     node_data_t targ_node; /**< Data about the originating node */
