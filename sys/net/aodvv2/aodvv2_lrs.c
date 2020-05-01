@@ -22,7 +22,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 static void _reset_entry_if_stale(uint8_t i);
@@ -84,6 +84,7 @@ void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry)
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         if (!routing_table[i].used) {
             memcpy(&routing_table[i].route, entry, sizeof(aodvv2_local_route_t));
+            routing_table[i].used = true;
             return;
         }
     }
@@ -108,11 +109,13 @@ void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType)
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
-            routing_table[i].route.metricType == metricType) {
-            memset(&routing_table[i].route, 0, sizeof(aodvv2_local_route_t));
-            routing_table[i].used = false;
-            return;
+        if (routing_table[i].used) {
+            if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
+                routing_table[i].route.metricType == metricType) {
+                memset(&routing_table[i].route, 0, sizeof(aodvv2_local_route_t));
+                routing_table[i].used = false;
+                return;
+            }
         }
     }
 }
