@@ -39,5 +39,10 @@ void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst)
 {
     assert(src != NULL && dst != NULL);
 
-    memcpy(dst, src->_addr, sizeof(uint8_t) * NETADDR_MAX_LENGTH);
+    if (src->_type == AF_UNSPEC) {
+        memset(dst, 0, sizeof(ipv6_addr_t));
+    }
+    else {
+        memcpy(dst, src->_addr, sizeof(ipv6_addr_t));
+    }
 }
