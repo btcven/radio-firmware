@@ -1,6 +1,8 @@
 MODULE = radio_firmware_sys
 
-DIRS += chat
+ifneq (,$(filter chat,$(USEMODULE)))
+  DIRS += chat
+endif
 DIRS += shell_extended
 DIRS += net
 DIRS += oonf_api
