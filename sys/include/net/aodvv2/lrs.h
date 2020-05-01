@@ -65,7 +65,7 @@ typedef struct {
                                destination */
     timex_t last_used; /**< IP address of this route's destination */
     timex_t expiration_time; /**< Time at which this route expires */
-    routing_metric_t metricType; /**< Metric type of this route */
+    routing_metric_t metric_type; /**< Metric type of this route */
     uint8_t metric; /**< Metric value of this route*/
     uint8_t state; /**< State of this route (i.e. one of
                         aodvv2_routing_states) */
@@ -79,13 +79,13 @@ void aodvv2_lrs_init(void);
 /**
  * @brief     Get next hop towards dest.
  *
- * @param[in] dest        Destination of the packet
- * @param[in] metricType  Metric Type of the desired route
+ * @param[in] dest         Destination of the packet
+ * @param[in] metric_type  Metric Type of the desired route
  *
  * @return Next hop towards dest if it exists, NULL otherwise.
  */
 ipv6_addr_t *aodvv2_lrs_get_next_hop(ipv6_addr_t *dest,
-                                     routing_metric_t metricType);
+                                     routing_metric_t metric_type);
 
 /**
  * @brief     Add new entry to Local Route, if there is no other entry
@@ -98,22 +98,22 @@ void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry);
 /**
  * @brief     Retrieve pointer to a Local Route entry.
  *
- * @param[in] addr       The address towards which the route should point
- * @param[in] metricType Metric Type of the desired route
+ * @param[in] addr        The address towards which the route should point
+ * @param[in] metric_type Metric Type of the desired route
  *
  * @return Local Route if it exists, NULL otherwise
  */
 aodvv2_local_route_t *aodvv2_lrs_get_entry(ipv6_addr_t *addr,
-                                           routing_metric_t metricType);
+                                           routing_metric_t metric_type);
 
 /**
  * @brief     Delete Local Route entry towards addr with metric type MetricType,
  *            if it exists.
  *
  * @param[in] addr       The address towards which the route should point
- * @param[in] metricType Metric Type of the desired route
+ * @param[in] metric_type Metric Type of the desired route
  */
-void aodvv2_lrs_delete_entry(ipv6_addr_t *addr, routing_metric_t metricType);
+void aodvv2_lrs_delete_entry(ipv6_addr_t *addr, routing_metric_t metric_type);
 
 /**
  * @brief   Check if the data of a RREQ or RREP offers improvement for an

@@ -233,7 +233,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         aodvv2_lrs_get_entry(&packet_data.targ_node.addr,
                              packet_data.metric_type);
 
-    if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
+    if (!rt_entry || (rt_entry->metric_type != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
 
         aodvv2_local_route_t tmp = {0};
@@ -438,7 +438,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_lrs_get_entry(&packet_data.orig_node.addr,
                              packet_data.metric_type);
 
-    if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
+    if (!rt_entry || (rt_entry->metric_type != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
 
         aodvv2_local_route_t tmp = {0};

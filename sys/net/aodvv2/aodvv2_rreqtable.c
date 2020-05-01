@@ -116,9 +116,9 @@ static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_da
     for (unsigned i = 0; i < ARRAY_SIZE(rreq_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (ipv6_addr_equal(&rreq_table[i].origNode, &packet_data->orig_node.addr) &&
-            ipv6_addr_equal(&rreq_table[i].targNode, &packet_data->targ_node.addr) &&
-            rreq_table[i].metricType == packet_data->metric_type) {
+        if (ipv6_addr_equal(&rreq_table[i].orig_node, &packet_data->orig_node.addr) &&
+            ipv6_addr_equal(&rreq_table[i].targ_node, &packet_data->targ_node.addr) &&
+            rreq_table[i].metric_type == packet_data->metric_type) {
             return &rreq_table[i];
         }
     }
@@ -136,9 +136,9 @@ void aodvv2_rreqtable_add(aodvv2_packet_data_t *packet_data)
     for (unsigned i = 0; i < ARRAY_SIZE(rreq_table); i++) {
         if (!rreq_table[i].timestamp.seconds &&
             !rreq_table[i].timestamp.microseconds) {
-            rreq_table[i].origNode = packet_data->orig_node.addr;
-            rreq_table[i].targNode = packet_data->targ_node.addr;
-            rreq_table[i].metricType = packet_data->metric_type;
+            rreq_table[i].orig_node = packet_data->orig_node.addr;
+            rreq_table[i].targ_node = packet_data->targ_node.addr;
+            rreq_table[i].metric_type = packet_data->metric_type;
             rreq_table[i].metric = packet_data->orig_node.metric;
             rreq_table[i].seqnum = packet_data->orig_node.seqnum;
             rreq_table[i].timestamp = packet_data->timestamp;

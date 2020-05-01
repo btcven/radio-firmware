@@ -48,9 +48,9 @@ extern "C" {
  *          received in order to avoid duplicates.
  */
 typedef struct {
-    ipv6_addr_t origNode; /**< Node which originated the RREQ*/
-    ipv6_addr_t targNode; /**< Target (destination) of the RREQ */
-    routing_metric_t metricType; /**< Metric type of the RREQ */
+    ipv6_addr_t orig_node; /**< Node which originated the RREQ*/
+    ipv6_addr_t targ_node; /**< Target (destination) of the RREQ */
+    routing_metric_t metric_type; /**< Metric type of the RREQ */
     uint8_t metric; /**< Metric of the RREQ */
     aodvv2_seqnum_t seqnum; /**< Sequence number of the RREQ */
     timex_t timestamp; /**< Last time this entry was updated */
