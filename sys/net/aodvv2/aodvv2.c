@@ -34,7 +34,7 @@
 
 #include "mutex.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #if ENABLE_DEBUG == 1
@@ -510,13 +510,13 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    ipv6_addr_to_netaddr(orig_addr, &pkt.orig_node.addr);
+    pkt.orig_node.addr = *orig_addr;
     pkt.orig_node.metric = 0;
     pkt.orig_node.seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
 
     /* Set TargNode information */
-    ipv6_addr_to_netaddr(target_addr, &pkt.targ_node.addr);
+    pkt.targ_node.addr = *target_addr;
     pkt.targ_node.metric = 0;
     pkt.targ_node.seqnum = 0;
 

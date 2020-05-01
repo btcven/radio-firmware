@@ -91,18 +91,21 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
     enum rfc5444_result res;
     struct rfc5444_writer_address *orig_node_addr;
     struct rfc5444_writer_address *targ_node_addr;
+    struct netaddr tmp;
 
     /* add orig_node address (has no address tlv); is mandatory address */
+    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, &tmp);
     orig_node_addr =
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                   &_target->packet_data.orig_node.addr, true);
+                                   &tmp, true);
 
     assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
+    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, &tmp);
     targ_node_addr =
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                   &_target->packet_data.targ_node.addr, true);
+                                   &tmp, true);
 
     assert(targ_node_addr != NULL);
 
@@ -131,6 +134,7 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     enum rfc5444_result res;
     struct rfc5444_writer_address *orig_node_addr;
     struct rfc5444_writer_address *targ_node_addr;
+    struct netaddr tmp;
 
     uint16_t orig_node_seqnum = _target->packet_data.orig_node.seqnum;
     uint16_t targ_node_seqnum = aodvv2_seqnum_get();
@@ -138,16 +142,18 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     uint8_t targ_node_hopct = _target->packet_data.targ_node.metric;
 
     /* add orig_node address (has no address tlv); is mandatory address */
+    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, &tmp);
     orig_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                   &_target->packet_data.orig_node.addr, true);
+                                   &tmp, true);
 
     assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
+    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, &tmp);
     targ_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
-                                   &_target->packet_data.targ_node.addr, true);
+                                   &tmp, true);
 
     assert(targ_node_addr != NULL);
 

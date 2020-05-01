@@ -145,7 +145,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(
         DEBUG("rfc5444_reader: RFC5444_MSGTLV_TARGSEQNUM: %d\n",
               *tlv->single_value);
         is_targ_node_addr = true;
-        packet_data.targ_node.addr = cont->addr;
+        netaddr_to_ipv6_addr(&cont->addr, &packet_data.targ_node.addr);
         packet_data.targ_node.seqnum = *tlv->single_value;
     }
 
@@ -155,7 +155,7 @@ static enum rfc5444_result _cb_rrep_blocktlv_addresstlvs_okay(
         DEBUG("rfc5444_reader: RFC5444_MSGTLV_ORIGSEQNUM: %d\n",
               *tlv->single_value);
         is_targ_node_addr = false;
-        packet_data.orig_node.addr = cont->addr;
+        netaddr_to_ipv6_addr(&cont->addr, &packet_data.orig_node.addr);
         packet_data.orig_node.seqnum = *tlv->single_value;
     }
 
@@ -197,13 +197,13 @@ static enum rfc5444_result _cb_rrep_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    if ((packet_data.orig_node.addr._type == AF_UNSPEC) ||
+    if (ipv6_addr_is_unspecified(&packet_data.orig_node.addr) ||
         !packet_data.orig_node.seqnum) {
         DEBUG("rfc5444_reader: missing OrigNode Address or SeqNum!\n");
         return RFC5444_DROP_PACKET;
     }
 
-    if ((packet_data.targ_node.addr._type == AF_UNSPEC) ||
+    if (ipv6_addr_is_unspecified(&packet_data.targ_node.addr) ||
         !packet_data.targ_node.seqnum) {
         DEBUG("rfc5444_reader: missing TargNode Address or SeqNum!\n");
         return RFC5444_DROP_PACKET;
@@ -241,14 +241,11 @@ static enum rfc5444_result _cb_rrep_end_callback(
         aodvv2_lrs_add_entry(&tmp);
 
         /* Add entry to nib forwading table */
-        ipv6_addr_t dst;
-        ipv6_addr_t next_hop;
-
-        memcpy(&dst, packet_data.targ_node.addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, packet_data.sender._addr, sizeof(ipv6_addr_t));
+        ipv6_addr_t *dst = &packet_data.targ_node.addr;
+        ipv6_addr_t *next_hop = &packet_data.sender;
 
         DEBUG("rfc5444_reader: adding route to NIB FT\n");
-        if (gnrc_ipv6_nib_ft_add(&dst, AODVV2_PREFIX_LEN, &next_hop,
+        if (gnrc_ipv6_nib_ft_add(dst, AODVV2_PREFIX_LEN, next_hop,
                                  _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG("rfc5444_reader: couldn't add route!\n");
         }
@@ -265,16 +262,13 @@ static enum rfc5444_result _cb_rrep_end_callback(
         aodvv2_lrs_fill_routing_entry_rrep(&packet_data, rt_entry, link_cost);
 
         /* Add entry to nib forwading table */
-        ipv6_addr_t dst;
-        ipv6_addr_t next_hop;
+        ipv6_addr_t *dst = &rt_entry->addr;
+        ipv6_addr_t *next_hop = &rt_entry->next_hop;
 
-        memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
-
-        gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
+        gnrc_ipv6_nib_ft_del(dst, AODVV2_PREFIX_LEN);
 
         DEBUG("rfc5444_reader: adding route to NIB FT\n");
-        if (gnrc_ipv6_nib_ft_add(&dst, AODVV2_PREFIX_LEN, &next_hop,
+        if (gnrc_ipv6_nib_ft_add(dst, AODVV2_PREFIX_LEN, next_hop,
                                  _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG("rfc5444_reader: couldn't add route!\n");
         }
@@ -283,22 +277,15 @@ static enum rfc5444_result _cb_rrep_end_callback(
     /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's earlier
      * RREQ, and RREP processing is completed. Any packets buffered for
      * OrigNode should be transmitted. */
-    ipv6_addr_t tmp;
-    netaddr_to_ipv6_addr(&packet_data.orig_node.addr, &tmp);
-    if (aodvv2_client_find(&tmp)) {
+    if (aodvv2_client_find(&packet_data.orig_node.addr)) {
         DEBUG("rfc5444_reader: {%" PRIu32 ":%" PRIu32 "}\n",
               now.seconds, now.microseconds);
-        DEBUG("rfc5444_reader: %s:  this is my RREP (SeqNum: %d)\n",
-              netaddr_to_string(&nbuf, &packet_data.orig_node.addr),
+        DEBUG("rfc5444_reader: this is my RREP (SeqNum: %d)\n",
               packet_data.orig_node.seqnum);
-        DEBUG("rfc5444_reader: We are done here, thanks %s!\n",
-              netaddr_to_string(&nbuf, &packet_data.targ_node.addr));
-
-        ipv6_addr_t targ_addr;
-        netaddr_to_ipv6_addr(&packet_data.targ_node.addr, &targ_addr);
+        DEBUG("rfc5444_reader: We are done here, thanks!\n");
 
         /* Send buffered packets for this address */
-        aodvv2_buffer_dispatch(&targ_addr);
+        aodvv2_buffer_dispatch(&packet_data.targ_node.addr);
     }
     else {
         /* If HandlingRtr is not RREQ_Gen then the outgoing RREP is sent to the
@@ -306,12 +293,10 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG("rfc5444_reader: not my RREP\n");
         DEBUG("rfc5444_reader: passing it on to the next hop\n");
 
-        ipv6_addr_t next_hop;
-        struct netaddr *na_next_hop =
+        ipv6_addr_t *next_hop =
             aodvv2_lrs_get_next_hop(&packet_data.orig_node.addr,
-                                             packet_data.metric_type);
-        netaddr_to_ipv6_addr(na_next_hop, &next_hop);
-        aodvv2_send_rrep(&packet_data, &next_hop);
+                                    packet_data.metric_type);
+        aodvv2_send_rrep(&packet_data, next_hop);
     }
     return RFC5444_OKAY;
 }
@@ -349,7 +334,7 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(
               *tlv->single_value);
 
         is_orig_node_addr = true;
-        packet_data.orig_node.addr = cont->addr;
+        netaddr_to_ipv6_addr(&cont->addr, &packet_data.orig_node.addr);
         packet_data.orig_node.seqnum = *tlv->single_value;
     }
 
@@ -360,14 +345,14 @@ static enum rfc5444_result _cb_rreq_blocktlv_addresstlvs_okay(
               *tlv->single_value);
 
         is_targ_node = true;
-        packet_data.targ_node.addr = cont->addr;
+        netaddr_to_ipv6_addr(&cont->addr, &packet_data.targ_node.addr);
         packet_data.targ_node.seqnum = *tlv->single_value;
     }
 
     if (!tlv && !is_orig_node_addr) {
         /* assume that tlv missing => targ_node Address */
         is_targ_node = true;
-        packet_data.targ_node.addr = cont->addr;
+        netaddr_to_ipv6_addr(&cont->addr, &packet_data.targ_node.addr);
     }
 
     if (!is_orig_node_addr && !is_targ_node) {
@@ -409,12 +394,12 @@ static enum rfc5444_result _cb_rreq_end_callback(
         DEBUG("rfc5444_reader: dropping packet.\n");
         return RFC5444_DROP_PACKET;
     }
-    if ((packet_data.orig_node.addr._type == AF_UNSPEC) ||
+    if (ipv6_addr_is_unspecified(&packet_data.orig_node.addr) ||
         !packet_data.orig_node.seqnum) {
         DEBUG("rfc5444_reader: missing OrigNode Address or SeqNum!\n");
         return RFC5444_DROP_PACKET;
     }
-    if (packet_data.targ_node.addr._type == AF_UNSPEC) {
+    if (ipv6_addr_is_unspecified(&packet_data.targ_node.addr)) {
         DEBUG("rfc5444_reader: missing TargNode Address!\n");
         return RFC5444_DROP_PACKET;
     }
@@ -463,14 +448,11 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_lrs_add_entry(&tmp);
 
         /* Add entry to nib forwading table */
-        ipv6_addr_t dst;
-        ipv6_addr_t next_hop;
-
-        memcpy(&dst, packet_data.orig_node.addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, packet_data.sender._addr, sizeof(ipv6_addr_t));
+        ipv6_addr_t *dst = &packet_data.orig_node.addr;
+        ipv6_addr_t *next_hop = &packet_data.sender;
 
         DEBUG("rfc5444_reader: adding route to NIB FT\n");
-        if (gnrc_ipv6_nib_ft_add(&dst, AODVV2_PREFIX_LEN, &next_hop,
+        if (gnrc_ipv6_nib_ft_add(dst, AODVV2_PREFIX_LEN, next_hop,
                                  _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG("rfc5444_reader: couldn't add route!\n");
         }
@@ -489,16 +471,13 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_lrs_fill_routing_entry_rreq(&packet_data, rt_entry, link_cost);
 
         /* Add entry to nib forwading table */
-        ipv6_addr_t dst;
-        ipv6_addr_t next_hop;
+        ipv6_addr_t *dst = &rt_entry->addr;
+        ipv6_addr_t *next_hop = &rt_entry->next_hop;
 
-        memcpy(&dst, rt_entry->addr._addr, sizeof(ipv6_addr_t));
-        memcpy(&next_hop, rt_entry->next_hop._addr, sizeof(ipv6_addr_t));
-
-        gnrc_ipv6_nib_ft_del(&dst, AODVV2_PREFIX_LEN);
+        gnrc_ipv6_nib_ft_del(dst, AODVV2_PREFIX_LEN);
 
         DEBUG("rfc5444_reader: adding route to NIB FT\n");
-        if (gnrc_ipv6_nib_ft_add(&dst, AODVV2_PREFIX_LEN, &next_hop,
+        if (gnrc_ipv6_nib_ft_add(dst, AODVV2_PREFIX_LEN, next_hop,
                                  _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG("rfc5444_reader: couldn't add route!\n");
         }
@@ -509,17 +488,13 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * subsequently processing for the RREQ is complete.  Otherwise,
      * processing continues as follows.
      */
-    ipv6_addr_t tmp;
-    netaddr_to_ipv6_addr(&packet_data.targ_node.addr, &tmp);
-    if (aodvv2_client_find(&tmp)) {
+    if (aodvv2_client_find(&packet_data.targ_node.addr)) {
         DEBUG("rfc5444_reader: targ_node is in client list, sending RREP\n");
 
         /* Make sure to start with a clean metric value */
         packet_data.targ_node.metric = 0;
 
-        ipv6_addr_t sender;
-        netaddr_to_ipv6_addr(&packet_data.sender, &sender);
-        aodvv2_send_rrep(&packet_data, &sender);
+        aodvv2_send_rrep(&packet_data, &packet_data.sender);
     }
     else {
         DEBUG("rfc5444_reader: i'm not targ_node, forwarding RREQ\n");
@@ -557,5 +532,5 @@ void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender)
 {
     assert(sender != NULL);
 
-    ipv6_addr_to_netaddr(sender, &packet_data.sender);
+    packet_data.sender = *sender;
 }
