@@ -50,18 +50,23 @@ void aodvv2_seqnum_inc(void);
 aodvv2_seqnum_t aodvv2_seqnum_get(void);
 
 /**
- * @brief   Compare 2 sequence numbers.
+ * @brief   Compare sequence numbers
  *
- * @param[in] s1 First sequence number
- * @param[in] s2 Second sequence number
+ * @see <a href="https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-4.4">
+ *          draft-perkins-manet-aodvv2-03, Section 4.4. Sequence Numbers
+ *      </a>
  *
- * @return -1, s1 is smaller.
- * @return  0, s1 and s2 are equal.
- * @return  1, s1 is bigger.
+ * @param[in] existing Known sequence number.
+ * @param[in] received Newly received sequence number.
+ *
+ * @return <0 Received sequence number is older.
+ * @return >0 Received sequence number is newer.
+ * @return 0  Existing sequence number is equal to the received.
  */
-static inline int aodvv2_seqnum_cmp(aodvv2_seqnum_t s1, aodvv2_seqnum_t s2)
+static inline int16_t aodvv2_seqnum_cmp(aodvv2_seqnum_t existing,
+                                        aodvv2_seqnum_t received)
 {
-    return s1 == s2 ? 0 : (s1 > s2 ? +1 : -1);
+    return (int16_t)((int32_t)received - (int32_t)existing);
 }
 
 #ifdef __cplusplus

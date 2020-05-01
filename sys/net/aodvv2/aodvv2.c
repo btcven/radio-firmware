@@ -378,7 +378,7 @@ int aodvv2_init(gnrc_netif_t *netif)
 
     /* Initialize AODVv2 internal structures */
     aodvv2_seqnum_init();
-    aodvv2_routingtable_init();
+    aodvv2_lrs_init();
     aodvv2_client_init();
     aodvv2_rreqtable_init();
     aodvv2_buffer_init();

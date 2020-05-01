@@ -57,7 +57,7 @@ enum aodvv2_routing_state {
 };
 
 /**
- * @brief   All fields of a routing table entry
+ * @brief   All fields of a Local Route entry
  */
 typedef struct {
     struct netaddr addr; /**< IP address of this route's destination */
@@ -74,82 +74,82 @@ typedef struct {
 } aodvv2_local_route_t;
 
 /**
- * @brief     Initialize routing table.
+ * @brief     Initialize Local Route Set.
  */
-void aodvv2_routingtable_init(void);
+void aodvv2_lrs_init(void);
 
 /**
  * @brief     Get next hop towards dest.
- *            Returns NULL if dest is not in routing table.
  *
  * @param[in] dest        Destination of the packet
  * @param[in] metricType  Metric Type of the desired route
- * @return                next hop towards dest if it exists, NULL otherwise
+ *
+ * @return Next hop towards dest if it exists, NULL otherwise.
  */
-struct netaddr *aodvv2_routingtable_get_next_hop(struct netaddr *dest,
+struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest,
                                                  routing_metric_t metricType);
 
 /**
- * @brief     Add new entry to routing table, if there is no other entry
+ * @brief     Add new entry to Local Route, if there is no other entry
  *            to the same destination.
  *
- * @param[in] entry        The routing table entry to add
+ * @param[in] entry The Local Route to add.
  */
-void aodvv2_routingtable_add_entry(aodvv2_local_route_t *entry);
+void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry);
 
 /**
- * @brief     Retrieve pointer to a routing table entry.
- *            To edit, simply follow the pointer.
- *            Returns NULL if addr is not in routing table.
+ * @brief     Retrieve pointer to a Local Route entry.
  *
  * @param[in] addr          The address towards which the route should point
  * @param[in] metricType    Metric Type of the desired route
- * @return                  Routing table entry if it exists, NULL otherwise
+ *
+ * @return Local Route if it exists, NULL otherwise
  */
-aodvv2_local_route_t *aodvv2_routingtable_get_entry(struct netaddr *addr,
-                                                      routing_metric_t metricType);
+aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
+                                           routing_metric_t metricType);
 
 /**
- * @brief     Delete routing table entry towards addr with metric type MetricType,
+ * @brief     Delete Local Route entry towards addr with metric type MetricType,
  *            if it exists.
  *
- * @param[in] addr          The address towards which the route should point
- * @param[in] metricType    Metric Type of the desired route
+ * @param[in] addr       The address towards which the route should point
+ * @param[in] metricType Metric Type of the desired route
  */
-void aodvv2_routingtable_delete_entry(struct netaddr *addr, routing_metric_t metricType);
+void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType);
 
 /**
- * Check if the data of a RREQ or RREP offers improvement for an existing routing
- * table entry.
- * @param rt_entry            the routing table entry to check
- * @param node_data           The data to check against. When handling a RREQ,
- *                            the OrigNode's information (i.e. packet_data.origNode)
- *                            must be passed. When handling a RREP, the
- *                            TargNode's data (i.e. packet_data.targNode) must
- *                            be passed.
+ * @brief   Check if the data of a RREQ or RREP offers improvement for an
+ *          existing Local Route entry.
+ *
+ * @param[in] rt_entry  The Local Route to check.
+ * @param[in] node_data The data to check against.
+ *
+ * @return true if offers improvement, false otherwise.
  */
-bool aodvv2_routingtable_offers_improvement(aodvv2_local_route_t *rt_entry,
-                                            node_data_t *node_data);
+bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
+                                   node_data_t *node_data);
 
 /**
- * Fills a routing table entry with the data of a RREQ.
- * @param packet_data         the RREQ's data
- * @param rt_entry            the routing table entry to fill
- * @param link_cost           the link cost for this RREQ
+ * @brief   Fills a Local Route entry with the data of a RREQ.
+ *
+ * @param[in]  packet_data The RREQ's data
+ * @param[out] rt_entry    The Local Route entry to fill
+ * @param[in]  link_cost   The link cost for this RREQ
  */
-void aodvv2_routingtable_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_local_route_t *rt_entry,
-                                                 uint8_t link_cost);
+void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
+                                        aodvv2_local_route_t *rt_entry,
+                                        uint8_t link_cost);
 
 /**
- * Fills a routing table entry with the data of a RREP.
- * @param packet_data         the RREP's data
- * @param rt_entry            the routing table entry to fill
- * @param link_cost           the link cost for this RREP
+ * @brief   Fills a Local Route entry with the data of a RREP.
+ *
+ * @param[in]  packet_data The RREP's data
+ * @param[out] rt_entry    The Local Route entry to fill
+ * @param[in]  link_cost   The link cost for this RREP
  */
-void aodvv2_routingtable_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_local_route_t *rt_entry,
-                                                 uint8_t link_cost);
+void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
+                                        aodvv2_local_route_t *rt_entry,
+                                        uint8_t link_cost);
 
 #ifdef __cplusplus
 } /* extern "C" */

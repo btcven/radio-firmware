@@ -230,17 +230,15 @@ static enum rfc5444_result _cb_rrep_end_callback(
     same MetricType of the RteMsg, matching RteMsg.Addr. */
 
     aodvv2_local_route_t *rt_entry =
-        aodvv2_routingtable_get_entry(&packet_data.targ_node.addr,
-                                      packet_data.metric_type);
+        aodvv2_lrs_get_entry(&packet_data.targ_node.addr,
+                             packet_data.metric_type);
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
 
         aodvv2_local_route_t tmp = {0};
-        aodvv2_routingtable_fill_routing_entry_rrep(&packet_data,
-                                                    &tmp,
-                                                    link_cost);
-        aodvv2_routingtable_add_entry(&tmp);
+        aodvv2_lrs_fill_routing_entry_rrep(&packet_data, &tmp, link_cost);
+        aodvv2_lrs_add_entry(&tmp);
 
         /* Add entry to nib forwading table */
         ipv6_addr_t dst;
@@ -256,8 +254,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         }
     }
     else {
-        if (!aodvv2_routingtable_offers_improvement(rt_entry,
-                                                    &packet_data.targ_node)) {
+        if (!aodvv2_lrs_offers_improvement(rt_entry, &packet_data.targ_node)) {
             DEBUG("rfc5444_reader: RREP offers no improvement over known route.\n");
             return RFC5444_DROP_PACKET;
         }
@@ -265,9 +262,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         /* The incoming routing information is better than existing routing
          * table information and SHOULD be used to improve the route table. */
         DEBUG("rfc5444_reader: updating Routing Table entry...\n");
-        aodvv2_routingtable_fill_routing_entry_rrep(&packet_data,
-                                                    rt_entry,
-                                                    link_cost);
+        aodvv2_lrs_fill_routing_entry_rrep(&packet_data, rt_entry, link_cost);
 
         /* Add entry to nib forwading table */
         ipv6_addr_t dst;
@@ -313,7 +308,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
         ipv6_addr_t next_hop;
         struct netaddr *na_next_hop =
-            aodvv2_routingtable_get_next_hop(&packet_data.orig_node.addr,
+            aodvv2_lrs_get_next_hop(&packet_data.orig_node.addr,
                                              packet_data.metric_type);
         netaddr_to_ipv6_addr(na_next_hop, &next_hop);
         aodvv2_send_rrep(&packet_data, &next_hop);
@@ -455,8 +450,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * same MetricType of the RteMsg, matching RteMsg.Addr.
      */
     aodvv2_local_route_t *rt_entry =
-        aodvv2_routingtable_get_entry(&packet_data.orig_node.addr,
-                                      packet_data.metric_type);
+        aodvv2_lrs_get_entry(&packet_data.orig_node.addr,
+                             packet_data.metric_type);
 
     if (!rt_entry || (rt_entry->metricType != packet_data.metric_type)) {
         DEBUG("rfc5444_reader: creating new Routing Table entry...\n");
@@ -464,8 +459,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_local_route_t tmp = {0};
 
         /* Add this RREQ to routing table*/
-        aodvv2_routingtable_fill_routing_entry_rreq(&packet_data, &tmp, link_cost);
-        aodvv2_routingtable_add_entry(&tmp);
+        aodvv2_lrs_fill_routing_entry_rreq(&packet_data, &tmp, link_cost);
+        aodvv2_lrs_add_entry(&tmp);
 
         /* Add entry to nib forwading table */
         ipv6_addr_t dst;
@@ -483,8 +478,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
     else {
         /* If the route is aready stored verify if this route offers an
          * improvement in path*/
-        if (!aodvv2_routingtable_offers_improvement(rt_entry,
-                                                    &packet_data.orig_node)) {
+        if (!aodvv2_lrs_offers_improvement(rt_entry, &packet_data.orig_node)) {
             DEBUG("rfc5444_reader: packet offers no improvement over known route.\n");
             return RFC5444_DROP_PACKET;
         }
@@ -492,8 +486,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         /* The incoming routing information is better than existing routing
          * table information and SHOULD be used to improve the route table. */
         DEBUG("rfc5444_reader: updating Routing Table entry...\n");
-        aodvv2_routingtable_fill_routing_entry_rreq(&packet_data, rt_entry,
-                                                    link_cost);
+        aodvv2_lrs_fill_routing_entry_rreq(&packet_data, rt_entry, link_cost);
 
         /* Add entry to nib forwading table */
         ipv6_addr_t dst;
