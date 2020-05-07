@@ -22,16 +22,18 @@
 #endif
 
 /**
- * @brief   Find a IEEE 802.15.4 networ interface.
+ * @brief   Find a network interface.
  *
- * @return  The gnrc_netif_t network interface.
- * @retval  NULL if no interface was found.
+ * @param[in] nettype The network type of the interface to find.
+ *
+ * @return The gnrc_netif_t network interface.
+ * @retval NULL if no interface was found.
  */
-static gnrc_netif_t *_find_ieee802154_netif(void);
+static gnrc_netif_t *_find_netif(uint16_t nettype);
 
 int main(void)
 {
-    gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
+    gnrc_netif_t *ieee802154_netif = _find_netif(NETDEV_TYPE_IEEE802154);
 
     /* Join LL-MANET-Routers multicast group */
     if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
@@ -71,7 +73,7 @@ int main(void)
     return 0;
 }
 
-static gnrc_netif_t *_find_ieee802154_netif(void)
+static gnrc_netif_t *_find_netif(uint16_t nettype)
 {
     static uint16_t device_type = 0;
 
@@ -82,16 +84,13 @@ static gnrc_netif_t *_find_ieee802154_netif(void)
         .data_len = sizeof(uint16_t),
     };
 
-    /* Iterate over network interfaces and find one that's IEEE 802.15.4, for
-     * the CC1312 there is only one interface, but we need to be sure it was
-     * initialized. Also well be using other interface; probably SLIP over UART
-     * so we need to be sure it's IEEE 802.15.4 */
+    /* Iterate over network interfaces and find one that matches */
     gnrc_netif_t *netif = NULL;
     for (netif = gnrc_netif_iter(netif);
          netif != NULL;
          netif = gnrc_netif_iter(netif)) {
         if (gnrc_netif_get_from_netdev(netif, &opt) == sizeof(uint16_t)) {
-            if (device_type == NETDEV_TYPE_IEEE802154) {
+            if (device_type == nettype) {
                 return netif;
             }
         }
