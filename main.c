@@ -17,6 +17,10 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/manet/manet.h"
 
+#if IS_USED(MODULE_VAINA)
+#include "net/vaina.h"
+#endif
+
 #if IS_USED(MODULE_SHELL_EXTENDED)
 #include "shell_extended.h"
 #endif
@@ -58,6 +62,18 @@ int main(void)
     if (aodvv2_init(ieee802154_netif) < 0) {
         printf("Couldn't initialize RFC5444\n");
     }
+
+#if IS_USED(MODULE_VAINA)
+    gnrc_netif_t *slipdev_netif = _find_netif(NETDEV_TYPE_SLIP);
+    if (slipdev_netif == NULL) {
+        printf("VAINA needs a wired interface (SLIP) to work!");
+    }
+    else {
+        if (vaina_init(slipdev_netif) < 0) {
+            printf("Couldn't initialize VAINA\n");
+        }
+    }
+#endif
 
     puts("Welcome to Turpial CC1312 Radio!");
 

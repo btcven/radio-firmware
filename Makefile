@@ -42,6 +42,8 @@ USEMODULE += ps
 USEMODULE += netstats_l2
 USEMODULE += netstats_ipv6
 
+USEMODULE += vaina
+
 USEMODULE += posix_inet
 
 USEMODULE += timex
