@@ -53,10 +53,12 @@ USEMODULE += slipdev
 # set slip parameters to default values if unset
 SLIP_UART     ?= "UART_NUMOF-1"
 SLIP_BAUDRATE ?= 115200
+SLIP_LOCAL_ADDR ?= "\"fe80::dead:beef:cafe:babe\""
 
 # export slip parameters
 CFLAGS += -DSLIP_UART="UART_DEV($(SLIP_UART))"
 CFLAGS += -DSLIP_BAUDRATE=$(SLIP_BAUDRATE)
+CFLAGS += -DSLIP_LOCAL_ADDR=$(SLIP_LOCAL_ADDR)
 
 CFLAGS += -I$(CURDIR)
 

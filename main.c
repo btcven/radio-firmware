@@ -66,9 +66,18 @@ int main(void)
 #if IS_USED(MODULE_VAINA)
     gnrc_netif_t *slipdev_netif = _find_netif(NETDEV_TYPE_SLIP);
     if (slipdev_netif == NULL) {
-        printf("VAINA needs a wired interface (SLIP) to work!");
+        printf("VAINA needs a wired interface (SLIP) to work!\n");
     }
     else {
+        ipv6_addr_t addr;
+        if (ipv6_addr_from_str(&addr, SLIP_LOCAL_ADDR) == NULL) {
+            printf("Malformed SLIP local address, please verify it!\n");
+        }
+
+        if (gnrc_netif_ipv6_addr_add(slipdev_netif, &addr, 128, 0) != sizeof(ipv6_addr_t)) {
+            printf("Couldn't setup SLIP local address\n");
+        }
+
         if (vaina_init(slipdev_netif) < 0) {
             printf("Couldn't initialize VAINA\n");
         }
