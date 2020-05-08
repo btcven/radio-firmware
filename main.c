@@ -21,8 +21,6 @@
 #include "shell_extended.h"
 #endif
 
-#include "chat.h"
-
 /**
  * @brief   Find a IEEE 802.15.4 networ interface.
  *
@@ -58,11 +56,6 @@ int main(void)
     if (aodvv2_init(ieee802154_netif) < 0) {
         printf("Couldn't initialize RFC5444\n");
     }
-
-    /* Initialize chat */
-#if IS_USED(MODULE_CHAT)
-    chat_init(ieee802154_netif);
-#endif
 
     puts("Welcome to Turpial CC1312 Radio!");
 
