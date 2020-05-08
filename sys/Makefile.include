@@ -1,0 +1,2 @@
+INCLUDES += -I$(APPBASE)/sys/include
+INCLUDES += -I$(APPBASE)/sys/oonf_api
