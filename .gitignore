@@ -13,3 +13,4 @@ targetConfigs/
 setenv
 .DS_Store
 bin/
+dist/tools/vaina/target
