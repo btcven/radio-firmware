@@ -14,4 +14,11 @@ config VAINA_PORT
     help
         Port used for the VAINA UDP server
 
+config VAINA_MCAST_ADDR
+    string "VAINA multicast address"
+    default "ff15::42"
+    help
+        Multicast address used for the VAINA server. This is where VAINA will
+        listen to messages (that are sent to the correct configured port).
+
 endif

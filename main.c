@@ -25,6 +25,13 @@
 #include "shell_extended.h"
 #endif
 
+#ifndef CONFIG_SLIP_LOCAL_ADDR
+/**
+ * @brief   SLIP link local address
+ */
+#define CONFIG_SLIP_LOCAL_ADDR "fe80::dead:beef:cafe:babe"
+#endif
+
 /**
  * @brief   Find a network interface.
  *
@@ -65,12 +72,13 @@ int main(void)
 
 #if IS_USED(MODULE_VAINA)
     gnrc_netif_t *slipdev_netif = _find_netif(NETDEV_TYPE_SLIP);
+    printf("found SLIP netif %d\n", slipdev_netif->pid);
     if (slipdev_netif == NULL) {
         printf("VAINA needs a wired interface (SLIP) to work!\n");
     }
     else {
         ipv6_addr_t addr;
-        if (ipv6_addr_from_str(&addr, SLIP_LOCAL_ADDR) == NULL) {
+        if (ipv6_addr_from_str(&addr, CONFIG_SLIP_LOCAL_ADDR) == NULL) {
             printf("Malformed SLIP local address, please verify it!\n");
         }
 

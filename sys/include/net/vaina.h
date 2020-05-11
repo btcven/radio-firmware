@@ -33,6 +33,13 @@ extern "C" {
 #define CONFIG_VAINA_PORT (1337)
 #endif
 
+#ifndef CONFIG_VAINA_MCAST_ADDR
+/**
+ * @brief   VAINA multicast address
+ */
+#define CONFIG_VAINA_MCAST_ADDR "ff15::42"
+#endif
+
 /**
  * @enum   VAINA message types
  */

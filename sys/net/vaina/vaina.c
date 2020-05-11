@@ -30,7 +30,7 @@
 #include "debug.h"
 
 #if ENABLE_DEBUG == 1
-static char _stack[THREAD_STACKSIZE_DEAFULT + THREAD_EXTRA_STACKSIZE_PRINTF];
+static char _stack[THREAD_STACKSIZE_DEFAULT + THREAD_EXTRA_STACKSIZE_PRINTF];
 #else
 static char _stack[THREAD_STACKSIZE_DEFAULT];
 #endif
@@ -39,6 +39,16 @@ static char _stack[THREAD_STACKSIZE_DEFAULT];
  * @brief   UDP socket
  */
 static sock_udp_t _sock;
+
+/**
+ * @brief   GNRC netif
+ */
+static gnrc_netif_t *_netif;
+
+/**
+ * @brief   UDP local endpoint
+ */
+static sock_udp_ep_t _local;
 
 static int _parse_msg(vaina_msg_t *vaina, uint8_t *buf, size_t len)
 {
@@ -62,10 +72,10 @@ static int _parse_msg(vaina_msg_t *vaina, uint8_t *buf, size_t len)
             vaina->msg = type;
             vaina->seqno = seqno;
             if (vaina->msg == VAINA_MSG_RCS_ADD) {
-                memcpy(&vaina->payload.add.ip, &buf[1], sizeof(ipv6_addr_t));
+                memcpy(&vaina->payload.rcs_add.ip, &buf[2], sizeof(ipv6_addr_t));
             }
             else {
-                memcpy(&vaina->payload.del.ip, &buf[1], sizeof(ipv6_addr_t));
+                memcpy(&vaina->payload.rcs_del.ip, &buf[2], sizeof(ipv6_addr_t));
             }
             break;
 #endif
@@ -100,7 +110,8 @@ static int _process_msg(vaina_msg_t *msg)
     switch (msg->msg) {
 #if IS_USED(MODULE_AODVV2)
         case VAINA_MSG_RCS_ADD:
-            if (aodvv2_client_add(&msg->payload.add.ip, 128, 1) == NULL) {
+            DEBUG_PUTS("vaina: adding new client");
+            if (aodvv2_client_add(&msg->payload.rcs_add.ip, 128, 1) == NULL) {
                 DEBUG_PUTS("vaina: client set is full");
                 return -ENOSPC;
             }
@@ -134,6 +145,7 @@ static int _process_msg(vaina_msg_t *msg)
 
 static int _send_ack(vaina_msg_t *msg, sock_udp_ep_t *remote, bool good_ack)
 {
+    DEBUG("vaina: sending %s\n", good_ack ? "ack" : "nack");
     uint8_t buf[2];
     if (good_ack) {
         buf[0] = VAINA_MSG_ACK;
@@ -156,6 +168,16 @@ static void *_vaina_thread(void *arg)
     while (true) {
         int received = sock_udp_recv(&_sock, buf, sizeof(buf), SOCK_NO_TIMEOUT,
                                      &remote);
+
+        DEBUG("vaina: received new packet\n");
+
+        /* TODO: why remote.netif is equal to 0 when sending a receiving a
+         * packet from SLIP
+         */
+        if (remote.netif != _netif->pid && remote.netif != 0) {
+            DEBUG("vaina: not from our netif: %d\n", remote.netif);
+            continue;
+        }
 
         if (received < 0) {
             DEBUG_PUTS("vaina: couldn't receive packet");
@@ -191,16 +213,27 @@ int vaina_init(gnrc_netif_t *netif)
 {
     assert(netif != NULL);
 
-    sock_udp_ep_t local = {
-        .family = AF_INET6,
-        .addr = IPV6_ADDR_ALL_NODES_IF_LOCAL,
-        .netif = netif->pid,
-        .port = CONFIG_VAINA_PORT,
-    };
-    if (sock_udp_create(&_sock, &local, NULL, 0) < 0) {
+    ipv6_addr_t group;
+    if (ipv6_addr_from_str(&group, CONFIG_VAINA_MCAST_ADDR) == NULL) {
+        DEBUG_PUTS("vaina: invalid IPv6 group address");
+        return -EINVAL;
+    }
+
+    if (gnrc_netif_ipv6_group_join(netif, &group) < 0) {
+        DEBUG_PUTS("vaina: coudln't joint VAINA IPv6 group");
+        return -1;
+    }
+
+    _local.family = AF_INET6;
+    memcpy(&_local.addr, &group, sizeof(ipv6_addr_t));
+    _local.netif = netif->pid;
+    _local.port = CONFIG_VAINA_PORT;
+    if (sock_udp_create(&_sock, &_local, NULL, 0) < 0) {
         DEBUG_PUTS("vaina: couldn't create UDP socket");
         return -1;
     }
+
+    _netif = netif;
 
     return thread_create(_stack, sizeof(_stack), THREAD_PRIORITY_MAIN + 2,
                          THREAD_CREATE_STACKTEST, _vaina_thread, NULL, "vaina");
