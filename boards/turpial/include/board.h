@@ -35,30 +35,12 @@ extern "C" {
 /** @} */
 
 /**
- * @name    On-board button configuration
+ * @name    Front-End configuration
  * @{
  */
-#define BTN0_PIN            GPIO_PIN(0, 13)
-#define BTN0_MODE           GPIO_IN_PU
-
-#define BTN1_PIN            GPIO_PIN(0, 14)
-#define BTN1_MODE           GPIO_IN_PU
-/** @} */
-
-/**
- * @brief   On-board LED configuration and controlling
- * @{
- */
-#define LED0_PIN            GPIO_PIN(0, 6)          /**< red   */
-#define LED1_PIN            GPIO_PIN(0, 7)          /**< green */
-
-#define LED0_ON             gpio_set(LED0_PIN)
-#define LED0_OFF            gpio_clear(LED0_PIN)
-#define LED0_TOGGLE         gpio_toggle(LED0_PIN)
-
-#define LED1_ON             gpio_set(LED1_PIN)
-#define LED1_OFF            gpio_clear(LED1_PIN)
-#define LED1_TOGGLE         gpio_toggle(LED1_PIN)
+#define RF_PA_EN_PIN        GPIO_PIN(0, 28)
+#define RF_LNA_EN_PIN       GPIO_PIN(0, 29)
+#define RF_HGM_PIN          GPIO_PIN(0, 30)
 /** @} */
 
 /**
