@@ -10,11 +10,11 @@ SUDO=${SUDO:-sudo}
 
 unsupported_platform() {
     echo "unsupported platform" >&2
-    echo "(currently supported \`uname -s\` 'Darvin' and 'Linux')" >&2
+    echo "(currently supported \`uname -s\` 'Darwin' and 'Linux')" >&2
 }
 
 case "$(uname -s)" in
-    Darvin)
+    Darwin)
         PLATFORM="OSX";;
     Linux)
         PLATFORM="Linux";;
