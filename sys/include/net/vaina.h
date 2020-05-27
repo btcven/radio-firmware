@@ -13,7 +13,7 @@
  * @file
  * @brief       VAINA - Versatile Address Interface | Network Administration
  *
- * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
+ * @author      Locha Mesh developers <developers@locha.io>
  * @}
  */
 
