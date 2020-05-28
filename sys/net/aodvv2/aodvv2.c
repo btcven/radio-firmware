@@ -387,12 +387,12 @@ int aodvv2_init(gnrc_netif_t *netif)
     ipv6_addr_t netif_addr;
     if (_find_netif_global_addr(&netif_addr) < 0) {
         DEBUG("aodvv2: no global address found\n");
-        return -1;
     }
-
-    /* Every node is it's own cllient */
-    aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
-                      CONFIG_AODVV2_DEFAULT_METRIC);
+    else {
+        /* Every node is it's own cllient */
+        aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
+                          CONFIG_AODVV2_DEFAULT_METRIC);
+    }
 
     /* Register netreg */
     gnrc_netreg_entry_init_pid(&netreg, UDP_MANET_PORT, _pid);
