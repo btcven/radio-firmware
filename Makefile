@@ -3,9 +3,7 @@ APPLICATION = radio-firmware
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= turpial
-ifeq ($(BOARD),turpial)
-  BOARDSDIR ?= $(CURDIR)/boards
-endif
+EXTERNAL_BOARD_DIRS ?= $(CURDIR)/boards
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/RIOT
@@ -42,20 +40,45 @@ USEMODULE += ps
 USEMODULE += netstats_l2
 USEMODULE += netstats_ipv6
 
+USEMODULE += vaina
+
 USEMODULE += posix_inet
 
 USEMODULE += timex
 
 USEMODULE += slipdev
+USEMODULE += slipdev_stdio
 
 # set slip parameters to default values if unset
-SLIP_UART     ?= "UART_NUMOF-1"
+ifeq ($(BOARD),cc2538dk)
+  SLIP_UART     ?= "UART_NUMOF-1"
+else
+  SLIP_UART     ?= "0"
+endif
 SLIP_BAUDRATE ?= 115200
 
 # export slip parameters
 CFLAGS += -DSLIP_UART="UART_DEV($(SLIP_UART))"
 CFLAGS += -DSLIP_BAUDRATE=$(SLIP_BAUDRATE)
 
+# Enable SLAAC
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_SLAAC=1
+
 CFLAGS += -I$(CURDIR)
+
+.PHONY: host-tools
+
+host-tools:
+	$(Q)env -u CC -u CFLAGS make -C $(RIOTTOOLS)
+
+sliptty:
+	$(Q)env -u CC -u CFLAGS make -C $(RIOTTOOLS)/sliptty
+
+IPV6_PREFIX = 2001:db8::/64
+
+# Configure terminal parameters
+TERMDEPS += host-tools
+TERMPROG ?= sudo sh $(CURDIR)/dist/tools/vaina/start_network.sh
+TERMFLAGS ?= $(FLAGS_EXTRAS) $(IPV6_PREFIX) $(PORT) $(SLIP_BAUDRATE)
 
 include $(RIOTBASE)/Makefile.include

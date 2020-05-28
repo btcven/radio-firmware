@@ -8,7 +8,11 @@ ifneq (,$(filter oonf_rfc5444,$(USEMODULE)))
   USEMODULE += oonf_common
 endif
 
+ifneq (,$(filter vaina,$(USEMODULE)))
+  USEMODULE += gnrc_sock
+  USEMODULE += gnrc_sock_udp
+endif
+
 ifneq (,$(filter manet,$(USEMODULE)))
   USEMODULE += radio_firmware_net
 endif
-

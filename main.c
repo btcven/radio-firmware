@@ -17,21 +17,34 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/manet/manet.h"
 
+#if IS_USED(MODULE_VAINA)
+#include "net/vaina.h"
+#endif
+
 #if IS_USED(MODULE_SHELL_EXTENDED)
 #include "shell_extended.h"
 #endif
 
+#ifndef CONFIG_SLIP_LOCAL_ADDR
 /**
- * @brief   Find a IEEE 802.15.4 networ interface.
- *
- * @return  The gnrc_netif_t network interface.
- * @retval  NULL if no interface was found.
+ * @brief   SLIP link local address
  */
-static gnrc_netif_t *_find_ieee802154_netif(void);
+#define CONFIG_SLIP_LOCAL_ADDR "fe80::dead:beef:cafe:babe"
+#endif
+
+/**
+ * @brief   Find a network interface.
+ *
+ * @param[in] nettype The network type of the interface to find.
+ *
+ * @return The gnrc_netif_t network interface.
+ * @retval NULL if no interface was found.
+ */
+static gnrc_netif_t *_find_netif(uint16_t nettype);
 
 int main(void)
 {
-    gnrc_netif_t *ieee802154_netif = _find_ieee802154_netif();
+    gnrc_netif_t *ieee802154_netif = _find_netif(NETDEV_TYPE_IEEE802154);
 
     /* Join LL-MANET-Routers multicast group */
     if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
@@ -57,6 +70,28 @@ int main(void)
         printf("Couldn't initialize RFC5444\n");
     }
 
+#if IS_USED(MODULE_VAINA)
+    gnrc_netif_t *slipdev_netif = _find_netif(NETDEV_TYPE_SLIP);
+    printf("found SLIP netif %d\n", slipdev_netif->pid);
+    if (slipdev_netif == NULL) {
+        printf("VAINA needs a wired interface (SLIP) to work!\n");
+    }
+    else {
+        ipv6_addr_t addr;
+        if (ipv6_addr_from_str(&addr, CONFIG_SLIP_LOCAL_ADDR) == NULL) {
+            printf("Malformed SLIP local address, please verify it!\n");
+        }
+
+        if (gnrc_netif_ipv6_addr_add(slipdev_netif, &addr, 128, 0) != sizeof(ipv6_addr_t)) {
+            printf("Couldn't setup SLIP local address\n");
+        }
+
+        if (vaina_init(slipdev_netif) < 0) {
+            printf("Couldn't initialize VAINA\n");
+        }
+    }
+#endif
+
     puts("Welcome to Turpial CC1312 Radio!");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
@@ -71,7 +106,7 @@ int main(void)
     return 0;
 }
 
-static gnrc_netif_t *_find_ieee802154_netif(void)
+static gnrc_netif_t *_find_netif(uint16_t nettype)
 {
     static uint16_t device_type = 0;
 
@@ -82,16 +117,13 @@ static gnrc_netif_t *_find_ieee802154_netif(void)
         .data_len = sizeof(uint16_t),
     };
 
-    /* Iterate over network interfaces and find one that's IEEE 802.15.4, for
-     * the CC1312 there is only one interface, but we need to be sure it was
-     * initialized. Also well be using other interface; probably SLIP over UART
-     * so we need to be sure it's IEEE 802.15.4 */
+    /* Iterate over network interfaces and find one that matches */
     gnrc_netif_t *netif = NULL;
     for (netif = gnrc_netif_iter(netif);
          netif != NULL;
          netif = gnrc_netif_iter(netif)) {
         if (gnrc_netif_get_from_netdev(netif, &opt) == sizeof(uint16_t)) {
-            if (device_type == NETDEV_TYPE_IEEE802154) {
+            if (device_type == nettype) {
                 return netif;
             }
         }
