@@ -47,25 +47,28 @@ USEMODULE += posix_inet
 USEMODULE += timex
 
 USEMODULE += slipdev
-USEMODULE += slipdev_stdio
 
-# set slip parameters to default values if unset
-ifeq ($(BOARD),cc2538dk)
-  SLIP_UART     ?= "UART_NUMOF-1"
-else
+# Enable SLAAC
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_SLAAC=1
+
+USE_SLIPTTY ?= 0
+ifeq (1,$(USE_SLIPTTY))
+  USEMODULE += slipdev_stdio
+
   SLIP_UART     ?= "0"
+  SLIP_BAUDRATE ?= 115200
+else
+  SLIP_UART     ?= "UART_NUMOF-1"
+  SLIP_BAUDRATE ?= 115200
 endif
-SLIP_BAUDRATE ?= 115200
 
 # export slip parameters
 CFLAGS += -DSLIP_UART="UART_DEV($(SLIP_UART))"
 CFLAGS += -DSLIP_BAUDRATE=$(SLIP_BAUDRATE)
 
-# Enable SLAAC
-CFLAGS += -DCONFIG_GNRC_IPV6_NIB_SLAAC=1
-
 CFLAGS += -I$(CURDIR)
 
+ifeq (1,$(USE_SLIPTTY))
 .PHONY: host-tools
 
 host-tools:
@@ -74,11 +77,12 @@ host-tools:
 sliptty:
 	$(Q)env -u CC -u CFLAGS make -C $(RIOTTOOLS)/sliptty
 
-IPV6_PREFIX = 2001:db8::/64
+  IPV6_PREFIX = 2001:db8::/64
 
 # Configure terminal parameters
-TERMDEPS += host-tools
-TERMPROG ?= sudo sh $(CURDIR)/dist/tools/vaina/start_network.sh
-TERMFLAGS ?= $(FLAGS_EXTRAS) $(IPV6_PREFIX) $(PORT) $(SLIP_BAUDRATE)
+  TERMDEPS += host-tools
+  TERMPROG ?= sudo sh $(CURDIR)/dist/tools/vaina/start_network.sh
+  TERMFLAGS ?= $(FLAGS_EXTRAS) $(IPV6_PREFIX) $(PORT) $(SLIP_BAUDRATE)
+endif
 
 include $(RIOTBASE)/Makefile.include
