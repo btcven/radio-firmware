@@ -56,6 +56,9 @@ static int _init_slipdev(void);
 #define SLIPDEV_IF    (7)
 /** @} */
 
+#define MAIN_QUEUE_SIZE     (8)
+static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
+
 int main(void)
 {
     if (_init_ieee802154() < 0) {
@@ -68,6 +71,8 @@ int main(void)
     }
 
     puts("Welcome to Turpial Radio!");
+
+    msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     /* Start shell */
     char line_buf[SHELL_DEFAULT_BUFSIZE];
