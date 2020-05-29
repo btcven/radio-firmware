@@ -88,9 +88,7 @@ static void _cb_add_message_header(struct rfc5444_writer *wr,
 
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
 {
-    enum rfc5444_result res;
     struct rfc5444_writer_address *orig_node_addr;
-    struct rfc5444_writer_address *targ_node_addr;
 
     /* add orig_node address (has no address tlv); is mandatory address */
     orig_node_addr =
@@ -100,35 +98,25 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
     assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
-    targ_node_addr =
-        rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
-                                   &_target->packet_data.targ_node.addr, true);
-
-    assert(targ_node_addr != NULL);
+    rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
+                               &_target->packet_data.targ_node.addr, true);
 
     /* add SeqNum TLV and metric TLV to OrigNode */
-    res =
-        rfc5444_writer_add_addrtlv(wr, orig_node_addr,
-                                   &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
-                                   &_target->packet_data.orig_node.seqnum,
-                                   sizeof(_target->packet_data.orig_node.seqnum),
-                                   false);
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
+                               &_target->packet_data.orig_node.seqnum,
+                               sizeof(_target->packet_data.orig_node.seqnum),
+                               false);
 
-    assert(res == RFC5444_OKAY);
-
-    res =
-        rfc5444_writer_add_addrtlv(wr, orig_node_addr,
-                                   &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
-                                   &_target->packet_data.orig_node.metric,
-                                   sizeof(_target->packet_data.orig_node.metric),
-                                   false);
-
-    assert(res == RFC5444_OKAY);
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
+                               &_target->packet_data.orig_node.metric,
+                               sizeof(_target->packet_data.orig_node.metric),
+                               false);
 }
 
 static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
 {
-    enum rfc5444_result res;
     struct rfc5444_writer_address *orig_node_addr;
     struct rfc5444_writer_address *targ_node_addr;
 
@@ -152,29 +140,21 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     assert(targ_node_addr != NULL);
 
     /* add OrigNode and TargNode SeqNum TLVs */
-    /* TODO: allow_dup true or false? */
-    res =
-        rfc5444_writer_add_addrtlv(wr, orig_node_addr,
-                                   &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
-                                   &orig_node_seqnum, sizeof(orig_node_seqnum),
-                                   false);
+    rfc5444_writer_add_addrtlv(wr, orig_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
+                               &orig_node_seqnum, sizeof(orig_node_seqnum),
+                               false);
 
-    assert(res == RFC5444_OKAY);
-
-    res =
-        rfc5444_writer_add_addrtlv(wr, targ_node_addr,
-                                   &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM],
-                                   &targ_node_seqnum, sizeof(targ_node_seqnum),
-                                   false);
-
-    assert(res == RFC5444_OKAY);
+    rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_TARGSEQNUM],
+                               &targ_node_seqnum, sizeof(targ_node_seqnum),
+                               false);
 
     /* Add Metric TLV to targ_node Address */
-    res =
-        rfc5444_writer_add_addrtlv(wr, targ_node_addr,
-                                   &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
-                                   &targ_node_hopct, sizeof(targ_node_hopct),
-                                   false);
+    rfc5444_writer_add_addrtlv(wr, targ_node_addr,
+                               &_rrep_addrtlvs[RFC5444_MSGTLV_METRIC],
+                               &targ_node_hopct, sizeof(targ_node_hopct),
+                               false);
 
     assert(res == RFC5444_OKAY);
 }

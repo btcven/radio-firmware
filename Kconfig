@@ -2,12 +2,6 @@
 
 menu "Turpial - Radio Firmware Configuration"
 
-config SLIP_LOCAL_ADDR
-    string "SLIP link local address"
-    default "fe80::dead:beef:cafe:babe"
-    help
-        Default SLIP link local address
-
 rsource "sys/Kconfig"
 
 endmenu
