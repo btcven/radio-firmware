@@ -59,7 +59,7 @@ ifeq (1,$(USE_SLIPTTY))
   SLIP_UART     ?= "0"
   SLIP_BAUDRATE ?= 115200
 else
-  SLIP_UART     ?= "UART_NUMOF-1"
+  SLIP_UART     ?= "1"
   SLIP_BAUDRATE ?= 115200
 endif
 
