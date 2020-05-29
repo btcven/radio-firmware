@@ -14,7 +14,7 @@ APPBASE ?= $(CURDIR)
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
-DEVELHELP ?= 1
+DEVELHELP ?= 0
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
@@ -25,8 +25,8 @@ EXTERNAL_MODULE_DIRS += sys
 USEMODULE += gnrc_netdev_default
 USEMODULE += auto_init_gnrc_netif
 
-USEMODULE += gnrc_ipv6_default
-USEMODULE += gnrc_ipv6_router_default
+USEMODULE += gnrc_ipv6_router
+USEMODULE += gnrc_icmpv6
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_udp
 USEMODULE += gnrc_pktdump
@@ -64,8 +64,8 @@ else
 endif
 
 # export slip parameters
-CFLAGS += -DSLIP_UART="UART_DEV($(SLIP_UART))"
-CFLAGS += -DSLIP_BAUDRATE=$(SLIP_BAUDRATE)
+CFLAGS += -DSLIP_PARAM_UART="UART_DEV($(SLIP_UART))"
+CFLAGS += -DSLIP_PARAM_BAUDRATE=$(SLIP_BAUDRATE)
 
 CFLAGS += -I$(CURDIR)
 
