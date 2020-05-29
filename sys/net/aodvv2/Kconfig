@@ -15,7 +15,7 @@ config AODVV2_MAX_IDLETIME
     default 250
     depends on MODULE_AODVV2
 
-config AODVV2_CLIENT_SET_ENTRIES
+config AODVV2_RCS_ENTRIES
     int "Configure maximum number of entries on the Router Client Set"
     default 2
     depends on MODULE_AODVV2
