@@ -198,7 +198,11 @@ static void _send_packet(struct rfc5444_writer *writer,
                          struct rfc5444_writer_target *iface, void *buffer,
                          size_t length)
 {
+#ifdef DEVELHELP
     assert(writer != NULL && iface != NULL && buffer != NULL && length != 0);
+#else
+    (void)writer;
+#endif
 
 #if ENABLE_DEBUG == 1
     static struct autobuf hexbuf;
