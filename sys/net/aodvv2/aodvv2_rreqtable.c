@@ -38,8 +38,6 @@ static timex_t _null_time;
 static timex_t now;
 static timex_t _max_idletime;
 
-static struct netaddr_str nbuf;
-
 void aodvv2_rreqtable_init(void)
 {
     DEBUG("aodvv2_rreqtable_init()\n");
@@ -118,8 +116,8 @@ static aodvv2_rreq_entry_t *_get_comparable_rreq(aodvv2_packet_data_t *packet_da
     for (unsigned i = 0; i < ARRAY_SIZE(rreq_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&rreq_table[i].origNode, &packet_data->orig_node.addr) &&
-            !netaddr_cmp(&rreq_table[i].targNode, &packet_data->targ_node.addr) &&
+        if (ipv6_addr_equal(&rreq_table[i].origNode, &packet_data->orig_node.addr) &&
+            ipv6_addr_equal(&rreq_table[i].targNode, &packet_data->targ_node.addr) &&
             rreq_table[i].metricType == packet_data->metric_type) {
             return &rreq_table[i];
         }
@@ -163,9 +161,6 @@ static void _reset_entry_if_stale(uint8_t i)
 
     timex_t expiration_time = timex_add(rreq_table[i].timestamp, _max_idletime);
     if (timex_cmp(expiration_time, now) < 0) {
-        /* timestamp+expiration time is in the past: this entry is stale */
-        DEBUG("_reset_entry_if_stale: entry %s is stale, resettings\n",
-              netaddr_to_string(&nbuf, &rreq_table[i].origNode));
         memset(&rreq_table[i], 0, sizeof(rreq_table[i]));
     }
 }

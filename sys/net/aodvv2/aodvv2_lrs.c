@@ -22,7 +22,7 @@
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 static void _reset_entry_if_stale(uint8_t i);
@@ -64,8 +64,8 @@ void aodvv2_lrs_init(void)
     memset(&routing_table, 0, sizeof(routing_table));
 }
 
-struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest,
-                                        routing_metric_t metricType)
+ipv6_addr_t *aodvv2_lrs_get_next_hop(ipv6_addr_t *dest,
+                                     routing_metric_t metricType)
 {
     aodvv2_local_route_t *entry = aodvv2_lrs_get_entry(dest, metricType);
     if (!entry) {
@@ -77,7 +77,7 @@ struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest,
 void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry)
 {
     /* only add if we don't already know the address */
-    if (aodvv2_lrs_get_entry(&(entry->addr), entry->metricType)) {
+    if (aodvv2_lrs_get_entry(&entry->addr, entry->metricType)) {
         return;
     }
     /*find free spot in RT and place rt_entry there */
@@ -90,13 +90,13 @@ void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry)
     }
 }
 
-aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
+aodvv2_local_route_t *aodvv2_lrs_get_entry(ipv6_addr_t *addr,
                                            routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
 
-        if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
+        if (ipv6_addr_equal(&routing_table[i].route.addr, addr) &&
             routing_table[i].route.metricType == metricType) {
             return &routing_table[i].route;
         }
@@ -104,13 +104,13 @@ aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
     return NULL;
 }
 
-void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType)
+void aodvv2_lrs_delete_entry(ipv6_addr_t *addr, routing_metric_t metricType)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(routing_table); i++) {
         _reset_entry_if_stale(i);
 
         if (routing_table[i].used) {
-            if (!netaddr_cmp(&routing_table[i].route.addr, addr) &&
+            if (ipv6_addr_equal(&routing_table[i].route.addr, addr) &&
                 routing_table[i].route.metricType == metricType) {
                 memset(&routing_table[i].route, 0, sizeof(aodvv2_local_route_t));
                 routing_table[i].used = false;
@@ -211,8 +211,8 @@ void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
 }
 
 void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
-                                                 aodvv2_local_route_t *rt_entry,
-                                                 uint8_t link_cost)
+                                        aodvv2_local_route_t *rt_entry,
+                                        uint8_t link_cost)
 {
     rt_entry->addr = packet_data->targ_node.addr;
     rt_entry->seqnum = packet_data->targ_node.seqnum;

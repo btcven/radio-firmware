@@ -23,8 +23,6 @@
 
 #include <string.h>
 
-#include "common/netaddr.h"
-
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/seqnum.h"
@@ -60,11 +58,11 @@ enum aodvv2_routing_state {
  * @brief   All fields of a Local Route entry
  */
 typedef struct {
-    struct netaddr addr; /**< IP address of this route's destination */
+    ipv6_addr_t addr; /**< IP address of this route's destination */
     aodvv2_seqnum_t seqnum; /**< The Sequence Number obtained from the
                                  last packet that updated the entry */
-    struct netaddr next_hop; /**< IP address of the the next hop towards the
-                                     destination */
+    ipv6_addr_t next_hop; /**< IP address of the the next hop towards the
+                               destination */
     timex_t last_used; /**< IP address of this route's destination */
     timex_t expiration_time; /**< Time at which this route expires */
     routing_metric_t metricType; /**< Metric type of this route */
@@ -86,8 +84,8 @@ void aodvv2_lrs_init(void);
  *
  * @return Next hop towards dest if it exists, NULL otherwise.
  */
-struct netaddr *aodvv2_lrs_get_next_hop(struct netaddr *dest,
-                                                 routing_metric_t metricType);
+ipv6_addr_t *aodvv2_lrs_get_next_hop(ipv6_addr_t *dest,
+                                     routing_metric_t metricType);
 
 /**
  * @brief     Add new entry to Local Route, if there is no other entry
@@ -100,12 +98,12 @@ void aodvv2_lrs_add_entry(aodvv2_local_route_t *entry);
 /**
  * @brief     Retrieve pointer to a Local Route entry.
  *
- * @param[in] addr          The address towards which the route should point
- * @param[in] metricType    Metric Type of the desired route
+ * @param[in] addr       The address towards which the route should point
+ * @param[in] metricType Metric Type of the desired route
  *
  * @return Local Route if it exists, NULL otherwise
  */
-aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
+aodvv2_local_route_t *aodvv2_lrs_get_entry(ipv6_addr_t *addr,
                                            routing_metric_t metricType);
 
 /**
@@ -115,7 +113,7 @@ aodvv2_local_route_t *aodvv2_lrs_get_entry(struct netaddr *addr,
  * @param[in] addr       The address towards which the route should point
  * @param[in] metricType Metric Type of the desired route
  */
-void aodvv2_lrs_delete_entry(struct netaddr *addr, routing_metric_t metricType);
+void aodvv2_lrs_delete_entry(ipv6_addr_t *addr, routing_metric_t metricType);
 
 /**
  * @brief   Check if the data of a RREQ or RREP offers improvement for an
