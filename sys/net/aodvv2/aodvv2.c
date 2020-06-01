@@ -79,30 +79,6 @@ static uint8_t _writer_msg_addrtlvs[CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE];
 static uint8_t _writer_pkt_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static mutex_t _writer_lock;
 
-static int _find_netif_global_addr(ipv6_addr_t *addr)
-{
-    assert(addr != NULL);
-
-    ipv6_addr_t addrs[CONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF];
-
-    int numof = gnrc_netif_ipv6_addrs_get(_netif, addrs, sizeof(addrs));
-    if (numof < 0) {
-        DEBUG("aodvv2: couldn't get IPv6 addresses for iface\n");
-        return -1;
-    }
-
-    for (unsigned i = 0; i < (numof / sizeof(ipv6_addr_t)); i++) {
-        /* Pick up the first global address */
-        if (ipv6_addr_is_global(&addrs[i])) {
-            memcpy(addr, &addrs[i], sizeof(ipv6_addr_t));
-            return 0;
-        }
-    }
-
-    /* No address was found */
-    return -1;
-}
-
 static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                         const void *ctx)
 {
@@ -386,16 +362,6 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_rcs_init();
     aodvv2_rreqtable_init();
     aodvv2_buffer_init();
-
-    /* Save our IPv6 address */
-    ipv6_addr_t netif_addr;
-    if (_find_netif_global_addr(&netif_addr) < 0) {
-        DEBUG("aodvv2: no global address found\n");
-    }
-    else {
-        /* Every node is it's own cllient */
-        aodvv2_rcs_add(&netif_addr, AODVV2_PREFIX_LEN, CONFIG_AODVV2_DEFAULT_METRIC);
-    }
 
     /* Register netreg */
     gnrc_netreg_entry_init_pid(&netreg, UDP_MANET_PORT, _pid);
