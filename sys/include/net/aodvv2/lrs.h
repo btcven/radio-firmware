@@ -59,6 +59,7 @@ enum aodvv2_routing_state {
  */
 typedef struct {
     ipv6_addr_t addr; /**< IP address of this route's destination */
+    uint8_t pfx_len;  /**< Prefix length */
     aodvv2_seqnum_t seqnum; /**< The Sequence Number obtained from the
                                  last packet that updated the entry */
     ipv6_addr_t next_hop; /**< IP address of the the next hop towards the
@@ -130,22 +131,22 @@ bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
 /**
  * @brief   Fills a Local Route entry with the data of a RREQ.
  *
- * @param[in]  packet_data The RREQ's data
- * @param[out] rt_entry    The Local Route entry to fill
- * @param[in]  link_cost   The link cost for this RREQ
+ * @param[in]  msg       The RREQ's data
+ * @param[out] rt_entry  The Local Route entry to fill
+ * @param[in]  link_cost The link cost for this RREQ
  */
-void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *packet_data,
+void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost);
 
 /**
  * @brief   Fills a Local Route entry with the data of a RREP.
  *
- * @param[in]  packet_data The RREP's data
- * @param[out] rt_entry    The Local Route entry to fill
- * @param[in]  link_cost   The link cost for this RREP
+ * @param[in]  msg       The RREP's data
+ * @param[out] rt_entry  The Local Route entry to fill
+ * @param[in]  link_cost The link cost for this RREP
  */
-void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *packet_data,
+void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost);
 

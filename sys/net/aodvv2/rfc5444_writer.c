@@ -92,7 +92,8 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
     struct netaddr tmp;
 
     /* add orig_node address (has no address tlv); is mandatory address */
-    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, &tmp);
+    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr,
+                         _target->packet_data.orig_node.pfx_len, &tmp);
     orig_node_addr =
         rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
                                    &tmp, true);
@@ -100,7 +101,9 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
     assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
-    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, &tmp);
+    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr,
+                         _target->packet_data.targ_node.pfx_len,
+                         &tmp);
     rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator,
                                &tmp, true);
 
@@ -130,7 +133,8 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     uint8_t targ_node_hopct = _target->packet_data.targ_node.metric;
 
     /* add orig_node address (has no address tlv); is mandatory address */
-    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, &tmp);
+    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr,
+                         _target->packet_data.orig_node.pfx_len, &tmp);
     orig_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
                                    &tmp, true);
@@ -138,7 +142,8 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     assert(orig_node_addr != NULL);
 
     /* add targ_node address (has no address tlv); is mandatory address */
-    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, &tmp);
+    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr,
+                         _target->packet_data.targ_node.pfx_len, &tmp);
     targ_node_addr =
         rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator,
                                    &tmp, true);
