@@ -231,7 +231,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     aodvv2_local_route_t *rt_entry =
         aodvv2_lrs_get_entry(&_msg_data.targ_node.addr, _msg_data.metric_type);
 
-    if (!rt_entry || (rt_entry->metricType != _msg_data.metric_type)) {
+    if (!rt_entry || (rt_entry->metric_type != _msg_data.metric_type)) {
         DEBUG_PUTS("aodvv2: creating new Local Route");
 
         aodvv2_local_route_t tmp = {0};
@@ -431,7 +431,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_lrs_get_entry(&_msg_data.orig_node.addr,
                              _msg_data.metric_type);
 
-    if (!rt_entry || (rt_entry->metricType != _msg_data.metric_type)) {
+    if (!rt_entry || (rt_entry->metric_type != _msg_data.metric_type)) {
         DEBUG_PUTS("aodvv2: creating new Local Route");
 
         aodvv2_local_route_t tmp = {0};
