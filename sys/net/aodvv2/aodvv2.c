@@ -22,9 +22,9 @@
  */
 
 #include "net/aodvv2/rfc5444.h"
-#include "net/aodvv2/client.h"
-#include "net/aodvv2/metric.h"
 #include "net/aodvv2/lrs.h"
+#include "net/aodvv2/metric.h"
+#include "net/aodvv2/rcs.h"
 #include "net/aodvv2/rreqtable.h"
 #include "net/aodvv2/seqnum.h"
 
@@ -117,7 +117,7 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                 gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)ctx;
                 ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
 
-                if (aodvv2_client_find(&ipv6_hdr->src) != NULL) {
+                if (aodvv2_rcs_is_client(&ipv6_hdr->src)) {
                     if (aodvv2_buffer_pkt_add(ctx_addr, pkt) == 0) {
                         DEBUG("aodvv2: finding route\n");
                         aodvv2_find_route(&ipv6_hdr->src, ctx_addr);
@@ -383,7 +383,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Initialize AODVv2 internal structures */
     aodvv2_seqnum_init();
     aodvv2_lrs_init();
-    aodvv2_client_init();
+    aodvv2_rcs_init();
     aodvv2_rreqtable_init();
     aodvv2_buffer_init();
 
@@ -394,8 +394,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     }
     else {
         /* Every node is it's own cllient */
-        aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
-                          CONFIG_AODVV2_DEFAULT_METRIC);
+        aodvv2_rcs_add(&netif_addr, AODVV2_PREFIX_LEN, CONFIG_AODVV2_DEFAULT_METRIC);
     }
 
     /* Register netreg */

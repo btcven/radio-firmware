@@ -22,10 +22,10 @@
  */
 
 #include "net/aodvv2/aodvv2.h"
-#include "net/aodvv2/client.h"
-#include "net/aodvv2/metric.h"
-#include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/lrs.h"
+#include "net/aodvv2/metric.h"
+#include "net/aodvv2/rcs.h"
+#include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/rreqtable.h"
 #include "net/manet/manet.h"
 
@@ -277,7 +277,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
     /* If HandlingRtr is RREQ_Gen then the RREP satisfies RREQ_Gen's earlier
      * RREQ, and RREP processing is completed. Any packets buffered for
      * OrigNode should be transmitted. */
-    if (aodvv2_client_find(&packet_data.orig_node.addr)) {
+    if (aodvv2_rcs_is_client(&packet_data.orig_node.addr)) {
         DEBUG("rfc5444_reader: {%" PRIu32 ":%" PRIu32 "}\n",
               now.seconds, now.microseconds);
         DEBUG("rfc5444_reader: this is my RREP (SeqNum: %d)\n",
@@ -488,7 +488,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * subsequently processing for the RREQ is complete.  Otherwise,
      * processing continues as follows.
      */
-    if (aodvv2_client_find(&packet_data.targ_node.addr)) {
+    if (aodvv2_rcs_is_client(&packet_data.targ_node.addr)) {
         DEBUG("rfc5444_reader: targ_node is in client list, sending RREP\n");
 
         /* Make sure to start with a clean metric value */
