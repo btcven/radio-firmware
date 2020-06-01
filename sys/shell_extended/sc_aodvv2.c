@@ -55,13 +55,13 @@ static int _rcs_add(int argc, char **argv)
 
     char *addr_str = argv[0];
 
+    uint8_t pfx_len = _get_pfx_len(addr_str);
+
     ipv6_addr_t addr;
     if (ipv6_addr_from_str(&addr, addr_str) == NULL) {
         printf("error: unable to parse IPv6 address\n");
         return 1;
     }
-
-    uint8_t pfx_len = _get_pfx_len(addr_str);
 
     if (aodvv2_rcs_add(&addr, pfx_len, 1) == NULL) {
         printf("error: unable to add client to RCS\n");
