@@ -24,7 +24,7 @@
 #define NET_AODVV2_RFC5444_H
 
 #include "net/aodvv2/seqnum.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 #include "net/metric.h"
 
 #include "timex.h"

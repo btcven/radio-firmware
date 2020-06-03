@@ -27,7 +27,7 @@
 #include "net/aodvv2/rcs.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/rreqtable.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 
 #include "net/gnrc/ipv6/nib/ft.h"
 
