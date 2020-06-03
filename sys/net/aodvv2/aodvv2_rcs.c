@@ -131,7 +131,7 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
     return NULL;
 }
 
-bool aodvv2_rcs_is_client(const ipv6_addr_t *addr)
+aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr)
 {
     mutex_lock(&_lock);
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
@@ -146,11 +146,11 @@ bool aodvv2_rcs_is_client(const ipv6_addr_t *addr)
         if (ipv6_addr_match_prefix(&entry->data.addr,
                                    addr) >= entry->data.pfx_len) {
             mutex_unlock(&_lock);
-            return true;
+            return &entry->data;
         }
     }
     mutex_unlock(&_lock);
-    return false;
+    return NULL;
 }
 
 void aodvv2_rcs_print_entries(void)

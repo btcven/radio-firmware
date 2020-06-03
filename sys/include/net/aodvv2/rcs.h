@@ -120,9 +120,9 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
  *
  * @param[in] addr The IPv6 address.
  *
- * @return true if is a client, false otherwise.
+ * @return NULL if not found, otherwise pointer to RCS entry.
  */
-bool aodvv2_rcs_is_client(const ipv6_addr_t *addr);
+aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr);
 
 /**
  * @brief   Print RCS entries.

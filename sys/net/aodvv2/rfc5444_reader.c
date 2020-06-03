@@ -268,7 +268,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         }
     }
 
-    if (aodvv2_rcs_is_client(&_msg_data.orig_node.addr)) {
+    if (aodvv2_rcs_is_client(&_msg_data.orig_node.addr) != NULL) {
         DEBUG("aodvv2: {%" PRIu32 ":%" PRIu32 "}\n",
               now.seconds, now.microseconds);
         DEBUG("aodvv2: this is my RREP (SeqNum: %d)\n",
@@ -477,7 +477,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
      * subsequently processing for the RREQ is complete.  Otherwise,
      * processing continues as follows.
      */
-    if (aodvv2_rcs_is_client(&_msg_data.targ_node.addr)) {
+    if (aodvv2_rcs_is_client(&_msg_data.targ_node.addr) != NULL) {
         DEBUG_PUTS("aodvv2: TargNode is on client list, sending RREP");
 
         /* Make sure to start with a clean metric value */
