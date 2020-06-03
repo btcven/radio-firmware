@@ -106,7 +106,7 @@ typedef struct {
  * @brief   All data contained in a RREQ or RREP.
  */
 typedef struct {
-    uint8_t hoplimit;             /**< Hop limit */
+    uint8_t msg_hop_limit;        /**< Hop limit */
     ipv6_addr_t sender;           /**< IP address of the neighboring router */
     routing_metric_t metric_type; /**< Metric type */
     node_data_t orig_node;        /**< OrigNode data */

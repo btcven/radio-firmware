@@ -135,7 +135,7 @@ static void _send_rreq(aodvv2_packet_data_t *packet_data,
            sizeof(aodvv2_packet_data_t));
 
     _writer_context.type = RFC5444_MSGTYPE_RREQ;
-    _writer_context.packet_data.hoplimit = packet_data->hoplimit;
+    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
 
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
@@ -159,7 +159,7 @@ static void _send_rrep(aodvv2_packet_data_t *packet_data,
            sizeof(aodvv2_packet_data_t));
 
     _writer_context.type = RFC5444_MSGTYPE_RREP;
-    _writer_context.packet_data.hoplimit = packet_data->hoplimit;
+    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
 
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
@@ -475,7 +475,7 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     aodvv2_packet_data_t pkt;
 
     /* Set metric information */
-    pkt.hoplimit = aodvv2_metric_max(METRIC_HOP_COUNT);
+    pkt.msg_hop_limit = aodvv2_metric_max(METRIC_HOP_COUNT);
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */

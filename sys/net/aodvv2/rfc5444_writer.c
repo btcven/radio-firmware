@@ -81,9 +81,9 @@ static aodvv2_writer_target_t *_target;
 static void _cb_add_message_header(struct rfc5444_writer *wr,
                                    struct rfc5444_writer_message *message)
 {
-    /* no originator, no hopcount, has hoplimit, no seqno */
+    /* no originator, no hopcount, has msg_hop_limit, no seqno */
     rfc5444_writer_set_msg_header(wr, message, false, false, true, false);
-    rfc5444_writer_set_msg_hoplimit(wr, message, _target->packet_data.hoplimit);
+    rfc5444_writer_set_msg_hoplimit(wr, message, _target->packet_data.msg_hop_limit);
 }
 
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)

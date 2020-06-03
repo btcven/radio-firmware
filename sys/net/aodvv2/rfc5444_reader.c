@@ -121,13 +121,13 @@ static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(
         return RFC5444_DROP_PACKET;
     }
 
-    _msg_data.hoplimit = cont->hoplimit;
-    if (_msg_data.hoplimit == 0) {
+    _msg_data.msg_hop_limit = cont->hoplimit;
+    if (_msg_data.msg_hop_limit == 0) {
         DEBUG_PUTS("aodvv2: hop limit is 0");
         return RFC5444_DROP_PACKET;
     }
 
-    _msg_data.hoplimit--;
+    _msg_data.msg_hop_limit--;
     return RFC5444_OKAY;
 }
 
@@ -297,12 +297,12 @@ static enum rfc5444_result _cb_rreq_blocktlv_messagetlvs_okay(
         return RFC5444_DROP_PACKET;
     }
 
-    _msg_data.hoplimit = cont->hoplimit;
-    if (_msg_data.hoplimit == 0) {
+    _msg_data.msg_hop_limit = cont->hoplimit;
+    if (_msg_data.msg_hop_limit == 0) {
         DEBUG("aodvv2: Hoplimit is 0.\n");
         return RFC5444_DROP_PACKET;
     }
-    _msg_data.hoplimit--;
+    _msg_data.msg_hop_limit--;
 
     return RFC5444_OKAY;
 }
@@ -396,7 +396,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    if (_msg_data.hoplimit == 0) {
+    if (_msg_data.msg_hop_limit == 0) {
         DEBUG_PUTS("aodvv2: hop limit is 0");
         return RFC5444_DROP_PACKET;
     }
