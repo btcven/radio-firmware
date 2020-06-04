@@ -15,6 +15,11 @@ config AODVV2_MAX_IDLETIME
     default 250
     depends on MODULE_AODVV2
 
+config AODVV2_MCMSG_MAX_ENTRIES
+    int "Maximum number of entries on the Multicast Message Set"
+    default 16
+    depends on MODULE_AODVV2
+
 config AODVV2_RCS_ENTRIES
     int "Configure maximum number of entries on the Router Client Set"
     default 2

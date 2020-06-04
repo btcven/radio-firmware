@@ -23,9 +23,9 @@
 
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/lrs.h"
+#include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
-#include "net/aodvv2/rreqtable.h"
 #include "net/aodvv2/seqnum.h"
 
 #include "net/gnrc/ipv6.h"
@@ -360,7 +360,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     aodvv2_seqnum_init();
     aodvv2_lrs_init();
     aodvv2_rcs_init();
-    aodvv2_rreqtable_init();
+    aodvv2_mcmsg_init();
     aodvv2_buffer_init();
 
     /* Register netreg */
@@ -499,8 +499,8 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     pkt.targ_node.metric = 0;
     pkt.targ_node.seqnum = 0;
 
-    /* Add RREQ to rreqtable */
-    aodvv2_rreqtable_add(&pkt);
+    /* Add RREQ to mcmsg */
+    aodvv2_mcmsg_process(&pkt);
 
     return aodvv2_send_rreq(&pkt, &ipv6_addr_all_manet_routers_link_local);
 }
