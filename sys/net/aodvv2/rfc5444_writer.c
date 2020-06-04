@@ -24,7 +24,7 @@
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/metric.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 static void _cb_add_message_header(struct rfc5444_writer *wr,
