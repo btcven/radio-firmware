@@ -23,7 +23,7 @@
 #include "net/gnrc/pktbuf.h"
 #include "net/gnrc/ipv6.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define CONFIG_AODVV2_MAX_BUFFERED_PACKETS (10)
