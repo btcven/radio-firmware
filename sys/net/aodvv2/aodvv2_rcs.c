@@ -54,8 +54,8 @@ aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len,
     }
 
     const aodvv2_rcs_entry_t *entry = aodvv2_rcs_matches(addr, pfx_len);
-    if (entry) {
-        DEBUG_PUTS("aodvv2: client exists, not adding it.\n");
+    if (entry != NULL) {
+        DEBUG_PUTS("aodvv2: client exists, not adding it");
         return NULL;
     }
 
@@ -76,7 +76,7 @@ aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len,
         }
     }
 
-    DEBUG_PUTS("aodvv2: router client set is full.\n");
+    DEBUG_PUTS("aodvv2: router client set is full");
     mutex_unlock(&_lock);
     return NULL;
 }
@@ -120,7 +120,7 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
         /* Compare addresses by prefix */
         if ((entry->data.pfx_len == pfx_len) &&
             (ipv6_addr_match_prefix(&entry->data.addr,
-                                   addr) == entry->data.pfx_len)) {
+                                   addr) >= entry->data.pfx_len)) {
             mutex_unlock(&_lock);
             return &entry->data;
         }
@@ -131,7 +131,7 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
     return NULL;
 }
 
-bool aodvv2_rcs_is_client(const ipv6_addr_t *addr)
+aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr)
 {
     mutex_lock(&_lock);
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
@@ -144,13 +144,13 @@ bool aodvv2_rcs_is_client(const ipv6_addr_t *addr)
 
         /* Compare addresses by prefix */
         if (ipv6_addr_match_prefix(&entry->data.addr,
-                                   addr) == entry->data.pfx_len) {
+                                   addr) >= entry->data.pfx_len) {
             mutex_unlock(&_lock);
-            return true;
+            return &entry->data;
         }
     }
     mutex_unlock(&_lock);
-    return false;
+    return NULL;
 }
 
 void aodvv2_rcs_print_entries(void)
@@ -165,8 +165,8 @@ void aodvv2_rcs_print_entries(void)
             continue;
         }
 
-        /* prints ipv6/prefix - cost */
-        printf("%s/%u - %u",
+        /* prints ipv6/prefix | cost */
+        printf("%s/%u | %u\n",
                ipv6_addr_to_str(buf, &entry->data.addr, sizeof(buf)),
                entry->data.pfx_len, entry->data.cost);
     }
