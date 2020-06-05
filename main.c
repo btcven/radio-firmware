@@ -28,7 +28,7 @@
 #include "msg.h"
 
 #include "net/aodvv2/aodvv2.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 #include "net/gnrc/ipv6/nib.h"
 #include "net/vaina.h"
 

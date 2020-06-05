@@ -23,11 +23,11 @@
 
 #include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/lrs.h"
+#include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
 #include "net/aodvv2/rfc5444.h"
-#include "net/aodvv2/rreqtable.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 
 #include "net/gnrc/ipv6/nib/ft.h"
 
@@ -408,10 +408,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    /* The incoming RREQ MUST be checked against previously received information
-     * from the RREQ Table Section 7.6.  If the information in the incoming
-     * RteMsg is redundant, then then no further action is taken. */
-    if (aodvv2_rreqtable_is_redundant(&_msg_data)) {
+    /* The incoming RREQ MUST be checked against previously received information */
+    if (aodvv2_mcmsg_process(&_msg_data) == AODVV2_MCMSG_REDUNDANT) {
         DEBUG_PUTS("aodvv2: packet is redundant");
         return RFC5444_DROP_PACKET;
     }

@@ -24,7 +24,7 @@
 #define NET_AODVV2_RFC5444_H
 
 #include "net/aodvv2/seqnum.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 #include "net/metric.h"
 
 #include "timex.h"
@@ -111,6 +111,7 @@ typedef struct {
     routing_metric_t metric_type; /**< Metric type */
     node_data_t orig_node;        /**< OrigNode data */
     node_data_t targ_node;        /**< TargNode data */
+    ipv6_addr_t seqnortr;         /**< SeqNoRtr */
     timex_t timestamp;            /**< Time at which the message was received */
 } aodvv2_packet_data_t;
 

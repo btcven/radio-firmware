@@ -93,6 +93,9 @@ int sc_aodvv2_cmd(int argc, char **argv)
 
             return _rcs_add(argc - 3, argv + 3);
         }
+        else {
+            puts("error: invalid command");
+        }
     }
     else {
         puts("error: invalid command");
