@@ -78,7 +78,7 @@ host-tools:
 sliptty:
 	$(Q)env -u CC -u CFLAGS make -C $(RIOTTOOLS)/sliptty
 
-  IPV6_PREFIX = 2001:db8::/64
+  IPV6_PREFIX = "fc00::/16"
 
 # Configure terminal parameters
   TERMDEPS += host-tools
