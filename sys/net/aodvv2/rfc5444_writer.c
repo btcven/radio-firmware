@@ -27,8 +27,7 @@
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
-static void _cb_add_message_header(struct rfc5444_writer *wr,
-                                   struct rfc5444_writer_message *message);
+static int _cb_add_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message);
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr);
 static void _cb_rrep_add_addresses(struct rfc5444_writer *wr);
 
@@ -78,12 +77,13 @@ static struct rfc5444_writer_message *_rrep_msg;
 
 static aodvv2_writer_target_t *_target;
 
-static void _cb_add_message_header(struct rfc5444_writer *wr,
-                                   struct rfc5444_writer_message *message)
+static int _cb_add_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message)
 {
     /* no originator, no hopcount, has msg_hop_limit, no seqno */
     rfc5444_writer_set_msg_header(wr, message, false, false, true, false);
     rfc5444_writer_set_msg_hoplimit(wr, message, _target->packet_data.msg_hop_limit);
+
+    return 0;
 }
 
 static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
@@ -183,13 +183,13 @@ void aodvv2_rfc5444_writer_register(struct rfc5444_writer *wr, aodvv2_writer_tar
         return;
     }
 
-    _rreq_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREQ, false, RFC5444_MAX_ADDRLEN);
+    _rreq_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREQ, false);
     if (_rreq_msg == NULL) {
         DEBUG("rfc5444_writer: couldn't reigster RREQ message\n");
         return;
     }
 
-    _rrep_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREP, false, RFC5444_MAX_ADDRLEN);
+    _rrep_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREP, false);
     if (_rrep_msg == NULL) {
         DEBUG("rfc5444_writer: couldn't reigster RREP message\n");
         return;

@@ -140,7 +140,7 @@ static void _send_rreq(aodvv2_packet_data_t *packet_data,
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
 
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREQ);
+    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREQ, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
 
     mutex_unlock(&_writer_lock);
@@ -164,7 +164,7 @@ static void _send_rrep(aodvv2_packet_data_t *packet_data,
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
 
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREP);
+    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREP, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
 
     mutex_unlock(&_writer_lock);
