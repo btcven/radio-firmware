@@ -42,44 +42,70 @@
 /**
  * @file
  */
-#ifndef PRINT_RFC5444_H_
-#define PRINT_RFC5444_H_
 
-#include "common/autobuf.h"
-#include "common/common_types.h"
-#include "rfc5444_reader.h"
+#ifndef COMMON_TYPES_H_
+#define COMMON_TYPES_H_
 
-/**
- * RFC5444 printer session
+#include <stddef.h>
+
+/*
+ * This line forces gcc NOT to demand memcpy with glibc version 2.14
+ * google for the memcpy/memmove debacle with gcc and glibc.
  */
-struct rfc5444_print_session {
-  /*! output buffer */
-  struct autobuf *output;
+// __asm__(".symver memcpy,memcpy@GLIBC_2.2.5");
 
-  /**
-   * Callback to print RFC5444 packet text representation
-   * @param session printer session
-   */
-  void (*print_packet)(struct rfc5444_print_session *session);
+#ifndef EXPORT
+/*! Macro to declare a function should be visible for other subsystems */
+#define EXPORT __attribute__((visibility("default")))
+#endif
 
-  /*! packet consumer */
-  struct rfc5444_reader_tlvblock_consumer _pkt;
+/* give everyone an arraysize implementation */
+#ifndef ARRAYSIZE
+/**
+ * @param a reference of an array (not a pointer!)
+ * @returns number of elements in array
+ */
+#define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
+#endif
 
-  /*! message consumer */
-  struct rfc5444_reader_tlvblock_consumer _msg;
+#ifndef STRINGIFY
+/*! converts the parameter of the macro into a string */
+#define STRINGIFY(x) #x
+#endif
 
-  /*! address consumer */
-  struct rfc5444_reader_tlvblock_consumer _addr;
+/*
+ * This force gcc to always inline, which prevents errors
+ * with option -Os
+ */
+#ifndef INLINE
+#ifdef __GNUC__
+/*! force inlining with GCC */
+#define INLINE inline __attribute__((always_inline))
+#else
+/*! default to normal inlining */
+#define INLINE inline
+#endif
+#endif
 
-  /*! rfc5444 reader */
-  struct rfc5444_reader *_reader;
-};
+/* printf size_t modifiers*/
+#if defined(__GNUC__)
+#define PRINTF_SIZE_T_SPECIFIER "zu"
+#define PRINTF_SIZE_T_HEX_SPECIFIER "zx"
+#define PRINTF_SSIZE_T_SPECIFIER "zd"
+#define PRINTF_PTRDIFF_T_SPECIFIER "zd"
+#else
+/* maybe someone can check what to do about LLVM/Clang? */
+#error Please implement size_t modifiers
+#endif
 
-EXPORT void rfc5444_print_add(struct rfc5444_print_session *, struct rfc5444_reader *reader);
-EXPORT void rfc5444_print_remove(struct rfc5444_print_session *session);
+#include <limits.h>
 
-EXPORT enum rfc5444_result rfc5444_print_direct(struct autobuf *out, void *buffer, size_t length);
+/* we have C99 ? */
+#if defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L
+#include <inttypes.h>
+#include <stdbool.h>
+#else
+#error "OONF needs C99"
+#endif /* __STDC_VERSION__ && __STDC_VERSION__ >= 199901L */
 
-EXPORT int rfc5444_print_raw(struct autobuf *out, void *buffer, size_t length);
-
-#endif /* PRINT_RFC5444_H_ */
+#endif /* COMMON_TYPES_H_ */

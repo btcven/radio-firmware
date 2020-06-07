@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,15 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -52,10 +56,12 @@
 #endif
 
 #include "common/autobuf.h"
+#include "common/string.h"
 
 #ifdef RIOT_VERSION
-int getpagesize(void) {
-	return 512;
+static size_t getpagesize(void)
+{
+  return 512;
 }
 #endif
 
@@ -64,13 +70,15 @@ int getpagesize(void) {
  * @param pow2 power of 2 (1024, 4096, ...)
  * @return multiple of pow2 which larger or equal val
  */
-static inline size_t
+static INLINE size_t
 ROUND_UP_TO_POWER_OF_2(size_t val, size_t pow2) {
   return (val + pow2 - 1) & ~(pow2 - 1);
 }
 
 static int _autobuf_enlarge(struct autobuf *autobuf, size_t new_size);
-static void _print_hexline(struct autobuf *out, void *buffer, size_t length);
+static void _print_hexline(struct autobuf *out, const void *buffer, size_t length);
+static int _vappendf(struct autobuf *autobuf, const char *format, va_list ap, va_list ap2)
+  __attribute__((format(printf, 2, 0)));
 
 /**
  * Initialize an autobuffer and allocate a chunk of memory
@@ -78,8 +86,7 @@ static void _print_hexline(struct autobuf *out, void *buffer, size_t length);
  * @return -1 if an out-of-memory error happened, 0 otherwise
  */
 int
-abuf_init(struct autobuf *autobuf)
-{
+abuf_init(struct autobuf *autobuf) {
   autobuf->_len = 0;
   autobuf->_buf = calloc(1, getpagesize());
   if (autobuf->_buf == NULL) {
@@ -97,8 +104,7 @@ abuf_init(struct autobuf *autobuf)
  * @param autobuf pointer to autobuf object
  */
 void
-abuf_free(struct autobuf *autobuf)
-{
+abuf_free(struct autobuf *autobuf) {
   free(autobuf->_buf);
   memset(autobuf, 0, sizeof(*autobuf));
 }
@@ -113,37 +119,19 @@ abuf_free(struct autobuf *autobuf)
  *   (excluding the \0)
  */
 int
-abuf_vappendf(struct autobuf *autobuf,
-    const char *format, va_list ap)
-{
-  int rc;
-  size_t min_size;
+abuf_vappendf(struct autobuf *autobuf, const char *format, va_list ap) {
+  int result;
   va_list ap2;
 
-  if (autobuf == NULL) return 0;
+  if (!autobuf) {
+    return 0;
+  }
 
   va_copy(ap2, ap);
-  rc = vsnprintf(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, ap);
-  if (rc < 0) {
-    autobuf->_error = true;
-    return rc;
-  }
-  va_end(ap);
-  min_size = autobuf->_len + (size_t)rc;
-  if (min_size >= autobuf->_total) {
-    if (_autobuf_enlarge(autobuf, min_size) < 0) {
-      autobuf->_buf[autobuf->_len] = '\0';
-      return -1;
-    }
-    rc = vsnprintf(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, ap2);
-    if (rc < 0) {
-      autobuf->_error = true;
-      return rc;
-    }
-  }
+  result = _vappendf(autobuf, format, ap, ap2);
   va_end(ap2);
-  autobuf->_len = min_size;
-  return rc;
+
+  return result;
 }
 
 /**
@@ -156,12 +144,12 @@ abuf_vappendf(struct autobuf *autobuf,
  *   (excluding the \0)
  */
 int
-abuf_appendf(struct autobuf *autobuf, const char *fmt, ...)
-{
+abuf_appendf(struct autobuf *autobuf, const char *fmt, ...) {
   int rc;
   va_list ap;
 
-  if (autobuf == NULL) return 0;
+  if (autobuf == NULL)
+    return 0;
 
   va_start(ap, fmt);
   rc = abuf_vappendf(autobuf, fmt, ap);
@@ -178,13 +166,13 @@ abuf_appendf(struct autobuf *autobuf, const char *fmt, ...)
  *   (excluding the \0)
  */
 int
-abuf_puts(struct autobuf *autobuf, const char *s)
-{
+abuf_puts(struct autobuf *autobuf, const char *s) {
   size_t len;
 
-  if (autobuf == NULL || s == NULL) return 0;
+  if (autobuf == NULL || s == NULL)
+    return 0;
 
-  len  = strlen(s);
+  len = strlen(s);
   if (_autobuf_enlarge(autobuf, autobuf->_len + len + 1) < 0) {
     return -1;
   }
@@ -201,11 +189,11 @@ abuf_puts(struct autobuf *autobuf, const char *s)
  * @return -1 if an out-of-memory error happened, 0 otherwise
  */
 int
-abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm)
-{
+abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm) {
   size_t rc;
 
-  if (autobuf == NULL) return 0;
+  if (autobuf == NULL)
+    return 0;
 
   rc = strftime(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, tm);
   if (rc == 0) {
@@ -218,7 +206,7 @@ abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm)
     rc = strftime(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, tm);
     if (rc == 0) {
       /* make sure we are null-terminated */
-      autobuf->_buf[autobuf->_len + rc] = 0;
+      autobuf->_buf[autobuf->_len] = 0;
 
       return -1;
     }
@@ -226,10 +214,6 @@ abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm)
 
   /* add data to length field */
   autobuf->_len += rc;
-
-  if (rc == 0) {
-    return -1;
-  }
   return rc;
 }
 
@@ -241,9 +225,9 @@ abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm)
  * @return -1 if an out-of-memory error happened, 0 otherwise
  */
 int
-abuf_memcpy(struct autobuf *autobuf, const void *p, const size_t len)
-{
-  if (autobuf == NULL || len == 0) return 0;
+abuf_memcpy(struct autobuf *autobuf, const void *p, const size_t len) {
+  if (autobuf == NULL || len == 0)
+    return 0;
 
   if (_autobuf_enlarge(autobuf, autobuf->_len + len) < 0) {
     return -1;
@@ -265,10 +249,9 @@ abuf_memcpy(struct autobuf *autobuf, const void *p, const size_t len)
  * @return -1 if an out-of-memory error happened, 0 otherwise
  */
 int
-abuf_memcpy_prepend(struct autobuf *autobuf,
-    const void *p, const size_t len)
-{
-  if (autobuf == NULL || len == 0) return 0;
+abuf_memcpy_prepend(struct autobuf *autobuf, const void *p, const size_t len) {
+  if (autobuf == NULL || len == 0)
+    return 0;
 
   if (_autobuf_enlarge(autobuf, autobuf->_len + len) < 0) {
     return -1;
@@ -290,11 +273,12 @@ abuf_memcpy_prepend(struct autobuf *autobuf,
  * @param len number of bytes to be removed
  */
 void
-abuf_pull(struct autobuf * autobuf, size_t len) {
+abuf_pull(struct autobuf *autobuf, size_t len) {
   char *p;
   size_t newsize;
 
-  if (autobuf == NULL || len == 0) return;
+  if (autobuf == NULL || len == 0)
+    return;
 
   if (len != autobuf->_len) {
     memmove(autobuf->_buf, &autobuf->_buf[len], autobuf->_len - len);
@@ -330,8 +314,8 @@ abuf_pull(struct autobuf * autobuf, size_t len) {
  * @param length length of buffer in bytes
  */
 void
-abuf_hexdump(struct autobuf *out, const char *prefix, void *buffer, size_t length) {
-  uint8_t *buf;
+abuf_hexdump(struct autobuf *out, const char *prefix, const void *buffer, size_t length) {
+  const uint8_t *buf;
   size_t j, l;
 
   buf = buffer;
@@ -355,12 +339,30 @@ abuf_hexdump(struct autobuf *out, const char *prefix, void *buffer, size_t lengt
  * @param length length of buffer in bytes
  */
 static void
-_print_hexline(struct autobuf *out, void *buffer, size_t length) {
+_print_hexline(struct autobuf *out, const void *buffer, size_t length) {
   size_t i;
-  uint8_t *buf = buffer;
+  const uint8_t *buf = buffer;
 
+  for (i = 0; i < 32; i++) {
+    if ((i & 3) == 0) {
+      abuf_puts(out, " ");
+    }
+    if (i < length) {
+      abuf_appendf(out, "%02x", (int)(buf[i]));
+    }
+    else {
+      abuf_puts(out, "  ");
+    }
+  }
+
+  abuf_puts(out, " ");
   for (i = 0; i < length; i++) {
-    abuf_appendf(out, "%s%02x", ((i & 3) == 0) ? " " : "", (int) (buf[i]));
+    if (buf[i] >= 32 && buf[i] < 127) {
+      abuf_appendf(out, "%c", buf[i]);
+    }
+    else {
+      abuf_puts(out, ".");
+    }
   }
 }
 
@@ -371,14 +373,13 @@ _print_hexline(struct autobuf *out, void *buffer, size_t length) {
  * @return -1 if an out-of-memory error happened, 0 otherwise
  */
 static int
-_autobuf_enlarge(struct autobuf *autobuf, size_t new_size)
-{
+_autobuf_enlarge(struct autobuf *autobuf, size_t new_size) {
   char *p;
   size_t roundUpSize;
 
   new_size++;
   if (new_size > autobuf->_total) {
-    roundUpSize = ROUND_UP_TO_POWER_OF_2(new_size+1, getpagesize());
+    roundUpSize = ROUND_UP_TO_POWER_OF_2(new_size + 1, getpagesize());
     p = realloc(autobuf->_buf, roundUpSize);
     if (p == NULL) {
 #ifdef WIN32
@@ -395,4 +396,43 @@ _autobuf_enlarge(struct autobuf *autobuf, size_t new_size)
     autobuf->_total = roundUpSize;
   }
   return 0;
+}
+
+/**
+ * vprintf()-style function that appends the output to an autobuffer
+ * @param autobuf pointer to autobuf object
+ * @param format printf format string
+ * @param ap variable argument list pointer
+ * @param ap2 copy of variable argument list pointer
+ * @return -1 if an out-of-memory error happened,
+ *   otherwise it returns the number of written characters
+ *   (excluding the \0)
+ */
+static int
+_vappendf(struct autobuf *autobuf, const char *format, va_list ap, va_list ap2) {
+  int rc;
+  size_t min_size;
+
+  if (autobuf == NULL)
+    return 0;
+
+  rc = vsnprintf(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, ap);
+  if (rc < 0) {
+    autobuf->_error = true;
+    return rc;
+  }
+  min_size = autobuf->_len + (size_t)rc;
+  if (min_size >= autobuf->_total) {
+    if (_autobuf_enlarge(autobuf, min_size) < 0) {
+      autobuf->_buf[autobuf->_len] = '\0';
+      return -1;
+    }
+    rc = vsnprintf(autobuf->_buf + autobuf->_len, autobuf->_total - autobuf->_len, format, ap2);
+    if (rc < 0) {
+      autobuf->_error = true;
+      return rc;
+    }
+  }
+  autobuf->_len = min_size;
+  return rc;
 }

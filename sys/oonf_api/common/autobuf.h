@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,54 +39,53 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #ifndef _COMMON_AUTOBUF_H
 #define _COMMON_AUTOBUF_H
 
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
-#include <stdbool.h>
+
+#include "common/common_types.h"
 
 /**
  * Auto-sized buffer handler, mostly used for generation of
  * large string buffers.
  */
 struct autobuf {
-  /* total number of bytes allocated in the buffer */
+  /*! total number of bytes allocated in the buffer */
   size_t _total;
 
-  /* currently number of used bytes */
+  /*! currently number of used bytes */
   size_t _len;
 
-  /* pointer to allocated memory */
+  /*! pointer to allocated memory */
   char *_buf;
 
-  /* an error happened since the last stream cleanup */
+  /*! an error happened since the last stream cleanup */
   bool _error;
 };
 
-int abuf_init(struct autobuf *autobuf);
-void abuf_free(struct autobuf *autobuf);
-int abuf_vappendf(struct autobuf *autobuf, const char *fmt,
-    va_list ap) __attribute__ ((format(printf, 2, 0)));
-int abuf_appendf(struct autobuf *autobuf, const char *fmt,
-    ...) __attribute__ ((format(printf, 2, 3)));
-int abuf_puts(struct autobuf * autobuf, const char *s);
-int abuf_strftime(struct autobuf * autobuf,
-    const char *format, const struct tm * tm);
-int abuf_memcpy(struct autobuf * autobuf,
-    const void *p, const size_t len);
-int abuf_memcpy_prepend(struct autobuf *autobuf,
-    const void *p, const size_t len);
-void abuf_pull(struct autobuf * autobuf, size_t len);
-void abuf_hexdump(struct autobuf *out,
-    const char *prefix, void *buffer, size_t length);
+EXPORT int abuf_init(struct autobuf *autobuf);
+EXPORT void abuf_free(struct autobuf *autobuf);
+EXPORT int abuf_vappendf(struct autobuf *autobuf, const char *fmt, va_list ap) __attribute__((format(printf, 2, 0)));
+EXPORT int abuf_appendf(struct autobuf *autobuf, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+EXPORT int abuf_puts(struct autobuf *autobuf, const char *s);
+EXPORT int abuf_strftime(struct autobuf *autobuf, const char *format, const struct tm *tm);
+EXPORT int abuf_memcpy(struct autobuf *autobuf, const void *p, const size_t len);
+EXPORT int abuf_memcpy_prepend(struct autobuf *autobuf, const void *p, const size_t len);
+EXPORT void abuf_pull(struct autobuf *autobuf, size_t len);
+EXPORT void abuf_hexdump(struct autobuf *out, const char *prefix, const void *buffer, size_t length);
 
 /**
  * Clears the content of an autobuf
- * @param autobuf
+ * @param autobuf autobuffer instance
  */
-static inline void
+static INLINE void
 abuf_clear(struct autobuf *autobuf) {
   autobuf->_len = 0;
   autobuf->_error = false;
@@ -94,39 +93,41 @@ abuf_clear(struct autobuf *autobuf) {
 }
 
 /**
- * @param autobuf pointer to autobuf
+ * @param autobuf autobuffer instance
  * @return pointer to internal bufffer memory
  */
-static inline char *
+static INLINE char *
 abuf_getptr(struct autobuf *autobuf) {
   return autobuf->_buf;
 }
 
 /**
- * @param autobuf pointer to autobuf
+ * @param autobuf autobuffer instance
  * @return number of bytes stored in autobuf
  */
-static inline size_t
+static INLINE size_t
 abuf_getlen(struct autobuf *autobuf) {
   return autobuf->_len;
 }
 
 /**
- * @param autobuf pointer to autobuf
+ * @param autobuf autobuffer instance
  * @return number of bytes allocated in buffer
  */
-static inline size_t
+static INLINE size_t
 abuf_getmax(struct autobuf *autobuf) {
   return autobuf->_total;
 }
 
 /**
- *
- * @param autobuf
- * @param len
+ * set the length of the autobuffer, will truncate the length
+ * by the total amount of memory in the buffer. Normally used
+ * to shorten a buffer.
+ * @param autobuf autobuffer instance
+ * @param len new length of the autobuffer
  */
-static inline void
-abuf_setlen(struct autobuf * autobuf, size_t len) {
+static INLINE void
+abuf_setlen(struct autobuf *autobuf, size_t len) {
   if (autobuf->_total > len) {
     autobuf->_len = len;
   }
@@ -136,43 +137,43 @@ abuf_setlen(struct autobuf * autobuf, size_t len) {
 
 /**
  * Append a single byte to an autobuffer
- * @param autobuf
+ * @param autobuf autobuffer instance
  * @param c byte to append
  * @return -1 if an error happened, 0 otherwise
  */
-static inline int
+static INLINE int
 abuf_append_uint8(struct autobuf *autobuf, const uint8_t c) {
   return abuf_memcpy(autobuf, &c, 1);
 }
 
 /**
  * Append a uint16 to an autobuffer
- * @param autobuf
+ * @param autobuf autobuffer instance
  * @param s uint16 to append
  * @return -1 if an error happened, 0 otherwise
  */
-static inline int
+static INLINE int
 abuf_append_uint16(struct autobuf *autobuf, const uint16_t s) {
   return abuf_memcpy(autobuf, &s, 2);
 }
 
 /**
  * Append a uint32 to an autobuffer
- * @param autobuf
+ * @param autobuf autobuffer instance
  * @param l uint32 to append
  * @return -1 if an error happened, 0 otherwise
  */
-static inline int
+static INLINE int
 abuf_append_uint32(struct autobuf *autobuf, const uint32_t l) {
   return abuf_memcpy(autobuf, &l, 4);
 }
 
 /**
- * @param autobuf
+ * @param autobuf autobuffer instance
  * @return true if an autobuf function failed
  *  since the last cleanup of the stream
  */
-static inline bool
+static INLINE bool
 abuf_has_failed(struct autobuf *autobuf) {
   return autobuf->_error;
 }

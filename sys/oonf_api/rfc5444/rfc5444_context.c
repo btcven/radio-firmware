@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,33 +38,43 @@
  * the copyright holders.
  *
  */
-#include <rfc5444/rfc5444_context.h>
+
+/**
+ * @file
+ */
+
+#include "rfc5444_context.h"
 
 static const char *_rfc5444_positive_result_texts[] = {
-  [RFC5444_OKAY]                 = "Okay",
-  [RFC5444_DROP_TLV]             = "Drop TLV",
+  [RFC5444_OKAY] = "Okay",
+  [RFC5444_DROP_TLV] = "Drop TLV",
   [RFC5444_DROP_MSG_BUT_FORWARD] = "Drop message but forward it",
-  [RFC5444_DROP_MESSAGE]         = "Drop message",
-  [RFC5444_DROP_PACKET]          = "Drop packet",
+  [RFC5444_DROP_MESSAGE] = "Drop message",
+  [RFC5444_DROP_PACKET] = "Drop packet",
 };
 
 static const char *_rfc5444_negative_result_texts[] = {
-  [RFC5444_OKAY]                 = "Okay",
-  [-RFC5444_UNSUPPORTED_VERSION]  = "Version of rfc5444 not supported",
-  [-RFC5444_END_OF_BUFFER]        = "Early end of packet",
-  [-RFC5444_BAD_TLV_IDXFLAGS]     = "Bad combination of index flags",
-  [-RFC5444_BAD_TLV_VALUEFLAGS]   = "Bad combination of value flags",
-  [-RFC5444_BAD_TLV_LENGTH]       = "TLV length is no multiple of number of values",
-  [-RFC5444_OUT_OF_MEMORY]        = "Memory allocation failed",
-  [-RFC5444_EMPTY_ADDRBLOCK]      = "Address block with zero addresses",
-  [-RFC5444_BAD_MSG_TAILFLAGS]    = "Bad combination of address tail flags",
-  [-RFC5444_BAD_MSG_PREFIXFLAGS]  = "Bad combination of address prefix length flags",
-  [-RFC5444_DUPLICATE_TLV]        = "Duplicate address TLV",
-  [-RFC5444_OUT_OF_ADDRTLV_MEM]   = "Not enough memory for address-TLVs",
-  [-RFC5444_MTU_TOO_SMALL]        = "Configured MTU size too small",
-  [-RFC5444_NO_MSGCREATOR]        = "Cannot create message without message creator",
-  [-RFC5444_FW_MESSAGE_TOO_LONG]  = "Cannot forward message, content too long",
-  [-RFC5444_FW_BAD_SIZE]          = "Bad length field of message to be forwarded",
+  [RFC5444_OKAY] = "Okay",
+  [-RFC5444_UNSUPPORTED_VERSION] = "Version of rfc5444 not supported",
+  [-RFC5444_END_OF_BUFFER] = "Early end of packet",
+  [-RFC5444_BAD_TLV_IDXFLAGS] = "Bad combination of tlv index flags",
+  [-RFC5444_BAD_TLV_VALUEFLAGS] = "Bad combination of tlv value flags",
+  [-RFC5444_BAD_TLV_LENGTH] = "TLV length is no multiple of number of values",
+  [-RFC5444_OUT_OF_MEMORY] = "Memory allocation failed",
+  [-RFC5444_EMPTY_ADDRBLOCK] = "Address block with zero addresses",
+  [-RFC5444_BAD_MSG_TAILFLAGS] = "Bad combination of address tail flags",
+  [-RFC5444_BAD_MSG_PREFIXFLAGS] = "Bad combination of address prefix length flags",
+  [-RFC5444_DUPLICATE_TLV] = "Duplicate address TLV",
+  [-RFC5444_OUT_OF_ADDRTLV_MEM] = "Not enough memory for address-TLVs",
+  [-RFC5444_MTU_TOO_SMALL] = "Configured MTU size too small",
+  [-RFC5444_NO_MSGCREATOR] = "Cannot create message without message creator",
+  [-RFC5444_FW_MESSAGE_TOO_LONG] = "Cannot forward message, content too long",
+  [-RFC5444_FW_BAD_SIZE] = "Bad length field of message to be forwarded",
+  [-RFC5444_TOO_LARGE] = "RFC5444 packet larger than 64k",
+  [-RFC5444_FW_BAD_TRANSFORM] = "RFC5444 transformer failed",
+  [-RFC5444_BAD_ADDR_HEAD_LENGTH] = "Bad addrblock head length",
+  [-RFC5444_BAD_ADDR_TAIL_LENGTH] = "Bad addrblock tail length",
+  [-RFC5444_BAD_TLV_INDEX] = "Bad tlv index fields",
 };
 
 /**

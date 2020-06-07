@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,29 +39,45 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #ifndef RFC5444_TLV_WRITER_H_
 #define RFC5444_TLV_WRITER_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "common/common_types.h"
 
+/**
+ * tlv write session
+ */
 struct rfc5444_tlv_writer_data {
+  /*! pointer to binary buffer */
   uint8_t *buffer;
+
+  /*! size of header */
   size_t header;
+
+  /*! size of added TLVs */
   size_t added;
+
+  /*! size of allocated TLVs */
   size_t allocated;
+
+  /*! size of set TLVs */
   size_t set;
+
+  /*! maximum size allowed for TLVs */
   size_t max;
 };
 
 /* internal functions that are not exported to the user */
 void _rfc5444_tlv_writer_init(struct rfc5444_tlv_writer_data *data, size_t max, size_t mtu);
 
-enum rfc5444_result _rfc5444_tlv_writer_add(struct rfc5444_tlv_writer_data *data,
-    uint8_t type, uint8_t exttype, const void *value, size_t length);
-enum rfc5444_result _rfc5444_tlv_writer_allocate(struct rfc5444_tlv_writer_data *data,
-    bool has_exttype, size_t length);
-enum rfc5444_result _rfc5444_tlv_writer_set(struct rfc5444_tlv_writer_data *data,
-    uint8_t type, uint8_t exttype, const void *value, size_t length);
+enum rfc5444_result _rfc5444_tlv_writer_add(
+  struct rfc5444_tlv_writer_data *data, uint8_t type, uint8_t exttype, const void *value, size_t length);
+enum rfc5444_result _rfc5444_tlv_writer_allocate(struct rfc5444_tlv_writer_data *data, bool has_exttype, size_t length);
+enum rfc5444_result _rfc5444_tlv_writer_set(
+  struct rfc5444_tlv_writer_data *data, uint8_t type, uint8_t exttype, const void *value, size_t length);
 
 #endif /* RFC5444_TLV_WRITER_H_ */

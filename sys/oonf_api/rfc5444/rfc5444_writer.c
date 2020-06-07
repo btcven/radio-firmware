@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,34 +39,38 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
+#include "common/common_types.h"
 #include "common/list.h"
-#include "rfc5444/rfc5444_context.h"
-#include "rfc5444/rfc5444_writer.h"
-#include "rfc5444/rfc5444_api_config.h"
+#include "rfc5444_api_config.h"
+#include "rfc5444_context.h"
+#include "rfc5444_writer.h"
 
-static void _register_addrtlvtype(struct rfc5444_writer *writer,
-    struct rfc5444_writer_message *msg,
-    struct rfc5444_writer_tlvtype *type);
+static void _register_addrtlvtype(
+  struct rfc5444_writer *writer, struct rfc5444_writer_message *msg, struct rfc5444_writer_tlvtype *type);
 static void *_copy_addrtlv_value(struct rfc5444_writer *writer, const void *value, size_t length);
-static void _free_tlvtype_tlvs(struct rfc5444_writer *writer, struct rfc5444_writer_tlvtype *tlvtype);
 static void _lazy_free_message(struct rfc5444_writer *writer, struct rfc5444_writer_message *msg);
 static struct rfc5444_writer_message *_get_message(struct rfc5444_writer *writer, uint8_t msgid);
 static struct rfc5444_writer_address *_malloc_address_entry(void);
 static struct rfc5444_writer_addrtlv *_malloc_addrtlv_entry(void);
+static void _free_address_entry(struct rfc5444_writer_address *addr);
+static void _free_addrtlv_entry(struct rfc5444_writer_addrtlv *addrtlv);
 
 /**
  * @param type TLV type
  * @param exttype TLV extension type
  * @return combined type
  */
-static inline int
+static INLINE int
 _get_fulltype(uint8_t type, uint8_t exttype) {
   return type * 256 + exttype;
 }
@@ -77,8 +81,8 @@ _get_fulltype(uint8_t type, uint8_t exttype) {
  */
 void
 rfc5444_writer_init(struct rfc5444_writer *writer) {
-  assert (writer->msg_buffer != NULL && writer->msg_size > 0);
-  assert (writer->addrtlv_buffer != NULL && writer->addrtlv_size > 0);
+  assert(writer->msg_buffer != NULL && writer->msg_size > 0);
+  assert(writer->addrtlv_buffer != NULL && writer->addrtlv_size > 0);
 
   /* set default memory handler functions */
   if (!writer->malloc_address_entry)
@@ -86,9 +90,9 @@ rfc5444_writer_init(struct rfc5444_writer *writer) {
   if (!writer->malloc_addrtlv_entry)
     writer->malloc_addrtlv_entry = _malloc_addrtlv_entry;
   if (!writer->free_address_entry)
-    writer->free_address_entry = free;
+    writer->free_address_entry = _free_address_entry;
   if (!writer->free_addrtlv_entry)
-    writer->free_addrtlv_entry = free;
+    writer->free_addrtlv_entry = _free_addrtlv_entry;
 
   oonf_list_init_head(&writer->_targets);
 
@@ -101,6 +105,8 @@ rfc5444_writer_init(struct rfc5444_writer *writer) {
   oonf_list_init_head(&writer->_addr_tlvtype_head);
 
   avl_init(&writer->_msgcreators, avl_comp_uint8, false);
+  avl_init(&writer->_processors, avl_comp_int32, true);
+  avl_init(&writer->_forwarding_processors, avl_comp_int32, true);
 
 #if WRITER_STATE_MACHINE == true
   writer->_state = RFC5444_WRITER_NONE;
@@ -120,6 +126,7 @@ rfc5444_writer_cleanup(struct rfc5444_writer *writer) {
   struct rfc5444_writer_content_provider *provider, *safe_prv;
   struct rfc5444_writer_tlvtype *tlvtype, *safe_tt;
   struct rfc5444_writer_target *interf, *safe_interf;
+  struct rfc5444_writer_postprocessor *processor, *safe_proc;
 
   assert(writer);
 #if WRITER_STATE_MACHINE == true
@@ -139,6 +146,11 @@ rfc5444_writer_cleanup(struct rfc5444_writer *writer) {
   /* remove all generic address tlvtypes */
   oonf_list_for_each_element_safe(&writer->_addr_tlvtype_head, tlvtype, _tlvtype_node, safe_tt) {
     rfc5444_writer_unregister_addrtlvtype(writer, tlvtype);
+  }
+
+  /* remove all packet postprocessors */
+  avl_for_each_element_safe(&writer->_processors, processor, _node, safe_proc) {
+    rfc5444_writer_unregister_postprocessor(writer, processor);
   }
 
   /* remove all message creators */
@@ -176,7 +188,8 @@ rfc5444_writer_cleanup(struct rfc5444_writer *writer) {
  */
 enum rfc5444_result
 rfc5444_writer_add_addrtlv(struct rfc5444_writer *writer, struct rfc5444_writer_address *addr,
-    struct rfc5444_writer_tlvtype *tlvtype, const void *value, size_t length, bool allow_dup) {
+  struct rfc5444_writer_tlvtype *tlvtype, const void *value, size_t length, bool allow_dup)
+{
   struct rfc5444_writer_addrtlv *addrtlv;
 
 #if WRITER_STATE_MACHINE == true
@@ -208,10 +221,6 @@ rfc5444_writer_add_addrtlv(struct rfc5444_writer *writer, struct rfc5444_writer_
   addrtlv->addrtlv_node.key = &tlvtype->_full_type;
   avl_insert(&addr->_addrtlv_tree, &addrtlv->addrtlv_node);
 
-  /* add to tlvtype tree */
-  addrtlv->tlv_node.key = &addr->_orig_index;
-  avl_insert(&tlvtype->_tlv_tree, &addrtlv->tlv_node);
-
   return RFC5444_OKAY;
 }
 
@@ -221,13 +230,13 @@ rfc5444_writer_add_addrtlv(struct rfc5444_writer *writer, struct rfc5444_writer_
  *
  * @param writer pointer to writer context
  * @param msg pointer to message object
- * @param address pointer network address
+ * @param naddr pointer network address
  * @param mandatory true if address is mandatory for all fragments of message
  * @return pointer to address object, NULL if an error happened
  */
 struct rfc5444_writer_address *
-rfc5444_writer_add_address(struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_message *msg, const struct netaddr *naddr, bool mandatory) {
+rfc5444_writer_add_address(struct rfc5444_writer *writer __attribute__((unused)), struct rfc5444_writer_message *msg,
+  const struct netaddr *naddr, bool mandatory) {
   struct rfc5444_writer_address *address;
 
 #if WRITER_STATE_MACHINE == true
@@ -242,11 +251,13 @@ rfc5444_writer_add_address(struct rfc5444_writer *writer __attribute__ ((unused)
 
     memcpy(&address->address, naddr, sizeof(*naddr));
 
-    /* calculate original index of address */
-    address->_orig_index = msg->_addr_tree.count;
-
     /* add address to address list */
-    oonf_list_add_tail(&msg->_addr_head, &address->_addr_node);
+    if (mandatory) {
+      oonf_list_add_tail(&msg->_addr_head, &address->_addr_oonf_list_node);
+    }
+    else {
+      oonf_list_add_tail(&msg->_non_mandatory_addr_head, &address->_addr_oonf_list_node);
+    }
 
     /* add address into message address tree */
     address->_addr_tree_node.key = &address->address;
@@ -265,14 +276,12 @@ rfc5444_writer_add_address(struct rfc5444_writer *writer __attribute__ ((unused)
  * This function must NOT be called from the rfc5444 writer callbacks.
  *
  * @param writer pointer to writer context
- * @param msgtype messagetype for this tlv, -1 to registere a generic
- *   (not message specific) address TLV type
  * @param type pointer to tlvtype structure, type and exttype must be already initialized
+ * @param msgtype message type this TLV belongs too, -1 for address TLV
  * @return 0 if addresstlvtype was registered, -1 otherwise
  */
 int
-rfc5444_writer_register_addrtlvtype(struct rfc5444_writer *writer,
-    struct rfc5444_writer_tlvtype *type, int msgtype) {
+rfc5444_writer_register_addrtlvtype(struct rfc5444_writer *writer, struct rfc5444_writer_tlvtype *type, int msgtype) {
   struct rfc5444_writer_message *msg = NULL;
 
 #if WRITER_STATE_MACHINE == true
@@ -305,7 +314,6 @@ rfc5444_writer_unregister_addrtlvtype(struct rfc5444_writer *writer, struct rfc5
     return;
   }
 
-  _free_tlvtype_tlvs(writer, tlvtype);
   oonf_list_remove(&tlvtype->_tlvtype_node);
 
   if (tlvtype->_creator) {
@@ -325,9 +333,8 @@ rfc5444_writer_unregister_addrtlvtype(struct rfc5444_writer *writer, struct rfc5
  * @return -1 if an error happened, 0 otherwise
  */
 int
-rfc5444_writer_register_msgcontentprovider(struct rfc5444_writer *writer,
-    struct rfc5444_writer_content_provider *cpr,
-    struct rfc5444_writer_tlvtype *addrtlvs, size_t addrtlvs_count) {
+rfc5444_writer_register_msgcontentprovider(struct rfc5444_writer *writer, struct rfc5444_writer_content_provider *cpr,
+  struct rfc5444_writer_tlvtype *addrtlvs, size_t addrtlvs_count) {
   struct rfc5444_writer_message *msg;
   size_t i;
 
@@ -339,7 +346,7 @@ rfc5444_writer_register_msgcontentprovider(struct rfc5444_writer *writer,
     return -1;
   }
 
-  for (i=0; i<addrtlvs_count; i++) {
+  for (i = 0; i < addrtlvs_count; i++) {
     _register_addrtlvtype(writer, msg, &addrtlvs[i]);
   }
 
@@ -359,9 +366,8 @@ rfc5444_writer_register_msgcontentprovider(struct rfc5444_writer *writer,
  * @param addrtlvs_count length of addressblock tlv array
  */
 void
-rfc5444_writer_unregister_content_provider(
-    struct rfc5444_writer *writer, struct rfc5444_writer_content_provider *cpr,
-    struct rfc5444_writer_tlvtype *addrtlvs, size_t addrtlvs_count) {
+rfc5444_writer_unregister_content_provider(struct rfc5444_writer *writer, struct rfc5444_writer_content_provider *cpr,
+  struct rfc5444_writer_tlvtype *addrtlvs, size_t addrtlvs_count) {
   size_t i;
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
@@ -371,7 +377,7 @@ rfc5444_writer_unregister_content_provider(
     return;
   }
 
-  for (i=0; i<addrtlvs_count; i++) {
+  for (i = 0; i < addrtlvs_count; i++) {
     rfc5444_writer_unregister_addrtlvtype(writer, &addrtlvs[i]);
   }
   avl_remove(&cpr->creator->_provider_tree, &cpr->_provider_node);
@@ -384,14 +390,12 @@ rfc5444_writer_unregister_content_provider(
  *
  * @param writer pointer to writer context
  * @param msgid message type
- * @param target_specific true if an unique message must be created for each
+ * @param if_specific true if an unique message must be created for each
  *   interface
- * @param addr_len address length in bytes for this message
  * @return message object, NULL if an error happened
  */
 struct rfc5444_writer_message *
-rfc5444_writer_register_message(struct rfc5444_writer *writer, uint8_t msgid,
-    bool if_specific, uint8_t addr_len) {
+rfc5444_writer_register_message(struct rfc5444_writer *writer, uint8_t msgid, bool if_specific) {
   struct rfc5444_writer_message *msg;
 
 #if WRITER_STATE_MACHINE == true
@@ -412,8 +416,7 @@ rfc5444_writer_register_message(struct rfc5444_writer *writer, uint8_t msgid,
   /* mark message as _registered */
   msg->_registered = true;
 
-  /* set real address length and target_specific flag */
-  msg->addr_len = addr_len;
+  /* set target_specific flag */
   msg->target_specific = if_specific;
   return msg;
 }
@@ -426,8 +429,7 @@ rfc5444_writer_register_message(struct rfc5444_writer *writer, uint8_t msgid,
  * @param msg pointer to message object
  */
 void
-rfc5444_writer_unregister_message(struct rfc5444_writer *writer,
-    struct rfc5444_writer_message *msg) {
+rfc5444_writer_unregister_message(struct rfc5444_writer *writer, struct rfc5444_writer_message *msg) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
 #endif
@@ -445,6 +447,53 @@ rfc5444_writer_unregister_message(struct rfc5444_writer *writer,
 }
 
 /**
+ * Registers a new post-processor
+ * @param writer rfc5444 writer
+ * @param processor rfc5444 post-processor
+ */
+void
+rfc5444_writer_register_postprocessor(struct rfc5444_writer *writer, struct rfc5444_writer_postprocessor *processor) {
+  processor->_node.key = &processor->priority;
+  avl_insert(&writer->_processors, &processor->_node);
+}
+
+/**
+ * Unregisters a post-processor
+ * @param writer rfc5444 writer
+ * @param processor rfc5444 post-processor
+ */
+void
+rfc5444_writer_unregister_postprocessor(struct rfc5444_writer *writer, struct rfc5444_writer_postprocessor *processor) {
+  if (avl_is_node_added(&processor->_node)) {
+    avl_remove(&writer->_processors, &processor->_node);
+  }
+}
+
+/**
+ * Registers a new forward handler
+ * @param writer rfc5444 writer
+ * @param forward rfc5444 forward handler
+ */
+void
+rfc5444_writer_register_forward_handler(struct rfc5444_writer *writer, struct rfc5444_writer_forward_handler *forward) {
+  forward->_node.key = &forward->priority;
+  avl_insert(&writer->_forwarding_processors, &forward->_node);
+}
+
+/**
+ * Unregisters a forward handler
+ * @param writer rfc5444 writer
+ * @param forward rfc5444 forward handler
+ */
+void
+rfc5444_writer_unregister_forward_handler(
+  struct rfc5444_writer *writer, struct rfc5444_writer_forward_handler *forward) {
+  if (avl_is_node_added(&forward->_node)) {
+    avl_remove(&writer->_forwarding_processors, &forward->_node);
+  }
+}
+
+/**
  * Registers a packet handler for the writer
  * This function must not be called outside the message_addresses callback.
  *
@@ -452,9 +501,7 @@ rfc5444_writer_unregister_message(struct rfc5444_writer *writer,
  * @param pkt pointer to packet handler object
  */
 void
-rfc5444_writer_register_pkthandler(struct rfc5444_writer *writer,
-    struct rfc5444_writer_pkthandler *pkt) {
-
+rfc5444_writer_register_pkthandler(struct rfc5444_writer *writer, struct rfc5444_writer_pkthandler *pkt) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
 #endif
@@ -471,8 +518,7 @@ rfc5444_writer_register_pkthandler(struct rfc5444_writer *writer,
  */
 void
 rfc5444_writer_unregister_pkthandler(
-    struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_pkthandler *pkt) {
+  struct rfc5444_writer *writer __attribute__((unused)), struct rfc5444_writer_pkthandler *pkt) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
 #endif
@@ -487,13 +533,12 @@ rfc5444_writer_unregister_pkthandler(
  * @param interf pointer to interface object
  */
 void
-rfc5444_writer_register_target(struct rfc5444_writer *writer,
-    struct rfc5444_writer_target *interf) {
+rfc5444_writer_register_target(struct rfc5444_writer *writer, struct rfc5444_writer_target *interf) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
 #endif
 
-  assert (interf->packet_buffer != NULL && interf->packet_size > 0);
+  assert(interf->packet_buffer != NULL && interf->packet_size > 0);
 
   interf->_pkt.buffer = interf->packet_buffer;
   _rfc5444_tlv_writer_init(&interf->_pkt, interf->packet_size, interf->packet_size);
@@ -511,8 +556,7 @@ rfc5444_writer_register_target(struct rfc5444_writer *writer,
  */
 void
 rfc5444_writer_unregister_target(
-    struct rfc5444_writer *writer  __attribute__ ((unused)),
-    struct rfc5444_writer_target *interf) {
+  struct rfc5444_writer *writer __attribute__((unused)), struct rfc5444_writer_target *interf) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
 #endif
@@ -550,16 +594,13 @@ _get_message(struct rfc5444_writer *writer, uint8_t msgid) {
     return NULL;
   }
 
-  /* pre-initialize addr_len */
-  msg->addr_len = RFC5444_MAX_ADDRLEN;
-
   /* initialize list/tree heads */
-  avl_init(&msg->_provider_tree, avl_comp_uint32, true);
-
+  avl_init(&msg->_provider_tree, avl_comp_int32, true);
   oonf_list_init_head(&msg->_msgspecific_tlvtype_head);
 
   avl_init(&msg->_addr_tree, avl_comp_netaddr, false);
   oonf_list_init_head(&msg->_addr_head);
+  oonf_list_init_head(&msg->_non_mandatory_addr_head);
   return msg;
 }
 
@@ -574,14 +615,13 @@ _get_message(struct rfc5444_writer *writer, uint8_t msgid) {
  *    type and exttype must already be initialized
  */
 static void
-_register_addrtlvtype(struct rfc5444_writer *writer,
-    struct rfc5444_writer_message *msg,
-    struct rfc5444_writer_tlvtype *tlvtype) {
+_register_addrtlvtype(
+  struct rfc5444_writer *writer, struct rfc5444_writer_message *msg, struct rfc5444_writer_tlvtype *tlvtype) {
   /* initialize addrtlv fields */
   tlvtype->_creator = msg;
   tlvtype->_full_type = _get_fulltype(tlvtype->type, tlvtype->exttype);
 
-  avl_init(&tlvtype->_tlv_tree, avl_comp_uint32, true);
+  assert(!oonf_list_is_node_added(&tlvtype->_tlvtype_node));
 
   if (msg) {
     /* add to message creator list */
@@ -591,6 +631,8 @@ _register_addrtlvtype(struct rfc5444_writer *writer,
     /* add to generic address tlvtype list */
     oonf_list_add_tail(&writer->_addr_tlvtype_head, &tlvtype->_tlvtype_node);
   }
+
+  oonf_list_init_head(&tlvtype->_current_tlv_list);
 }
 
 /**
@@ -615,22 +657,6 @@ _copy_addrtlv_value(struct rfc5444_writer *writer, const void *value, size_t len
 }
 
 /**
- * Free memory of all temporary allocated tlvs of a certain type
- * @param writer pointer to writer context
- * @param tlvtype pointer to tlvtype object
- */
-static void
-_free_tlvtype_tlvs(struct rfc5444_writer *writer, struct rfc5444_writer_tlvtype *tlvtype) {
-  struct rfc5444_writer_addrtlv *addrtlv, *ptr;
-
-  avl_remove_all_elements(&tlvtype->_tlv_tree, addrtlv, tlv_node, ptr) {
-    /* remove from address too */
-    avl_remove(&addrtlv->address->_addrtlv_tree, &addrtlv->addrtlv_node);
-    writer->free_addrtlv_entry(addrtlv);
-  }
-}
-
-/**
  * Free all allocated addresses in a writers context
  * @param writer pointer to writer context
  * @param msg pointer to message object
@@ -642,11 +668,9 @@ _rfc5444_writer_free_addresses(struct rfc5444_writer *writer, struct rfc5444_wri
 
   avl_remove_all_elements(&msg->_addr_tree, addr, _addr_tree_node, safe_addr) {
     /* remove from list too */
-    oonf_list_remove(&addr->_addr_node);
+    oonf_list_remove(&addr->_addr_oonf_list_node);
 
     avl_remove_all_elements(&addr->_addrtlv_tree, addrtlv, addrtlv_node, safe_addrtlv) {
-      /* remove from tlvtype too */
-      avl_remove(&addrtlv->tlvtype->_tlv_tree, &addrtlv->tlv_node);
       writer->free_addrtlv_entry(addrtlv);
     }
     writer->free_address_entry(addr);
@@ -659,14 +683,12 @@ _rfc5444_writer_free_addresses(struct rfc5444_writer *writer, struct rfc5444_wri
 /**
  * Free message object if not in use anymore
  * @param writer pointer to writer context
- * @param _msg pointer to message object
+ * @param msg pointer to message object
  */
 static void
 _lazy_free_message(struct rfc5444_writer *writer, struct rfc5444_writer_message *msg) {
-  if (!msg->_registered
-      && oonf_list_is_empty(&msg->_addr_head)
-      && oonf_list_is_empty(&msg->_msgspecific_tlvtype_head)
-      && avl_is_empty(&msg->_provider_tree)) {
+  if (!msg->_registered && oonf_list_is_empty(&msg->_addr_head) && oonf_list_is_empty(&msg->_msgspecific_tlvtype_head) &&
+      avl_is_empty(&msg->_provider_tree)) {
     avl_remove(&writer->_msgcreators, &msg->_msgcreator_node);
     free(msg);
   }
@@ -676,7 +698,7 @@ _lazy_free_message(struct rfc5444_writer *writer, struct rfc5444_writer_message 
  * Default allocater for address objects
  * @return pointer to cleaned address object, NULL if an error happened
  */
-static struct rfc5444_writer_address*
+static struct rfc5444_writer_address *
 _malloc_address_entry(void) {
   return calloc(1, sizeof(struct rfc5444_writer_address));
 }
@@ -685,7 +707,25 @@ _malloc_address_entry(void) {
  * Default allocator for address tlv object.
  * @return pointer to cleaned address tlv object, NULL if an error happened
  */
-static struct rfc5444_writer_addrtlv*
+static struct rfc5444_writer_addrtlv *
 _malloc_addrtlv_entry(void) {
   return calloc(1, sizeof(struct rfc5444_writer_addrtlv));
+}
+
+/**
+ * Default deallocater for address objects
+ * @param addr pointer to address object
+ */
+static void
+_free_address_entry(struct rfc5444_writer_address *addr) {
+  free(addr);
+}
+
+/**
+ * Default deallocator for address tlv object.
+ * @param addrtlv pointer to address tlv object
+ */
+static void
+_free_addrtlv_entry(struct rfc5444_writer_addrtlv *addrtlv) {
+  free(addrtlv);
 }
