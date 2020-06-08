@@ -42,44 +42,57 @@
 /**
  * @file
  */
-#ifndef PRINT_RFC5444_H_
-#define PRINT_RFC5444_H_
 
-#include "common/autobuf.h"
+#ifndef DLEP_SIGNAL_H_
+#define DLEP_SIGNAL_H_
+
 #include "common/common_types.h"
-#include "rfc5444_reader.h"
+
+/*! keyword for setting all bits in a bitmap */
+#define BITMAP256_ALL "all"
+
+/*! keyword for clearing all bits in a bitmap */
+#define BITMAP256_NONE "none"
 
 /**
- * RFC5444 printer session
+ * Bitarray with 256 bits length
  */
-struct rfc5444_print_session {
-  /*! output buffer */
-  struct autobuf *output;
-
-  /**
-   * Callback to print RFC5444 packet text representation
-   * @param session printer session
-   */
-  void (*print_packet)(struct rfc5444_print_session *session);
-
-  /*! packet consumer */
-  struct rfc5444_reader_tlvblock_consumer _pkt;
-
-  /*! message consumer */
-  struct rfc5444_reader_tlvblock_consumer _msg;
-
-  /*! address consumer */
-  struct rfc5444_reader_tlvblock_consumer _addr;
-
-  /*! rfc5444 reader */
-  struct rfc5444_reader *_reader;
+struct bitmap256 {
+  /*! array for 256 bits */
+  uint64_t b[256 / sizeof(uint64_t) / 8];
 };
 
-EXPORT void rfc5444_print_add(struct rfc5444_print_session *, struct rfc5444_reader *reader);
-EXPORT void rfc5444_print_remove(struct rfc5444_print_session *session);
+EXPORT bool bitmap256_is_subset(struct bitmap256 *set, struct bitmap256 *subset);
 
-EXPORT enum rfc5444_result rfc5444_print_direct(struct autobuf *out, void *buffer, size_t length);
+/**
+ * get a bit of the bit array
+ * @param map pointer to bit array
+ * @param bit index of bit
+ * @return content of the bit
+ */
+static inline bool
+bitmap256_get(struct bitmap256 *map, uint8_t bit) {
+  return ((map->b[bit >> 6]) & (1ull << (bit & 63ull))) != 0;
+}
 
-EXPORT int rfc5444_print_raw(struct autobuf *out, void *buffer, size_t length);
+/**
+ * set a bit of the bit array
+ * @param map pointer to bit array
+ * @param bit index of bit
+ */
+static inline void
+bitmap256_set(struct bitmap256 *map, uint8_t bit) {
+  map->b[bit >> 6] |= 1ull << (bit & 63ull);
+}
 
-#endif /* PRINT_RFC5444_H_ */
+/**
+ * reset a bit of the bit array
+ * @param map pointer to bit array
+ * @param bit index of bit
+ */
+static inline void
+bitmap256_reset(struct bitmap256 *map, uint8_t bit) {
+  map->b[bit >> 6] &= ~(1ull << (bit & 63ull));
+}
+
+#endif /* DLEP_SIGNAL_H_ */

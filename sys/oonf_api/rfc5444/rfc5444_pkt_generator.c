@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,12 +38,17 @@
  * the copyright holders.
  *
  */
+
+/**
+ * @file
+ */
 #include <assert.h>
 #include <string.h>
 
+#include "common/common_types.h"
 #include "common/list.h"
-#include "rfc5444/rfc5444_writer.h"
-#include "rfc5444/rfc5444_api_config.h"
+#include "rfc5444_api_config.h"
+#include "rfc5444_writer.h"
 
 static void _write_pktheader(struct rfc5444_writer_target *target);
 
@@ -55,12 +60,19 @@ static void _write_pktheader(struct rfc5444_writer_target *target);
  * @param target pointer to target for packet
  */
 void
-_rfc5444_writer_begin_packet(struct rfc5444_writer *writer,
-    struct rfc5444_writer_target *target) {
+_rfc5444_writer_begin_packet(struct rfc5444_writer *writer, struct rfc5444_writer_target *target) {
+  struct rfc5444_writer_postprocessor *processor;
   struct rfc5444_writer_pkthandler *handler;
 
   /* cleanup packet buffer data */
   _rfc5444_tlv_writer_init(&target->_pkt, target->packet_size, target->packet_size);
+
+  /* loop over post-processors */
+  avl_for_each_element(&writer->_processors, processor, _node) {
+    if (processor->is_matching_signature(processor, RFC5444_WRITER_PKT_POSTPROCESSOR)) {
+      target->_pkt.allocated += processor->allocate_space;
+    }
+  }
 
 #if WRITER_STATE_MACHINE == true
   writer->_state = RFC5444_WRITER_ADD_PKTHEADER;
@@ -78,7 +90,9 @@ _rfc5444_writer_begin_packet(struct rfc5444_writer *writer,
 #endif
   /* add packet tlvs */
   oonf_list_for_each_element(&writer->_pkthandlers, handler, _pkthandle_node) {
-    handler->addPacketTLVs(writer, target);
+    if (handler->addPacketTLVs) {
+      handler->addPacketTLVs(writer, target);
+    }
   }
 
   target->_is_flushed = false;
@@ -95,10 +109,11 @@ _rfc5444_writer_begin_packet(struct rfc5444_writer *writer,
  * @param force true if the writer should create an empty packet if necessary
  */
 void
-rfc5444_writer_flush(struct rfc5444_writer *writer,
-    struct rfc5444_writer_target *target, bool force) {
+rfc5444_writer_flush(struct rfc5444_writer *writer, struct rfc5444_writer_target *target, bool force) {
+  struct rfc5444_writer_postprocessor *processor;
   struct rfc5444_writer_pkthandler *handler;
-  size_t len;
+  size_t len, total;
+  bool error;
 
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_NONE);
@@ -121,7 +136,9 @@ rfc5444_writer_flush(struct rfc5444_writer *writer,
 
   /* finalize packet tlvs */
   oonf_list_for_each_element_reverse(&writer->_pkthandlers, handler, _pkthandle_node) {
-    handler->finishPacketTLVs(writer, target);
+    if (handler->finishPacketTLVs) {
+      handler->finishPacketTLVs(writer, target);
+    }
   }
 
 #if WRITER_STATE_MACHINE == true
@@ -147,16 +164,29 @@ rfc5444_writer_flush(struct rfc5444_writer *writer,
   /* compress packet buffer */
   if (target->_bin_msgs_size) {
     memmove(&target->_pkt.buffer[len + target->_pkt.added + target->_pkt.set],
-        &target->_pkt.buffer[target->_pkt.header + target->_pkt.added + target->_pkt.allocated],
-        target->_bin_msgs_size);
+      &target->_pkt.buffer[target->_pkt.header + target->_pkt.added + target->_pkt.allocated], target->_bin_msgs_size);
   }
 
-  /* send packet */
-  target->sendPacket(writer, target, target->_pkt.buffer,
-      len + target->_pkt.added + target->_pkt.set + target->_bin_msgs_size);
+  /* run post-processors */
+  error = false;
+  total = len + target->_pkt.added + target->_pkt.set + target->_bin_msgs_size;
+  avl_for_each_element(&writer->_processors, processor, _node) {
+    if (processor->is_matching_signature(processor, RFC5444_WRITER_PKT_POSTPROCESSOR)) {
+      if (processor->process(processor, target, NULL, &target->_pkt.buffer[0], &total)) {
+        /* error, stop postprocessing and drop message */
+        error = true;
+        break;
+      }
+    }
+  }
+
+  if (!error && total > 0) {
+    /* send packet */
+    target->sendPacket(writer, target, target->_pkt.buffer, total);
+  }
 
   /* cleanup length information */
-  target->_pkt.set  = 0;
+  target->_pkt.set = 0;
   target->_bin_msgs_size = 0;
 
   /* mark buffer as flushed */
@@ -167,8 +197,7 @@ rfc5444_writer_flush(struct rfc5444_writer *writer,
 #endif
 
 #if DEBUG_CLEANUP == true
-  memset(target->_pkt.buffer, 0,
-      len + target->_pkt.added + target->_pkt.set + target->_bin_msgs_size);
+  memset(target->_pkt.buffer, 252, target->_pkt.max);
 #endif
 }
 
@@ -185,9 +214,9 @@ rfc5444_writer_flush(struct rfc5444_writer *writer,
  * @return RFC5444_OKAY if tlv has been added to packet, RFC5444_... otherwise
  */
 enum rfc5444_result
-rfc5444_writer_add_packettlv(struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_target *target,
-    uint8_t type, uint8_t exttype, void *value, size_t length) {
+rfc5444_writer_add_packettlv(struct rfc5444_writer *writer __attribute__((unused)),
+  struct rfc5444_writer_target *target, uint8_t type, uint8_t exttype, void *value, size_t length)
+{
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_ADD_PKTTLV);
 #endif
@@ -205,8 +234,9 @@ rfc5444_writer_add_packettlv(struct rfc5444_writer *writer __attribute__ ((unuse
  * @return RFC5444_OKAY if tlv has been added to packet, RFC5444_... otherwise
  */
 enum rfc5444_result
-rfc5444_writer_allocate_packettlv(struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_target *target, bool has_exttype, size_t length) {
+rfc5444_writer_allocate_packettlv(struct rfc5444_writer *writer __attribute__((unused)),
+  struct rfc5444_writer_target *target, bool has_exttype, size_t length)
+{
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_ADD_PKTTLV);
 #endif
@@ -226,9 +256,9 @@ rfc5444_writer_allocate_packettlv(struct rfc5444_writer *writer __attribute__ ((
  * @return RFC5444_OKAY if tlv has been added to packet, RFC5444_... otherwise
  */
 enum rfc5444_result
-rfc5444_writer_set_packettlv(struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_target *target,
-    uint8_t type, uint8_t exttype, void *value, size_t length) {
+rfc5444_writer_set_packettlv(struct rfc5444_writer *writer __attribute__((unused)),
+  struct rfc5444_writer_target *target, uint8_t type, uint8_t exttype, void *value, size_t length)
+{
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_FINISH_PKTTLV);
 #endif
@@ -243,15 +273,15 @@ rfc5444_writer_set_packettlv(struct rfc5444_writer *writer __attribute__ ((unuse
  * @param target pointer to target to set packet header
  * @param has_seqno true if packet has a sequence number
  */
-void rfc5444_writer_set_pkt_header(
-    struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_target *target, bool has_seqno) {
+void
+rfc5444_writer_set_pkt_header(
+  struct rfc5444_writer *writer __attribute__((unused)), struct rfc5444_writer_target *target, bool has_seqno) {
 #if WRITER_STATE_MACHINE == true
   assert(writer->_state == RFC5444_WRITER_ADD_PKTHEADER);
 #endif
 
   /* we assume that we have always an TLV block and subtract the 2 bytes later */
-  target->_pkt.header = 1+2;
+  target->_pkt.header = 1 + 2;
 
   /* handle sequence number */
   target->_has_seqno = has_seqno;
@@ -270,18 +300,17 @@ void rfc5444_writer_set_pkt_header(
  * @param seqno sequence number of packet
  */
 void
-rfc5444_writer_set_pkt_seqno(struct rfc5444_writer *writer __attribute__ ((unused)),
-    struct rfc5444_writer_target *target, uint16_t seqno) {
+rfc5444_writer_set_pkt_seqno(
+  struct rfc5444_writer *writer __attribute__((unused)), struct rfc5444_writer_target *target, uint16_t seqno) {
 #if WRITER_STATE_MACHINE == true
-  assert(writer->_state == RFC5444_WRITER_ADD_PKTHEADER
-      || writer->_state == RFC5444_WRITER_FINISH_PKTHEADER);
+  assert(writer->_state == RFC5444_WRITER_ADD_PKTHEADER || writer->_state == RFC5444_WRITER_FINISH_PKTHEADER);
 #endif
   target->_seqno = seqno;
 }
 
 /**
  * Write the header of a packet into the packet buffer
- * @param writer pointer to writer target object
+ * @param target rfc5444 writer target
  */
 static void
 _write_pktheader(struct rfc5444_writer_target *target) {

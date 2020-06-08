@@ -42,44 +42,25 @@
 /**
  * @file
  */
-#ifndef PRINT_RFC5444_H_
-#define PRINT_RFC5444_H_
 
-#include "common/autobuf.h"
 #include "common/common_types.h"
-#include "rfc5444_reader.h"
+
+#include "bitmap256.h"
 
 /**
- * RFC5444 printer session
+ * Test if a bitmap is a subset of another bitmap
+ * @param set reference bitmap
+ * @param subset potential subset bitmap
+ * @return true if it is a subset of the reference, false otherwise
  */
-struct rfc5444_print_session {
-  /*! output buffer */
-  struct autobuf *output;
+bool
+bitmap256_is_subset(struct bitmap256 *set, struct bitmap256 *subset) {
+  size_t i;
 
-  /**
-   * Callback to print RFC5444 packet text representation
-   * @param session printer session
-   */
-  void (*print_packet)(struct rfc5444_print_session *session);
-
-  /*! packet consumer */
-  struct rfc5444_reader_tlvblock_consumer _pkt;
-
-  /*! message consumer */
-  struct rfc5444_reader_tlvblock_consumer _msg;
-
-  /*! address consumer */
-  struct rfc5444_reader_tlvblock_consumer _addr;
-
-  /*! rfc5444 reader */
-  struct rfc5444_reader *_reader;
-};
-
-EXPORT void rfc5444_print_add(struct rfc5444_print_session *, struct rfc5444_reader *reader);
-EXPORT void rfc5444_print_remove(struct rfc5444_print_session *session);
-
-EXPORT enum rfc5444_result rfc5444_print_direct(struct autobuf *out, void *buffer, size_t length);
-
-EXPORT int rfc5444_print_raw(struct autobuf *out, void *buffer, size_t length);
-
-#endif /* PRINT_RFC5444_H_ */
+  for (i = 0; i < ARRAYSIZE(set->b); i++) {
+    if (set->b[i] != (set->b[i] | subset->b[i])) {
+      return false;
+    }
+  }
+  return true;
+}

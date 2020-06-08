@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,20 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #include <string.h>
 
-#include "rfc5444/rfc5444_tlv_writer.h"
-#include "rfc5444/rfc5444_context.h"
-#include "rfc5444/rfc5444_api_config.h"
+#include "common/common_types.h"
+#include "rfc5444_api_config.h"
+#include "rfc5444_context.h"
+#include "rfc5444_tlv_writer.h"
 
-static size_t _calc_tlv_size(bool exttype, size_t length);
-static void _write_tlv(uint8_t *ptr, uint8_t type, uint8_t exttype,
-    uint8_t idx1, uint8_t idx2, const void *value, size_t length);
+static size_t _calc_tlv_size(bool has_exttype, size_t length);
+static void _write_tlv(
+  uint8_t *ptr, uint8_t type, uint8_t exttype, uint8_t idx1, uint8_t idx2, const void *value, size_t length);
 
 /**
  * Internal function to initialize a data buffer (message or packet)
@@ -59,8 +64,7 @@ static void _write_tlv(uint8_t *ptr, uint8_t type, uint8_t exttype,
  * @param mtu number of bytes of allocated buffer
  */
 void
-_rfc5444_tlv_writer_init(struct rfc5444_tlv_writer_data *data, size_t max,
-    size_t mtu __attribute__ ((unused))) {
+_rfc5444_tlv_writer_init(struct rfc5444_tlv_writer_data *data, size_t max, size_t mtu __attribute__((unused))) {
   data->header = 0;
   data->added = 0;
   data->allocated = 0;
@@ -84,8 +88,9 @@ _rfc5444_tlv_writer_init(struct rfc5444_tlv_writer_data *data, size_t max,
  * @return RFC5444_OKAY if tlv has been added to buffer, RFC5444_... otherwise
  */
 enum rfc5444_result
-_rfc5444_tlv_writer_add(struct rfc5444_tlv_writer_data *data,
-    uint8_t type, uint8_t exttype, const void *value, size_t length) {
+_rfc5444_tlv_writer_add(
+  struct rfc5444_tlv_writer_data *data, uint8_t type, uint8_t exttype, const void *value, size_t length)
+{
   size_t s;
 
   s = _calc_tlv_size(exttype != 0, length);
@@ -97,7 +102,6 @@ _rfc5444_tlv_writer_add(struct rfc5444_tlv_writer_data *data,
   _write_tlv(&data->buffer[data->header + data->added], type, exttype, 0, 255, value, length);
   data->added += s;
   return RFC5444_OKAY;
-
 }
 
 /**
@@ -110,8 +114,8 @@ _rfc5444_tlv_writer_add(struct rfc5444_tlv_writer_data *data,
  * @return RFC5444_OKAY if tlv has been added to buffer, RFC5444_... otherwise
  */
 enum rfc5444_result
-_rfc5444_tlv_writer_allocate(struct rfc5444_tlv_writer_data *data,
-    bool has_exttype, size_t length) {
+_rfc5444_tlv_writer_allocate(struct rfc5444_tlv_writer_data *data, bool has_exttype, size_t length)
+{
   size_t s;
 
   s = _calc_tlv_size(has_exttype, length);
@@ -136,8 +140,9 @@ _rfc5444_tlv_writer_allocate(struct rfc5444_tlv_writer_data *data,
  * @return RFC5444_OKAY if tlv has been added to buffer, RFC5444_... otherwise
  */
 enum rfc5444_result
-_rfc5444_tlv_writer_set(struct rfc5444_tlv_writer_data *data,
-    uint8_t type, uint8_t exttype, const void *value, size_t length) {
+_rfc5444_tlv_writer_set(
+  struct rfc5444_tlv_writer_data *data, uint8_t type, uint8_t exttype, const void *value, size_t length)
+{
   size_t s;
 
   s = _calc_tlv_size(exttype != 0, length);
@@ -157,9 +162,10 @@ _rfc5444_tlv_writer_set(struct rfc5444_tlv_writer_data *data,
  * @param length number of bytes of tlv value, 0 if no value
  * @return number of bytes for TLV including header
  */
-static size_t _calc_tlv_size(bool exttype, size_t length) {
+static size_t
+_calc_tlv_size(bool has_exttype, size_t length) {
   size_t s = 2;
-  if (exttype) {
+  if (has_exttype) {
     s++;
   }
 
@@ -178,15 +184,14 @@ static size_t _calc_tlv_size(bool exttype, size_t length) {
  * This function does NOT do a length check before writing
  * @param ptr pointer to buffer
  * @param type tlv type
- * @param has_exttype extended tlv type, 0 if no extended type
+ * @param exttype extended tlv type, 0 if no extended type
  * @param idx1 lower index of tlv in address block, 0 if no address tlv
  * @param idx2 upper index of tlv in address block, 255 if no address tlv
  * @param value pointer to tlv value, NULL if no value
  * @param length number of bytes in tlv value, 0 if no value
  */
 static void
-_write_tlv(uint8_t *ptr, uint8_t type, uint8_t exttype,
-    uint8_t idx1, uint8_t idx2, const void *value, size_t length) {
+_write_tlv(uint8_t *ptr, uint8_t type, uint8_t exttype, uint8_t idx1, uint8_t idx2, const void *value, size_t length) {
   uint8_t flags = 0;
 
   /* calculate flags field */
@@ -205,7 +210,6 @@ _write_tlv(uint8_t *ptr, uint8_t type, uint8_t exttype,
   if (length > 0) {
     flags |= RFC5444_TLV_FLAG_VALUE;
   }
-
 
   *ptr++ = type;
   *ptr++ = flags;
