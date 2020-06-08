@@ -28,7 +28,8 @@
 #include "msg.h"
 
 #include "net/aodvv2/aodvv2.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
+#include "net/gnrc/ipv6/nib.h"
 #include "net/vaina.h"
 
 #include "shell_extended.h"
@@ -90,6 +91,11 @@ static int _init_ieee802154(void)
         return -1;
     }
 
+    /* Disable router advertisements on this interface, this interface acts as
+     * a router, but only does route IPv6 packets to other nodes, it isn't some
+     * sort of generic router which peers should connect to. */
+    gnrc_ipv6_nib_change_rtr_adv_iface(ieee802154_netif, false);
+
     /* Join LL-MANET-Routers multicast group, this is the IPv6 group where we'll
      * be receiving RFC 5444 UDP packets */
     if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
@@ -113,6 +119,10 @@ static int _init_slipdev(void)
         printf("Error: We need a wired interface to send packets to.\n");
         return -1;
     }
+
+    /* Disable router advertisements on the SLIP interface to not confuse
+     * connected nodes */
+    gnrc_ipv6_nib_change_rtr_adv_iface(slipdev_netif, false);
 
     /* Add known fe80::2 local address so a computer/esp32 can know how to
      * configure the routing table. */

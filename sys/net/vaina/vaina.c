@@ -23,7 +23,7 @@
 #include "net/gnrc/ipv6/nib/ft.h"
 
 #if IS_USED(MODULE_AODVV2)
-#include "net/aodvv2/client.h"
+#include "net/aodvv2/rcs.h"
 #endif
 
 #define ENABLE_DEBUG (0)
@@ -111,14 +111,14 @@ static int _process_msg(vaina_msg_t *msg)
 #if IS_USED(MODULE_AODVV2)
         case VAINA_MSG_RCS_ADD:
             DEBUG_PUTS("vaina: adding new client");
-            if (aodvv2_client_add(&msg->payload.rcs_add.ip, 128, 1) == NULL) {
+            if (aodvv2_rcs_add(&msg->payload.rcs_add.ip, 128, 1) == NULL) {
                 DEBUG_PUTS("vaina: client set is full");
                 return -ENOSPC;
             }
             break;
 
         case VAINA_MSG_RCS_DEL:
-            aodvv2_client_delete(&msg->payload.rcs_del.ip);
+            aodvv2_rcs_del(&msg->payload.rcs_del.ip, 128);
             break;
 #endif
 

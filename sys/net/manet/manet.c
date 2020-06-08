@@ -18,7 +18,7 @@
  * @}
  */
 
-#include "net/manet/manet.h"
+#include "net/manet.h"
 
 ipv6_addr_t ipv6_addr_all_manet_routers_link_local =
     IPV6_ADDR_ALL_MANET_ROUTERS_LINK_LOCAL;

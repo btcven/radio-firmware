@@ -59,11 +59,6 @@ extern "C" {
 /** @} */
 
 /**
- * @brief   AODVv2 prefix length
- */
-#define AODVV2_PREFIX_LEN (128)
-
-/**
  * @brief   IPC message to send a RREQ
  */
 #define AODVV2_MSG_TYPE_SEND_RREQ (0x9000)

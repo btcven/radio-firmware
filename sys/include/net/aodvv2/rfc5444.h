@@ -24,7 +24,7 @@
 #define NET_AODVV2_RFC5444_H
 
 #include "net/aodvv2/seqnum.h"
-#include "net/manet/manet.h"
+#include "net/manet.h"
 #include "net/metric.h"
 
 #include "timex.h"
@@ -39,56 +39,47 @@ extern "C" {
 
 /**
  * @name    RFC5444 thread stack size
- * @{
  */
 #ifndef CONFIG_AODVV2_RFC5444_STACK_SIZE
-#define CONFIG_AODVV2_RFC5444_STACK_SIZE (2048)
+#define CONFIG_AODVV2_RFC5444_STACK_SIZE     (2048)
 #endif
-/** @} */
 
 /**
  * @name    RFC5444 thread priority
- * @{
  */
 #ifndef CONFIG_AODVV2_RFC5444_PRIO
-#define CONFIG_AODVV2_RFC5444_PRIO (6)
+#define CONFIG_AODVV2_RFC5444_PRIO           (6)
 #endif
-/** @} */
 
 /**
  * @name    RFC5444 message queue size
- * @{
  */
 #ifndef CONFIG_AODVV2_RFC5444_MSG_QUEUE_SIZE
 #define CONFIG_AODVV2_RFC5444_MSG_QUEUE_SIZE (32)
 #endif
-/** @} */
 
 /**
  * @name    RFC5444 maximum packet size
- * @{
  */
 #ifndef CONFIG_AODVV2_RFC5444_PACKET_SIZE
-#define CONFIG_AODVV2_RFC5444_PACKET_SIZE (128)
+#define CONFIG_AODVV2_RFC5444_PACKET_SIZE    (128)
 #endif
-/** @} */
 
 /**
  * @name    RFC5444 address TLVs buffer size
- * @{
  */
 #ifndef CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE
 #define CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE (1000)
 #endif
-/** @} */
 
 /**
  * @brief   AODVv2 message types
  */
 typedef enum {
-    RFC5444_MSGTYPE_RREQ = 10, /**< RREQ message type */
-    RFC5444_MSGTYPE_RREP = 11, /**< RREP message type */
-    RFC5444_MSGTYPE_RERR = 12, /**< RERR message type */
+    RFC5444_MSGTYPE_RREQ = 10,    /**< RREQ message type */
+    RFC5444_MSGTYPE_RREP = 11,    /**< RREP message type */
+    RFC5444_MSGTYPE_RERR = 12,    /**< RERR message type */
+    RFC5444_MSGTYPE_RREP_ACK = 13 /**< RREP_Ack message type */
 } rfc5444_msg_type_t;
 
 /**
@@ -105,34 +96,30 @@ typedef enum {
  * @brief   Data about an OrigNode or TargNode.
  */
 typedef struct {
-    struct netaddr addr; /**< IP address of the node */
-    uint8_t metric; /**< Metric value */
-    aodvv2_seqnum_t seqnum; /**< Sequence Number */
+    ipv6_addr_t addr;             /**< IPv6 address of the node */
+    uint8_t pfx_len;              /**< IPv6 address length */
+    uint8_t metric;               /**< Metric value */
+    aodvv2_seqnum_t seqnum;       /**< Sequence Number */
 } node_data_t;
 
 /**
  * @brief   All data contained in a RREQ or RREP.
  */
 typedef struct {
-    uint8_t hoplimit; /**< Hop limit */
-    struct netaddr sender; /**< IP address of the neighboring router
-                                which sent the RREQ/RREP*/
+    uint8_t msg_hop_limit;        /**< Hop limit */
+    ipv6_addr_t sender;           /**< IP address of the neighboring router */
     routing_metric_t metric_type; /**< Metric type */
-    node_data_t orig_node; /**< Data about the originating node */
-    node_data_t targ_node; /**< Data about the originating node */
-    timex_t timestamp; /**< Point at which the packet was (roughly)
-                            received. Note that this timestamp
-                            will be set after the packet has been
-                            successfully parsed. */
+    node_data_t orig_node;        /**< OrigNode data */
+    node_data_t targ_node;        /**< TargNode data */
+    ipv6_addr_t seqnortr;         /**< SeqNoRtr */
+    timex_t timestamp;            /**< Time at which the message was received */
 } aodvv2_packet_data_t;
 
 typedef struct {
-    /** Interface for generating RFC5444 packets */
-    struct rfc5444_writer_target target;
-    /** Address to which the packet should be sent */
-    ipv6_addr_t target_addr;
-    aodvv2_packet_data_t packet_data; /**< Payload of the AODVv2 Message */
-    int type; /**< Type of the AODVv2 Message (i.e. rfc5444_msg_type) */
+    struct rfc5444_writer_target target; /**< RFC5444 writer target */
+    ipv6_addr_t target_addr;             /**< Address where the packet will be sent */
+    aodvv2_packet_data_t packet_data;    /**< Payload of the AODVv2 Message */
+    int type;                            /**< AODVV2 message type */
 } aodvv2_writer_target_t;
 
 /**
@@ -158,7 +145,7 @@ void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
  * @param[in] writer Pointer to the writer context.
  * @param[in] target Pointer to the writer target.
  */
-void aodvv2_rfc5444_writer_register(struct rfc5444_writer *writer,
+void aodvv2_rfc5444_writer_register(struct rfc5444_writer *wr,
                                     aodvv2_writer_target_t *target);
 
 /**
@@ -166,20 +153,24 @@ void aodvv2_rfc5444_writer_register(struct rfc5444_writer *writer,
  *
  * @pre (@p src != NULL) && (@p dst != NULL)
  *
- * @param[in] src  Source.
- * @param[out] dst Destination.
+ * @param[in]  src     Source.
+ * @param[in]  pfx_len Prefix length.
+ * @param[out] dst     Destination.
  */
-void ipv6_addr_to_netaddr(const ipv6_addr_t *src, struct netaddr *dst);
+void ipv6_addr_to_netaddr(const ipv6_addr_t *src, uint8_t pfx_len,
+                          struct netaddr *dst);
 
 /**
  * @brief   `struct netaddr` to `ipv6_addr_t`.
  *
  * @pre (@p src != NULL) && (@p dst != NULL)
  *
- * @param[in] src  Source.
- * @param[out] dst Destination.
+ * @param[in]  src     Source.
+ * @param[out] dst     Destination.
+ * @param[out] pfx_len Prefix length.
  */
-void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst);
+void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst,
+                          uint8_t *pfx_len);
 
 #ifdef __cplusplus
 } /* extern "C" */

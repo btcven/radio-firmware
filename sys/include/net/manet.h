@@ -17,8 +17,8 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef NET_MANET_MANET_H
-#define NET_MANET_MANET_H
+#ifndef NET_MANET_H
+#define NET_MANET_H
 
 #include "net/gnrc/netif.h"
 
@@ -46,7 +46,7 @@ extern "C" {
  *          RFC 5498, section 6
  *      </a>
  */
-#define UDP_MANET_PORT (269)
+#define UDP_MANET_PORT     (269)
 
 /**
  * @brief   IP Port for MANET Protocols (138).
@@ -78,5 +78,5 @@ int manet_netif_ipv6_group_join(gnrc_netif_t *netif);
 } /* extern "C" */
 #endif
 
-#endif /* NET_MANET_MANET_H */
+#endif /* NET_MANET_H */
 /** @} */

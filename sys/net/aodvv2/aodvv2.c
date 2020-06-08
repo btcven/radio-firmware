@@ -22,10 +22,10 @@
  */
 
 #include "net/aodvv2/rfc5444.h"
-#include "net/aodvv2/client.h"
-#include "net/aodvv2/metric.h"
 #include "net/aodvv2/lrs.h"
-#include "net/aodvv2/rreqtable.h"
+#include "net/aodvv2/mcmsg.h"
+#include "net/aodvv2/metric.h"
+#include "net/aodvv2/rcs.h"
 #include "net/aodvv2/seqnum.h"
 
 #include "net/gnrc/ipv6.h"
@@ -79,30 +79,6 @@ static uint8_t _writer_msg_addrtlvs[CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE];
 static uint8_t _writer_pkt_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static mutex_t _writer_lock;
 
-static int _find_netif_global_addr(ipv6_addr_t *addr)
-{
-    assert(addr != NULL);
-
-    ipv6_addr_t addrs[CONFIG_GNRC_NETIF_IPV6_ADDRS_NUMOF];
-
-    int numof = gnrc_netif_ipv6_addrs_get(_netif, addrs, sizeof(addrs));
-    if (numof < 0) {
-        DEBUG("aodvv2: couldn't get IPv6 addresses for iface\n");
-        return -1;
-    }
-
-    for (unsigned i = 0; i < (numof / sizeof(ipv6_addr_t)); i++) {
-        /* Pick up the first global address */
-        if (ipv6_addr_is_global(&addrs[i])) {
-            memcpy(addr, &addrs[i], sizeof(ipv6_addr_t));
-            return 0;
-        }
-    }
-
-    /* No address was found */
-    return -1;
-}
-
 static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                         const void *ctx)
 {
@@ -117,7 +93,7 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                 gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)ctx;
                 ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
 
-                if (aodvv2_client_find(&ipv6_hdr->src) != NULL) {
+                if (aodvv2_rcs_is_client(&ipv6_hdr->src) != NULL) {
                     if (aodvv2_buffer_pkt_add(ctx_addr, pkt) == 0) {
                         DEBUG("aodvv2: finding route\n");
                         aodvv2_find_route(&ipv6_hdr->src, ctx_addr);
@@ -159,7 +135,7 @@ static void _send_rreq(aodvv2_packet_data_t *packet_data,
            sizeof(aodvv2_packet_data_t));
 
     _writer_context.type = RFC5444_MSGTYPE_RREQ;
-    _writer_context.packet_data.hoplimit = packet_data->hoplimit;
+    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
 
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
@@ -183,7 +159,7 @@ static void _send_rrep(aodvv2_packet_data_t *packet_data,
            sizeof(aodvv2_packet_data_t));
 
     _writer_context.type = RFC5444_MSGTYPE_RREP;
-    _writer_context.packet_data.hoplimit = packet_data->hoplimit;
+    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
 
     /* set address to which the _send_packet callback should send our RREQ */
     memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
@@ -383,20 +359,9 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Initialize AODVv2 internal structures */
     aodvv2_seqnum_init();
     aodvv2_lrs_init();
-    aodvv2_client_init();
-    aodvv2_rreqtable_init();
+    aodvv2_rcs_init();
+    aodvv2_mcmsg_init();
     aodvv2_buffer_init();
-
-    /* Save our IPv6 address */
-    ipv6_addr_t netif_addr;
-    if (_find_netif_global_addr(&netif_addr) < 0) {
-        DEBUG("aodvv2: no global address found\n");
-    }
-    else {
-        /* Every node is it's own cllient */
-        aodvv2_client_add(&netif_addr, AODVV2_PREFIX_LEN,
-                          CONFIG_AODVV2_DEFAULT_METRIC);
-    }
 
     /* Register netreg */
     gnrc_netreg_entry_init_pid(&netreg, UDP_MANET_PORT, _pid);
@@ -510,22 +475,32 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     aodvv2_packet_data_t pkt;
 
     /* Set metric information */
-    pkt.hoplimit = aodvv2_metric_max(METRIC_HOP_COUNT);
+    pkt.msg_hop_limit = aodvv2_metric_max(METRIC_HOP_COUNT);
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    ipv6_addr_to_netaddr(orig_addr, &pkt.orig_node.addr);
+    aodvv2_rcs_entry_t *client;
+    if ((client = aodvv2_rcs_is_client(orig_addr)) != NULL) {
+        pkt.orig_node.addr = client->addr;
+        pkt.orig_node.pfx_len = client->pfx_len;
+    }
+    else {
+        DEBUG_PUTS("aodvv2: not a client");
+        return -1;
+    }
+
     pkt.orig_node.metric = 0;
     pkt.orig_node.seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
 
     /* Set TargNode information */
-    ipv6_addr_to_netaddr(target_addr, &pkt.targ_node.addr);
+    pkt.targ_node.addr = *target_addr;
+    pkt.targ_node.pfx_len = 128;
     pkt.targ_node.metric = 0;
     pkt.targ_node.seqnum = 0;
 
-    /* Add RREQ to rreqtable */
-    aodvv2_rreqtable_add(&pkt);
+    /* Add RREQ to mcmsg */
+    aodvv2_mcmsg_process(&pkt);
 
     return aodvv2_send_rreq(&pkt, &ipv6_addr_all_manet_routers_link_local);
 }

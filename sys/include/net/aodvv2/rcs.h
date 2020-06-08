@@ -20,8 +20,8 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_CLIENT_H
-#define AODVV2_CLIENT_H
+#ifndef AODVV2_RCS_H
+#define AODVV2_RCS_H
 
 #include "net/ipv6/addr.h"
 
@@ -33,8 +33,8 @@ extern "C" {
  * @name    Configurable number of maximum entries in the Router Client Set
  * @{
  */
-#ifndef CONFIG_AODVV2_CLIENT_SET_ENTRIES
-#define CONFIG_AODVV2_CLIENT_SET_ENTRIES (2)
+#ifndef CONFIG_AODVV2_RCS_ENTRIES
+#define CONFIG_AODVV2_RCS_ENTRIES (2)
 #endif
 /** @} */
 
@@ -50,7 +50,7 @@ typedef struct {
      * @brief An IP address or the start of an address range that requires route
      *        discovery services from the AODVv2 router.
      */
-    ipv6_addr_t ip_address;
+    ipv6_addr_t addr;
     /**
      * @brief The length, in bits, of the routing prefix associated with the
      * IP address.
@@ -59,19 +59,18 @@ typedef struct {
      * the AODVv2 router MUST participate in route discovery on behalf of all
      * addresses within that prefix.
      */
-    uint8_t prefix_length;
+    uint8_t pfx_len;
     /**
      * @brief The cost associated with reaching the client's address or address
      *        range.
      */
     uint8_t cost;
-    bool _used; /**< **Not meant to be changed by user!** */
-} aodvv2_client_entry_t;
+} aodvv2_rcs_entry_t;
 
 /**
  * @brief   Initialize Router Client Set
  */
-void aodvv2_client_init(void);
+void aodvv2_rcs_init(void);
 
 /**
  * @brief   Add a client to the Router Client Set.
@@ -84,38 +83,57 @@ void aodvv2_client_init(void);
  * @param[in] cost          Cost associated with the client.
  *
  * @return NULL The Set is full.
- * @return aodvv2_client_entry_t * Pointer to the entry in the client set.
+ * @return aodvv2_rcs_entry_t * Pointer to the entry in the client set.
  */
-aodvv2_client_entry_t *aodvv2_client_add(const ipv6_addr_t *addr,
-                                         const uint8_t prefix_length,
-                                         const uint8_t cost);
+aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr,
+                                   const uint8_t prefix_length,
+                                   const uint8_t cost);
+
 /**
  * @brief   Delete a client from the Router Client Set
  *
  * @pre @p addr != NULL
  *
- * @param[in] addr IP address of the client to remove.
- *
- * @return 0  Deletion succeed.
- * @return -1 Client doesn't exist in the set.
+ * @param[in] addr    IPv6 address of the client to remove.
+ * @param[in] pfx_len `addr` prefix length.
  */
-int aodvv2_client_delete(const ipv6_addr_t *addr);
+void aodvv2_rcs_del(const ipv6_addr_t *addr, uint8_t pfx_len);
 
 /**
  * @brief   Find a client in the set.
  *
- * @pre @p != NULL
+ * @pre @p addr != NULL
  *
- * @param[in] addr The address of the client to be found.
+ * @param[in] addr    The client address to be found.
+ * @param[in] pfx_len `addr` prefix length.
  *
- * @return aodvv2_client_entry_t * Pointer to entry if found.
+ * @return Pointer to entry if found.
  * @return NULL Not found.
  */
-aodvv2_client_entry_t *aodvv2_client_find(const ipv6_addr_t *addr);
+aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
+                                       uint8_t pfx_len);
+
+/**
+ * @brief   Checks if the given IPv6 address matches an entry.
+ *
+ * @pre @p addr != NULL
+ *
+ * @param[in] addr The IPv6 address.
+ *
+ * @return NULL if not found, otherwise pointer to RCS entry.
+ */
+aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr);
+
+/**
+ * @brief   Print RCS entries.
+ *
+ * @param[in] entry The entry to get printed.
+ */
+void aodvv2_rcs_print_entries(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_CLIENT_H */
+#endif /* AODVV2_RCS_H */
 /** @} */
