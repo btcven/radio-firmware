@@ -1,8 +1,8 @@
 #!/bin/sh
 
 TUN=sl0
-PREFIX=128
-TUN_GLB="2001::200:0:cafe" # Dirección global de prueba
+PREFIX=64
+TUN_GLB="fc00:db8::1" # Dirección global de prueba
 SCRIPT=$(readlink -f "$0")
 BASEDIR=$(dirname "$SCRIPT")
 
@@ -29,12 +29,13 @@ add_addresses() {
         Linux)
             cargo build --release
             ${SUDO} ip address add ${TUN_GLB} dev ${TUN}
-            ${SUDO} target/release/vaina rcs add ${TUN} ${TUN_GLB}
+            ${SUDO} target/release/vaina rcs add ${TUN} ${PREFIX} ${TUN_GLB}
             ${SUDO} target/release/vaina nib add ${TUN} ${PREFIX} ${TUN_GLB}
             ;;
         OSX)
+            cargo build --relesae
 # TODO: add the IPV6 address to the interface!!!
-            ${SUDO} target/release/vaina rcs add ${TUN} ${TUN_GLB}
+            ${SUDO} target/release/vaina rcs add ${TUN} ${PREFIX} ${TUN_GLB}
             ${SUDO} target/release/vaina nib add ${TUN} ${PREFIX} ${TUN_GLB}
             unsupported_platform
             ;;

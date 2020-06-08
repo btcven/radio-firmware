@@ -212,6 +212,7 @@ int aodvv2_mcmsg_process(aodvv2_packet_data_t *msg)
             if (_is_compatible_mcmsg(&comparable->data, &entry->data)) {
                 if (entry->data.metric <= comparable->data.metric) {
                     DEBUG_PUTS("aodvv2: received McMsg is worse than stored");
+                    mutex_unlock(&_lock);
                     return AODVV2_MCMSG_REDUNDANT;
                 }
             }

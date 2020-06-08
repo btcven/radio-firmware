@@ -66,16 +66,18 @@ static int _parse_msg(vaina_msg_t *vaina, uint8_t *buf, size_t len)
 #if IS_USED(MODULE_AODVV2)
         case VAINA_MSG_RCS_ADD:
         case VAINA_MSG_RCS_DEL:
-            if (len < (2 + sizeof(ipv6_addr_t))) {
+            if (len < (2 + 1 + sizeof(ipv6_addr_t))) {
                 return -EINVAL;
             }
             vaina->msg = type;
             vaina->seqno = seqno;
             if (vaina->msg == VAINA_MSG_RCS_ADD) {
-                memcpy(&vaina->payload.rcs_add.ip, &buf[2], sizeof(ipv6_addr_t));
+                vaina->payload.rcs_add.pfx_len = buf[2];
+                memcpy(&vaina->payload.rcs_add.ip, &buf[3], sizeof(ipv6_addr_t));
             }
             else {
-                memcpy(&vaina->payload.rcs_del.ip, &buf[2], sizeof(ipv6_addr_t));
+                vaina->payload.rcs_del.pfx_len = buf[2];
+                memcpy(&vaina->payload.rcs_del.ip, &buf[3], sizeof(ipv6_addr_t));
             }
             break;
 #endif
@@ -88,11 +90,11 @@ static int _parse_msg(vaina_msg_t *vaina, uint8_t *buf, size_t len)
             vaina->msg = type;
             vaina->seqno = seqno;
             if (vaina->msg == VAINA_MSG_RCS_ADD) {
-                vaina->payload.nib_add.prefix = buf[2];
+                vaina->payload.nib_add.pfx_len = buf[2];
                 memcpy(&vaina->payload.nib_add.ip, &buf[3], sizeof(ipv6_addr_t));
             }
             else {
-                vaina->payload.nib_del.prefix = buf[2];
+                vaina->payload.nib_del.pfx_len = buf[2];
                 memcpy(&vaina->payload.nib_del.ip, &buf[3], sizeof(ipv6_addr_t));
             }
             break;
@@ -111,21 +113,22 @@ static int _process_msg(vaina_msg_t *msg)
 #if IS_USED(MODULE_AODVV2)
         case VAINA_MSG_RCS_ADD:
             DEBUG_PUTS("vaina: adding new client");
-            if (aodvv2_rcs_add(&msg->payload.rcs_add.ip, 128, 1) == NULL) {
+            if (aodvv2_rcs_add(&msg->payload.rcs_add.ip,
+                               msg->payload.rcs_add.pfx_len, 1) == NULL) {
                 DEBUG_PUTS("vaina: client set is full");
                 return -ENOSPC;
             }
             break;
 
         case VAINA_MSG_RCS_DEL:
-            aodvv2_rcs_del(&msg->payload.rcs_del.ip, 128);
+            aodvv2_rcs_del(&msg->payload.rcs_del.ip, msg->payload.rcs_del.pfx_len);
             break;
 #endif
 
         case VAINA_MSG_NIB_ADD:
             DEBUG_PUTS("vaina: adding NIB entry");
             if (gnrc_ipv6_nib_ft_add(&msg->payload.nib_add.ip,
-                                     msg->payload.nib_add.prefix,
+                                     msg->payload.nib_add.pfx_len,
                                      NULL, _netif->pid, 0) < 0) {
                 return -ENOMEM;
             }
@@ -133,7 +136,7 @@ static int _process_msg(vaina_msg_t *msg)
 
         case VAINA_MSG_NIB_DEL:
             gnrc_ipv6_nib_ft_del(&msg->payload.nib_del.ip,
-                                 msg->payload.nib_del.prefix);
+                                 msg->payload.nib_del.pfx_len);
             break;
 
         default:

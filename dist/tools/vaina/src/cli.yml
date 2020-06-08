@@ -46,6 +46,10 @@ subcommands:
                         help: "Network interface (e.g: sl0)"
                         required: true
                         takes_value: true
+                    - prefix:
+                        help: "IPv6 prefix in bits (e.g: 128)"
+                        required: true
+                        takes_value: true
                     - IP:
                         help: "IPv6 address of the client to add"
                         required: true
@@ -55,6 +59,10 @@ subcommands:
                 args:
                     - interface:
                         help: "Network interface (e.g: sl0)"
+                        required: true
+                        takes_value: true
+                    - prefix:
+                        help: "IPv6 prefix in bits (e.g: 128)"
                         required: true
                         takes_value: true
                     - IP:

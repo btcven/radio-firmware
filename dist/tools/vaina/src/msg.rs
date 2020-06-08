@@ -24,6 +24,8 @@ pub enum Message {
     RcsAdd {
         /// Sequence number
         seqno: u8,
+        /// IPv6 address prefix
+        prefix: u8,
         /// Entry IPv6 address
         ip: Ipv6Addr,
     },
@@ -31,6 +33,8 @@ pub enum Message {
     RcsDel {
         /// Sequence number
         seqno: u8,
+        /// IPv6 address prefix
+        prefix: u8,
         /// Entry IPv6 address
         ip: Ipv6Addr,
     },
@@ -76,14 +80,16 @@ impl Message {
 
         match *self {
             Message::Ack { .. } | Message::Nack { .. } => {}
-            Message::RcsAdd { seqno, ref ip } => {
+            Message::RcsAdd { seqno, prefix, ref ip } => {
                 buf.put_u8(VAINA_MSG_RCS_ADD);
                 buf.put_u8(seqno);
+                buf.put_u8(prefix);
                 buf.put_slice(&ip.octets());
             }
-            Message::RcsDel { seqno, ref ip } => {
+            Message::RcsDel { seqno, prefix, ref ip } => {
                 buf.put_u8(VAINA_MSG_RCS_DEL);
                 buf.put_u8(seqno);
+                buf.put_u8(prefix);
                 buf.put_slice(&ip.octets());
             }
             Message::NibAdd {
