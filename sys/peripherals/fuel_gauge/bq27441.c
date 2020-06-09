@@ -13,7 +13,7 @@
  * @file
  * @brief       fuel gauge BQ27441
  *
- * @author      Luis Ruiz <luisan00@hotmail.com>
+ * @author      Locha Mesh Developers <developers@locha.io>
  *
  * @}
  */
