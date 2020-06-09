@@ -13,7 +13,7 @@
  * @file
  * @brief       Fuel gauge BQ27441
  *
- * @author      Luis Ruiz <luisan00@hotmail.com>
+ * @author      Locha Mesh Developers <developers@locha.io>
  */
 #ifndef BQ27441_H
 #define BQ27441_H
