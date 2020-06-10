@@ -34,18 +34,11 @@ USEMODULE += gnrc_pktdump
 USEMODULE += manet
 USEMODULE += aodvv2
 USEMODULE += shell_extended
+USEMODULE += vaina
 
-USEMODULE += shell
-USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += netstats_l2
 USEMODULE += netstats_ipv6
-
-USEMODULE += vaina
-
-USEMODULE += posix_inet
-
-USEMODULE += timex
 
 USEMODULE += slipdev
 
