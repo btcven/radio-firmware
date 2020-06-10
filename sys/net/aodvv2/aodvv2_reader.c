@@ -33,6 +33,8 @@
 
 #include "xtimer.h"
 
+#include "rfc5444_compat.h"
+
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
