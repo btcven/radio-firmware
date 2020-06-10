@@ -148,7 +148,7 @@ static int _process_msg(vaina_msg_t *msg)
 
 static int _send_ack(vaina_msg_t *msg, sock_udp_ep_t *remote, bool good_ack)
 {
-    DEBUG("vaina: sending %s\n", good_ack ? "ack" : "nack");
+    char res[IPV6_ADDR_MAX_STR_LEN];
     uint8_t buf[2];
     if (good_ack) {
         buf[0] = VAINA_MSG_ACK;
@@ -157,6 +157,12 @@ static int _send_ack(vaina_msg_t *msg, sock_udp_ep_t *remote, bool good_ack)
         buf[0] = VAINA_MSG_NACK;
     }
     buf[1] = msg->seqno;
+    remote->netif = _netif->pid;
+
+    DEBUG("vaina: sending %s\n", good_ack ? "ack" : "nack");
+    DEBUG("vaina: to %s%%%d\n",
+          ipv6_addr_to_str(res, (ipv6_addr_t *)&remote->addr, sizeof(res)),
+          remote->netif);
 
     return sock_udp_send(&_sock, buf, sizeof(buf), remote);
 }
