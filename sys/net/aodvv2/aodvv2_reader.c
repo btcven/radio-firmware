@@ -21,7 +21,7 @@
  * @}
  */
 
-#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"

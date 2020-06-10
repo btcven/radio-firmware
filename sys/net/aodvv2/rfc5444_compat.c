@@ -21,7 +21,6 @@
  * @}
  */
 
-#include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/rfc5444.h"
 
 #include <assert.h>

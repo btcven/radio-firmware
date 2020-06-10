@@ -21,7 +21,6 @@
  * @}
  */
 
-#include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/mcmsg.h"
 
 #define ENABLE_DEBUG (0)

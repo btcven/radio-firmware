@@ -21,6 +21,7 @@
  * @}
  */
 
+#include "net/aodvv2.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"
