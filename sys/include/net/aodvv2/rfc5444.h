@@ -118,8 +118,6 @@ typedef struct {
 typedef struct {
     struct rfc5444_writer_target target; /**< RFC5444 writer target */
     ipv6_addr_t target_addr;             /**< Address where the packet will be sent */
-    aodvv2_packet_data_t packet_data;    /**< Payload of the AODVv2 Message */
-    int type;                            /**< AODVV2 message type */
 } aodvv2_writer_target_t;
 
 #ifdef __cplusplus

@@ -32,10 +32,33 @@ extern "C" {
 /**
  * @brief   Register AODVv2 message writer
  *
- * @param[in] writer Pointer to the writer context.
- * @param[in] target Pointer to the writer target.
+ * @param[in] wr      The RFC 5444 writer.
  */
-void aodvv2_writer_init(struct rfc5444_writer *wr, aodvv2_writer_target_t *target);
+void aodvv2_writer_init(struct rfc5444_writer *wr);
+
+/**
+ * @brief   Write a RREQ
+ *
+ * @pre (@p wr != NULL) && (@p message != NULL)
+ *
+ * @param[in] wr      The RFC 5444 writer.
+ * @param[in] message The RREQ message data.
+ *
+ * @return 0 on success, otherwise 0< on failure.
+ */
+int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *message);
+
+/**
+ * @brief   Write a RREP
+ *
+ * @pre (@p wr != NULL) && (@p message != NULL)
+ *
+ * @param[in] wr      The RFC 5444 writer.
+ * @param[in] message The RREP message data.
+ *
+ * @return 0 on success, otherwise 0< on failure.
+ */
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_packet_data_t *message);
 
 #ifdef __cplusplus
 } /* extern "C" */

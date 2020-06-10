@@ -126,51 +126,33 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
     }
 }
 
-static void _send_rreq(aodvv2_packet_data_t *packet_data,
-                       ipv6_addr_t *next_hop)
+static void _send_rreq(aodvv2_packet_data_t *message, ipv6_addr_t *next_hop)
 {
-    assert(packet_data != NULL && next_hop != NULL);
+    assert(message != NULL);
+    assert(next_hop != NULL);
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&_writer_lock);
+    _writer_context.target_addr = *next_hop;
 
-    /* Copy packet */
-    memcpy(&_writer_context.packet_data, packet_data,
-           sizeof(aodvv2_packet_data_t));
+    aodvv2_writer_send_rreq(&_writer, message);
 
-    _writer_context.type = RFC5444_MSGTYPE_RREQ;
-    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
-
-    /* set address to which the _send_packet callback should send our RREQ */
-    memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
-
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREQ, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
-
     mutex_unlock(&_writer_lock);
 }
 
-static void _send_rrep(aodvv2_packet_data_t *packet_data,
-                       ipv6_addr_t *next_hop)
+static void _send_rrep(aodvv2_packet_data_t *message, ipv6_addr_t *next_hop)
 {
-    assert(packet_data != NULL && next_hop != NULL);
+    assert(message != NULL);
+    assert(next_hop != NULL);
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&_writer_lock);
+    _writer_context.target_addr = *next_hop;
 
-    /* Copy packet */
-    memcpy(&_writer_context.packet_data, packet_data,
-           sizeof(aodvv2_packet_data_t));
+    aodvv2_writer_send_rrep(&_writer, message);
 
-    _writer_context.type = RFC5444_MSGTYPE_RREP;
-    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
-
-    /* set address to which the _send_packet callback should send our RREQ */
-    memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
-
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREP, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
-
     mutex_unlock(&_writer_lock);
 }
 
@@ -403,7 +385,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Register a target (for sending messages to) in writer */
     rfc5444_writer_register_target(&_writer, &_writer_context.target);
 
-    aodvv2_writer_init(&_writer, &_writer_context);
+    aodvv2_writer_init(&_writer);
 
     mutex_unlock(&_writer_lock);
 

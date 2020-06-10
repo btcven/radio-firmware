@@ -77,13 +77,13 @@ static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] =
 static struct rfc5444_writer_message *_rreq_msg;
 static struct rfc5444_writer_message *_rrep_msg;
 
-static aodvv2_writer_target_t *_target;
+static aodvv2_packet_data_t _msg;
 
 static int _cb_add_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message)
 {
     /* no originator, no hopcount, has msg_hop_limit, no seqno */
     rfc5444_writer_set_msg_header(wr, message, false, false, true, false);
-    rfc5444_writer_set_msg_hoplimit(wr, message, _target->packet_data.msg_hop_limit);
+    rfc5444_writer_set_msg_hoplimit(wr, message, _msg.msg_hop_limit);
 
     return 0;
 }
@@ -95,29 +95,29 @@ static void _cb_rreq_add_addresses(struct rfc5444_writer *wr)
     uint8_t pfx_len;
 
     /* Add OrigPrefix address */
-    pfx_len = _target->packet_data.orig_node.pfx_len;
+    pfx_len = _msg.orig_node.pfx_len;
     if (pfx_len == 0 || pfx_len > 128) {
         pfx_len = 128;
     }
-    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, pfx_len, &tmp);
+    ipv6_addr_to_netaddr(&_msg.orig_node.addr, pfx_len, &tmp);
     orig_prefix = rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator, &tmp, true);
     assert(orig_prefix != NULL);
 
     /* Add TargPrefix address */
-    pfx_len = _target->packet_data.targ_node.pfx_len;
+    pfx_len = _msg.targ_node.pfx_len;
     if (pfx_len == 0 || pfx_len > 128) {
         pfx_len = 128;
     }
-    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, pfx_len, &tmp);
+    ipv6_addr_to_netaddr(&_msg.targ_node.addr, pfx_len, &tmp);
     rfc5444_writer_add_address(wr, _rreq_message_content_provider.creator, &tmp, true);
 
     /* Add SeqNum TLV and metric TLV to OrigPrefix */
     rfc5444_writer_add_addrtlv(wr, orig_prefix, &_rreq_addrtlvs[RFC5444_MSGTLV_ORIGSEQNUM],
-                               &_target->packet_data.orig_node.seqnum, sizeof(_target->packet_data.orig_node.seqnum),
+                               &_msg.orig_node.seqnum, sizeof(_msg.orig_node.seqnum),
                                false);
 
     rfc5444_writer_add_addrtlv(wr, orig_prefix, &_rreq_addrtlvs[RFC5444_MSGTLV_METRIC],
-                               &_target->packet_data.orig_node.metric, sizeof(_target->packet_data.orig_node.metric),
+                               &_msg.orig_node.metric, sizeof(_msg.orig_node.metric),
                                false);
 }
 
@@ -128,26 +128,26 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
     struct netaddr tmp;
     uint8_t pfx_len;
 
-    uint16_t orig_node_seqnum = _target->packet_data.orig_node.seqnum;
+    uint16_t orig_node_seqnum = _msg.orig_node.seqnum;
     uint16_t targ_node_seqnum = aodvv2_seqnum_get();
     aodvv2_seqnum_inc();
-    uint8_t targ_node_hopct = _target->packet_data.targ_node.metric;
+    uint8_t targ_node_hopct = _msg.targ_node.metric;
 
     /* Add OrigPrefix address */
-    pfx_len = _target->packet_data.orig_node.pfx_len;
+    pfx_len = _msg.orig_node.pfx_len;
     if (pfx_len == 0 || pfx_len > 128) {
         pfx_len = 128;
     }
-    ipv6_addr_to_netaddr(&_target->packet_data.orig_node.addr, pfx_len, &tmp);
+    ipv6_addr_to_netaddr(&_msg.orig_node.addr, pfx_len, &tmp);
     orig_prefix = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator, &tmp, true);
     assert(orig_prefix != NULL);
 
     /* Add TargPrefix address */
-    pfx_len = _target->packet_data.targ_node.pfx_len;
+    pfx_len = _msg.targ_node.pfx_len;
     if (pfx_len == 0 || pfx_len > 128) {
         pfx_len = 128;
     }
-    ipv6_addr_to_netaddr(&_target->packet_data.targ_node.addr, pfx_len, &tmp);
+    ipv6_addr_to_netaddr(&_msg.targ_node.addr, pfx_len, &tmp);
     targ_prefix = rfc5444_writer_add_address(wr, _rrep_message_content_provider.creator, &tmp, true);
     assert(orig_prefix != NULL);
 
@@ -163,13 +163,10 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
                                sizeof(targ_node_hopct), false);
 }
 
-void aodvv2_writer_init(struct rfc5444_writer *wr, aodvv2_writer_target_t *target)
+void aodvv2_writer_init(struct rfc5444_writer *wr)
 {
-    assert(wr != NULL && target != NULL);
-
+    assert(wr != NULL);
     int res;
-
-    _target = target;
 
     res = rfc5444_writer_register_msgcontentprovider(wr, &_rreq_message_content_provider, _rreq_addrtlvs,
                                                      ARRAY_SIZE(_rreq_addrtlvs));
@@ -199,4 +196,33 @@ void aodvv2_writer_init(struct rfc5444_writer *wr, aodvv2_writer_target_t *targe
 
     _rreq_msg->addMessageHeader = _cb_add_message_header;
     _rrep_msg->addMessageHeader = _cb_add_message_header;
+}
+
+int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *message)
+{
+    memcpy(&_msg, message, sizeof(aodvv2_packet_data_t));
+
+    if (rfc5444_writer_create_message_alltarget(wr, RFC5444_MSGTYPE_RREQ,
+                                                RFC5444_MAX_ADDRLEN) != RFC5444_OKAY) {
+        DEBUG_PUTS("aodvv2: RREQ message not created");
+        return -EIO;
+    }
+
+    return 0;
+}
+
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_packet_data_t *message)
+{
+    memcpy(&_msg, message, sizeof(aodvv2_packet_data_t));
+
+    /* TODO(jeandudey): should we use alltarget for RREP? AFAIK we should have
+     * multiple targets to specific destinations (with the specified network
+     * interface), not to _all targets_ (all nodes we know of) */
+    if (rfc5444_writer_create_message_alltarget(wr, RFC5444_MSGTYPE_RREP,
+                                                RFC5444_MAX_ADDRLEN) != RFC5444_OKAY) {
+        DEBUG_PUTS("aodvv2: RREP message not created");
+        return -EIO;
+    }
+
+    return 0;
 }
