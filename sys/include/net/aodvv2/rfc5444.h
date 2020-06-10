@@ -127,8 +127,7 @@ typedef struct {
  *
  * @param[in] reader Pointer to the reader context.
  */
-void aodvv2_rfc5444_reader_register(struct rfc5444_reader *reader,
-                                    kernel_pid_t netif_pid);
+void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid);
 
 /**
  * @brief   Sets the sender address
@@ -145,8 +144,7 @@ void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
  * @param[in] writer Pointer to the writer context.
  * @param[in] target Pointer to the writer target.
  */
-void aodvv2_rfc5444_writer_register(struct rfc5444_writer *wr,
-                                    aodvv2_writer_target_t *target);
+void aodvv2_writer_init(struct rfc5444_writer *wr, aodvv2_writer_target_t *target);
 
 /**
  * @brief   `ipv6_addr_t` to `struct netaddr`.

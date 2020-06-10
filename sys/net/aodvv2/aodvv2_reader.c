@@ -491,8 +491,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
     return RFC5444_OKAY;
 }
 
-void aodvv2_rfc5444_reader_register(struct rfc5444_reader *reader,
-                                    kernel_pid_t netif_pid)
+void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid)
 {
     assert(reader != NULL && netif_pid != KERNEL_PID_UNDEF);
 

@@ -161,7 +161,7 @@ static void _cb_rrep_add_addresses(struct rfc5444_writer *wr)
                                sizeof(targ_node_hopct), false);
 }
 
-void aodvv2_rfc5444_writer_register(struct rfc5444_writer *wr, aodvv2_writer_target_t *target)
+void aodvv2_writer_init(struct rfc5444_writer *wr, aodvv2_writer_target_t *target)
 {
     assert(wr != NULL && target != NULL);
 

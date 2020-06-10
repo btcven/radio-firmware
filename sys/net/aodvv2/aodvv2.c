@@ -374,7 +374,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     rfc5444_reader_init(&_reader);
 
     /* Register AODVv2 messages reader */
-    aodvv2_rfc5444_reader_register(&_reader, _netif->pid);
+    aodvv2_reader_init(&_reader, _netif->pid);
 
     mutex_unlock(&_reader_lock);
 
@@ -399,7 +399,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Register a target (for sending messages to) in writer */
     rfc5444_writer_register_target(&_writer, &_writer_context.target);
 
-    aodvv2_rfc5444_writer_register(&_writer, &_writer_context);
+    aodvv2_writer_init(&_writer, &_writer_context);
 
     mutex_unlock(&_writer_lock);
 
