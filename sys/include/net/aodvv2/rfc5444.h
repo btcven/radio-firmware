@@ -122,22 +122,6 @@ typedef struct {
     int type;                            /**< AODVV2 message type */
 } aodvv2_writer_target_t;
 
-/**
- * @brief   Register AODVv2 message reader
- *
- * @param[in] reader Pointer to the reader context.
- */
-void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid);
-
-/**
- * @brief   Sets the sender address
- *
- * @notes MUST be called before starting to parse the packet.
- *
- * @param[in] sender The address of the sender.
- */
-void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

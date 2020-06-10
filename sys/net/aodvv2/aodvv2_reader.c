@@ -21,6 +21,7 @@
  * @}
  */
 
+#include "aodvv2_reader.h"
 #include "net/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"

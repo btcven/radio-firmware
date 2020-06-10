@@ -35,6 +35,7 @@
 
 #include "mutex.h"
 
+#include "aodvv2_reader.h"
 #include "aodvv2_writer.h"
 
 #define ENABLE_DEBUG (0)
