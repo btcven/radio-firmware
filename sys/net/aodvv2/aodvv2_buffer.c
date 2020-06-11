@@ -19,7 +19,7 @@
 
 #include <stdbool.h>
 
-#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2.h"
 #include "net/gnrc/pktbuf.h"
 #include "net/gnrc/ipv6.h"
 

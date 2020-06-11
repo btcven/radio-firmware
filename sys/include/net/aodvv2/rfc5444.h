@@ -113,64 +113,12 @@ typedef struct {
     node_data_t targ_node;        /**< TargNode data */
     ipv6_addr_t seqnortr;         /**< SeqNoRtr */
     timex_t timestamp;            /**< Time at which the message was received */
-} aodvv2_packet_data_t;
+} aodvv2_message_t;
 
 typedef struct {
     struct rfc5444_writer_target target; /**< RFC5444 writer target */
     ipv6_addr_t target_addr;             /**< Address where the packet will be sent */
-    aodvv2_packet_data_t packet_data;    /**< Payload of the AODVv2 Message */
-    int type;                            /**< AODVV2 message type */
 } aodvv2_writer_target_t;
-
-/**
- * @brief   Register AODVv2 message reader
- *
- * @param[in] reader Pointer to the reader context.
- */
-void aodvv2_rfc5444_reader_register(struct rfc5444_reader *reader,
-                                    kernel_pid_t netif_pid);
-
-/**
- * @brief   Sets the sender address
- *
- * @notes MUST be called before starting to parse the packet.
- *
- * @param[in] sender The address of the sender.
- */
-void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
-
-/**
- * @brief   Register AODVv2 message writer
- *
- * @param[in] writer Pointer to the writer context.
- * @param[in] target Pointer to the writer target.
- */
-void aodvv2_rfc5444_writer_register(struct rfc5444_writer *wr,
-                                    aodvv2_writer_target_t *target);
-
-/**
- * @brief   `ipv6_addr_t` to `struct netaddr`.
- *
- * @pre (@p src != NULL) && (@p dst != NULL)
- *
- * @param[in]  src     Source.
- * @param[in]  pfx_len Prefix length.
- * @param[out] dst     Destination.
- */
-void ipv6_addr_to_netaddr(const ipv6_addr_t *src, uint8_t pfx_len,
-                          struct netaddr *dst);
-
-/**
- * @brief   `struct netaddr` to `ipv6_addr_t`.
- *
- * @pre (@p src != NULL) && (@p dst != NULL)
- *
- * @param[in]  src     Source.
- * @param[out] dst     Destination.
- * @param[out] pfx_len Prefix length.
- */
-void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst,
-                          uint8_t *pfx_len);
 
 #ifdef __cplusplus
 } /* extern "C" */

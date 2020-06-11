@@ -21,8 +21,7 @@
  * @}
  */
 
-#include "net/aodvv2/aodvv2.h"
-#include "net/aodvv2/rfc5444.h"
+#include "rfc5444_compat.h"
 
 #include <assert.h>
 

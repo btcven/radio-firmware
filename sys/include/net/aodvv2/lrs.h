@@ -23,7 +23,6 @@
 
 #include <string.h>
 
-#include "net/aodvv2/aodvv2.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/seqnum.h"
 #include "net/metric.h"
@@ -132,7 +131,7 @@ bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
  * @param[out] rt_entry  The Local Route entry to fill
  * @param[in]  link_cost The link cost for this RREQ
  */
-void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *msg,
+void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_message_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost);
 
@@ -143,7 +142,7 @@ void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *msg,
  * @param[out] rt_entry  The Local Route entry to fill
  * @param[in]  link_cost The link cost for this RREP
  */
-void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *msg,
+void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_message_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost);
 

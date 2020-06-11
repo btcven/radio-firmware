@@ -21,6 +21,7 @@
  * @}
  */
 
+#include "net/aodvv2.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"
@@ -33,6 +34,9 @@
 #include "net/gnrc/netif/hdr.h"
 
 #include "mutex.h"
+
+#include "aodvv2_reader.h"
+#include "aodvv2_writer.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -122,51 +126,33 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
     }
 }
 
-static void _send_rreq(aodvv2_packet_data_t *packet_data,
-                       ipv6_addr_t *next_hop)
+static void _send_rreq(aodvv2_message_t *message, ipv6_addr_t *next_hop)
 {
-    assert(packet_data != NULL && next_hop != NULL);
+    assert(message != NULL);
+    assert(next_hop != NULL);
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&_writer_lock);
+    _writer_context.target_addr = *next_hop;
 
-    /* Copy packet */
-    memcpy(&_writer_context.packet_data, packet_data,
-           sizeof(aodvv2_packet_data_t));
+    aodvv2_writer_send_rreq(&_writer, message);
 
-    _writer_context.type = RFC5444_MSGTYPE_RREQ;
-    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
-
-    /* set address to which the _send_packet callback should send our RREQ */
-    memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
-
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREQ, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
-
     mutex_unlock(&_writer_lock);
 }
 
-static void _send_rrep(aodvv2_packet_data_t *packet_data,
-                       ipv6_addr_t *next_hop)
+static void _send_rrep(aodvv2_message_t *message, ipv6_addr_t *next_hop)
 {
-    assert(packet_data != NULL && next_hop != NULL);
+    assert(message != NULL);
+    assert(next_hop != NULL);
 
     /* Make sure no other thread is using the writer right now */
     mutex_lock(&_writer_lock);
+    _writer_context.target_addr = *next_hop;
 
-    /* Copy packet */
-    memcpy(&_writer_context.packet_data, packet_data,
-           sizeof(aodvv2_packet_data_t));
+    aodvv2_writer_send_rrep(&_writer, message);
 
-    _writer_context.type = RFC5444_MSGTYPE_RREP;
-    _writer_context.packet_data.msg_hop_limit = packet_data->msg_hop_limit;
-
-    /* set address to which the _send_packet callback should send our RREQ */
-    memcpy(&_writer_context.target_addr, next_hop, sizeof(ipv6_addr_t));
-
-    rfc5444_writer_create_message_alltarget(&_writer, RFC5444_MSGTYPE_RREP, RFC5444_MAX_ADDRLEN);
     rfc5444_writer_flush(&_writer, &_writer_context.target, false);
-
     mutex_unlock(&_writer_lock);
 }
 
@@ -374,7 +360,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     rfc5444_reader_init(&_reader);
 
     /* Register AODVv2 messages reader */
-    aodvv2_rfc5444_reader_register(&_reader, _netif->pid);
+    aodvv2_reader_init(&_reader, _netif->pid);
 
     mutex_unlock(&_reader_lock);
 
@@ -399,7 +385,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     /* Register a target (for sending messages to) in writer */
     rfc5444_writer_register_target(&_writer, &_writer_context.target);
 
-    aodvv2_rfc5444_writer_register(&_writer, &_writer_context);
+    aodvv2_writer_init(&_writer);
 
     mutex_unlock(&_writer_lock);
 
@@ -411,7 +397,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     return _pid;
 }
 
-int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
+int aodvv2_send_rreq(aodvv2_message_t *pkt,
                      ipv6_addr_t *next_hop)
 {
     aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
@@ -424,7 +410,7 @@ int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
     memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
 
     /* Copy RREQ packet */
-    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_message_t));
 
     /* Prepare and send IPC message */
     msg_t ipc_msg;
@@ -439,7 +425,7 @@ int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
     return 0;
 }
 
-int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
+int aodvv2_send_rrep(aodvv2_message_t *pkt,
                      ipv6_addr_t *next_hop)
 {
     aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
@@ -452,7 +438,7 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
     memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
 
     /* Copy RREQ packet */
-    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_message_t));
 
     /* Prepare and send IPC message */
     msg_t ipc_msg;
@@ -472,7 +458,7 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
 {
     assert(orig_addr != NULL && target_addr != NULL);
 
-    aodvv2_packet_data_t pkt;
+    aodvv2_message_t pkt;
 
     /* Set metric information */
     pkt.msg_hop_limit = aodvv2_metric_max(METRIC_HOP_COUNT);

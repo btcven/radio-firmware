@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 
-#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2.h"
 
 int find_route_cmd(int argc, char **argv)
 {

@@ -21,7 +21,8 @@
  * @}
  */
 
-#include "net/aodvv2/aodvv2.h"
+#include "aodvv2_reader.h"
+#include "net/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
@@ -32,6 +33,8 @@
 #include "net/gnrc/ipv6/nib/ft.h"
 
 #include "xtimer.h"
+
+#include "rfc5444_compat.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
@@ -109,7 +112,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _address_consumer_entries[]
 };
 
 static struct netaddr_str nbuf;
-static aodvv2_packet_data_t _msg_data;
+static aodvv2_message_t _msg_data;
 
 static kernel_pid_t _netif_pid = KERNEL_PID_UNDEF;
 
@@ -491,8 +494,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
     return RFC5444_OKAY;
 }
 
-void aodvv2_rfc5444_reader_register(struct rfc5444_reader *reader,
-                                    kernel_pid_t netif_pid)
+void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid)
 {
     assert(reader != NULL && netif_pid != KERNEL_PID_UNDEF);
 

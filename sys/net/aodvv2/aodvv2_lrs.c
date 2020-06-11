@@ -19,7 +19,7 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#include "net/aodvv2/aodvv2.h"
+#include "net/aodvv2/conf.h"
 #include "net/aodvv2/lrs.h"
 
 #define ENABLE_DEBUG (0)
@@ -196,7 +196,7 @@ bool aodvv2_lrs_offers_improvement(aodvv2_local_route_t *rt_entry,
     return true;
 }
 
-void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *msg,
+void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_message_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost)
 {
@@ -211,7 +211,7 @@ void aodvv2_lrs_fill_routing_entry_rreq(aodvv2_packet_data_t *msg,
     rt_entry->state = ROUTE_STATE_ACTIVE;
 }
 
-void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_packet_data_t *msg,
+void aodvv2_lrs_fill_routing_entry_rrep(aodvv2_message_t *msg,
                                         aodvv2_local_route_t *rt_entry,
                                         uint8_t link_cost)
 {

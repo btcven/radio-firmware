@@ -23,6 +23,7 @@
 #ifndef NET_AODVV2_AODVV2_H
 #define NET_AODVV2_AODVV2_H
 
+#include "net/aodvv2/conf.h"
 #include "net/aodvv2/rfc5444.h"
 #include "net/ipv6/addr.h"
 #include "net/gnrc.h"
@@ -30,33 +31,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief   Maximum lifetime for a sequence number in seconds
- * @{
- */
-#ifndef CONFIG_AODVV2_MAX_SEQNUM_LIFETIME
-#define CONFIG_AODVV2_MAX_SEQNUM_LIFETIME (300)
-#endif
-/** @} */
-
-/**
- * @brief   Active interval value in seconds
- * @{
- */
-#ifndef CONFIG_AODVV2_ACTIVE_INTERVAL
-#define CONFIG_AODVV2_ACTIVE_INTERVAL (5U)
-#endif
-/** @} */
-
-/**
- * @brief TODO: investigate what's this
- * @{
- */
-#ifndef CONFIG_AODVV2_MAX_IDLETIME
-#define CONFIG_AODVV2_MAX_IDLETIME (250U)
-#endif
-/** @} */
 
 /**
  * @brief   IPC message to send a RREQ
@@ -69,7 +43,7 @@ extern "C" {
 #define AODVV2_MSG_TYPE_SEND_RREP (0x9001)
 
 typedef struct {
-    aodvv2_packet_data_t pkt; /**< Packet to send */
+    aodvv2_message_t pkt; /**< Packet to send */
     ipv6_addr_t next_hop; /**< Next hop */
 } aodvv2_msg_t;
 
@@ -93,8 +67,7 @@ int aodvv2_init(gnrc_netif_t *netif);
  *
  * @return Negative number on failure, otherwise succeed.
  */
-int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
-                     ipv6_addr_t *next_hop);
+int aodvv2_send_rreq(aodvv2_message_t *pkt, ipv6_addr_t *next_hop);
 
 /**
  * @brief   Send a RREP
@@ -106,8 +79,7 @@ int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
  *
  * @return Negative number on failure, otherwise succeed.
  */
-int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
-                     ipv6_addr_t *next_hop);
+int aodvv2_send_rrep(aodvv2_message_t *pkt, ipv6_addr_t *next_hop);
 
 /**
  * @brief   Initiate a route discovery process to find the given address.
