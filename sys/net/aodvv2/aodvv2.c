@@ -126,7 +126,7 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
     }
 }
 
-static void _send_rreq(aodvv2_packet_data_t *message, ipv6_addr_t *next_hop)
+static void _send_rreq(aodvv2_message_t *message, ipv6_addr_t *next_hop)
 {
     assert(message != NULL);
     assert(next_hop != NULL);
@@ -141,7 +141,7 @@ static void _send_rreq(aodvv2_packet_data_t *message, ipv6_addr_t *next_hop)
     mutex_unlock(&_writer_lock);
 }
 
-static void _send_rrep(aodvv2_packet_data_t *message, ipv6_addr_t *next_hop)
+static void _send_rrep(aodvv2_message_t *message, ipv6_addr_t *next_hop)
 {
     assert(message != NULL);
     assert(next_hop != NULL);
@@ -397,7 +397,7 @@ int aodvv2_init(gnrc_netif_t *netif)
     return _pid;
 }
 
-int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
+int aodvv2_send_rreq(aodvv2_message_t *pkt,
                      ipv6_addr_t *next_hop)
 {
     aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
@@ -410,7 +410,7 @@ int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
     memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
 
     /* Copy RREQ packet */
-    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_message_t));
 
     /* Prepare and send IPC message */
     msg_t ipc_msg;
@@ -425,7 +425,7 @@ int aodvv2_send_rreq(aodvv2_packet_data_t *pkt,
     return 0;
 }
 
-int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
+int aodvv2_send_rrep(aodvv2_message_t *pkt,
                      ipv6_addr_t *next_hop)
 {
     aodvv2_msg_t *msg = malloc(sizeof(aodvv2_msg_t));
@@ -438,7 +438,7 @@ int aodvv2_send_rrep(aodvv2_packet_data_t *pkt,
     memcpy(&msg->next_hop, next_hop, sizeof(ipv6_addr_t));
 
     /* Copy RREQ packet */
-    memcpy(&msg->pkt, pkt, sizeof(aodvv2_packet_data_t));
+    memcpy(&msg->pkt, pkt, sizeof(aodvv2_message_t));
 
     /* Prepare and send IPC message */
     msg_t ipc_msg;
@@ -458,7 +458,7 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
 {
     assert(orig_addr != NULL && target_addr != NULL);
 
-    aodvv2_packet_data_t pkt;
+    aodvv2_message_t pkt;
 
     /* Set metric information */
     pkt.msg_hop_limit = aodvv2_metric_max(METRIC_HOP_COUNT);

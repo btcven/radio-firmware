@@ -66,7 +66,7 @@ static inline bool _is_compatible_mcmsg(aodvv2_mcmsg_t *lhs, aodvv2_mcmsg_t *rhs
     return false;
 }
 
-static inline bool _is_compatible(aodvv2_mcmsg_t *entry, aodvv2_packet_data_t *msg)
+static inline bool _is_compatible(aodvv2_mcmsg_t *entry, aodvv2_message_t *msg)
 {
     /* A RREQ is considered compatible if they both contain the same OrigPrefix,
      * OrigPrefixLength, TargPrefix and MetricType */
@@ -80,7 +80,7 @@ static inline bool _is_compatible(aodvv2_mcmsg_t *entry, aodvv2_packet_data_t *m
     return false;
 }
 
-static inline bool _is_comparable(aodvv2_mcmsg_t *entry, aodvv2_packet_data_t *msg)
+static inline bool _is_comparable(aodvv2_mcmsg_t *entry, aodvv2_message_t *msg)
 {
     /* If both McMsg don't provide a SeqNoRtr address (is unspcified), they only
      * need to be compatible to be comparable */
@@ -99,7 +99,7 @@ static inline bool _is_comparable(aodvv2_mcmsg_t *entry, aodvv2_packet_data_t *m
     return false;
 }
 
-static internal_entry_t *_find_comparable_entry(aodvv2_packet_data_t *msg)
+static internal_entry_t *_find_comparable_entry(aodvv2_message_t *msg)
 {
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
         internal_entry_t *entry = &_entries[i];
@@ -115,7 +115,7 @@ static internal_entry_t *_find_comparable_entry(aodvv2_packet_data_t *msg)
     return NULL;
 }
 
-static internal_entry_t *_add(aodvv2_packet_data_t *msg)
+static internal_entry_t *_add(aodvv2_message_t *msg)
 {
     /* Find empty McMsg and fill it */
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
@@ -153,7 +153,7 @@ void aodvv2_mcmsg_init(void)
     mutex_unlock(&_lock);
 }
 
-int aodvv2_mcmsg_process(aodvv2_packet_data_t *msg)
+int aodvv2_mcmsg_process(aodvv2_message_t *msg)
 {
     mutex_lock(&_lock);
 

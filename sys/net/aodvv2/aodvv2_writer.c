@@ -77,7 +77,7 @@ static struct rfc5444_writer_tlvtype _rrep_addrtlvs[] =
 static struct rfc5444_writer_message *_rreq_msg;
 static struct rfc5444_writer_message *_rrep_msg;
 
-static aodvv2_packet_data_t _msg;
+static aodvv2_message_t _msg;
 
 static int _cb_add_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message)
 {
@@ -198,9 +198,9 @@ void aodvv2_writer_init(struct rfc5444_writer *wr)
     _rrep_msg->addMessageHeader = _cb_add_message_header;
 }
 
-int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *message)
+int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_message_t *message)
 {
-    memcpy(&_msg, message, sizeof(aodvv2_packet_data_t));
+    memcpy(&_msg, message, sizeof(aodvv2_message_t));
 
     if (rfc5444_writer_create_message_alltarget(wr, RFC5444_MSGTYPE_RREQ,
                                                 RFC5444_MAX_ADDRLEN) != RFC5444_OKAY) {
@@ -211,9 +211,9 @@ int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *mes
     return 0;
 }
 
-int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_packet_data_t *message)
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message)
 {
-    memcpy(&_msg, message, sizeof(aodvv2_packet_data_t));
+    memcpy(&_msg, message, sizeof(aodvv2_message_t));
 
     /* TODO(jeandudey): should we use alltarget for RREP? AFAIK we should have
      * multiple targets to specific destinations (with the specified network

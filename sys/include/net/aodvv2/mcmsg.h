@@ -75,7 +75,7 @@ void aodvv2_mcmsg_init(void);
  * @return AODVV2_MCMSG_OK processing went fine.
  * @return AODVV2_MCMSG_REDUNDANT message is redundant.
  */
-int aodvv2_mcmsg_process(aodvv2_packet_data_t *msg);
+int aodvv2_mcmsg_process(aodvv2_message_t *msg);
 
 #ifdef __cplusplus
 } /* extern "C" */

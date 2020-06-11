@@ -113,7 +113,7 @@ typedef struct {
     node_data_t targ_node;        /**< TargNode data */
     ipv6_addr_t seqnortr;         /**< SeqNoRtr */
     timex_t timestamp;            /**< Time at which the message was received */
-} aodvv2_packet_data_t;
+} aodvv2_message_t;
 
 typedef struct {
     struct rfc5444_writer_target target; /**< RFC5444 writer target */

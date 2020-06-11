@@ -46,7 +46,7 @@ void aodvv2_writer_init(struct rfc5444_writer *wr);
  *
  * @return 0 on success, otherwise 0< on failure.
  */
-int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *message);
+int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_message_t *message);
 
 /**
  * @brief   Write a RREP
@@ -58,7 +58,7 @@ int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_packet_data_t *mes
  *
  * @return 0 on success, otherwise 0< on failure.
  */
-int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_packet_data_t *message);
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message);
 
 #ifdef __cplusplus
 } /* extern "C" */

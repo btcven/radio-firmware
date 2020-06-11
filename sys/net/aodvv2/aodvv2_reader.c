@@ -112,7 +112,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _address_consumer_entries[]
 };
 
 static struct netaddr_str nbuf;
-static aodvv2_packet_data_t _msg_data;
+static aodvv2_message_t _msg_data;
 
 static kernel_pid_t _netif_pid = KERNEL_PID_UNDEF;
 
