@@ -9,5 +9,8 @@ endif
 ifneq (,$(filter oonf_api,$(USEMODULE)))
   DIRS += oonf_api
 endif
+ifneq (,$(filter radio_firmware_drivers,$(USEMODULE)))
+  DIRS += drivers
+endif
 
 include $(RIOTBASE)/Makefile.base
