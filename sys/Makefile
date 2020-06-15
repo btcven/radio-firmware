@@ -1,10 +1,16 @@
 MODULE = radio_firmware_sys
 
-ifneq (,$(filter chat,$(USEMODULE)))
-  DIRS += chat
+ifneq (,$(filter shell_extended,$(USEMODULE)))
+  DIRS += shell_extended
 endif
-DIRS += shell_extended
-DIRS += net
-DIRS += oonf_api
+ifneq (,$(filter radio_firmware_net,$(USEMODULE)))
+  DIRS += net
+endif
+ifneq (,$(filter oonf_api,$(USEMODULE)))
+  DIRS += oonf_api
+endif
+ifneq (,$(filter radio_firmware_drivers,$(USEMODULE)))
+  DIRS += drivers
+endif
 
 include $(RIOTBASE)/Makefile.base

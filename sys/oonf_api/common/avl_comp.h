@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,13 +39,22 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #ifndef AVL_COMP_H_
 #define AVL_COMP_H_
 
-int avl_comp_uint32(const void *k1, const void *k2);
-int avl_comp_uint16(const void *k1, const void *k2);
-int avl_comp_uint8(const void *k1, const void *k2);
-int avl_comp_netaddr(const void *k1, const void *k2);
-int avl_comp_strcasecmp(const void *, const void *);
+#include "common/common_types.h"
+#include "common/netaddr.h"
+
+EXPORT int avl_comp_uint32(const void *k1, const void *k2);
+EXPORT int avl_comp_int32(const void *k1, const void *k2);
+EXPORT int avl_comp_uint16(const void *k1, const void *k2);
+EXPORT int avl_comp_uint8(const void *k1, const void *k2);
+EXPORT int avl_comp_netaddr(const void *k1, const void *k2);
+EXPORT int avl_comp_netaddr_socket(const void *k1, const void *k2);
+EXPORT int avl_comp_strcasecmp(const void *, const void *);
 
 #endif /* AVL_COMP_H_ */

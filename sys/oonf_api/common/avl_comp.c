@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,18 @@
  *
  */
 
+/**
+ * @file
+ */
+
 #include <string.h>
 #include <strings.h>
 
 #include "common/avl_comp.h"
-#include "common/netaddr.h"
+#include "common/string.h"
 
 /**
  * AVL tree comparator for unsigned 32 bit integers
- * Custom pointer is not used.
  * @param k1 pointer to key 1
  * @param k2 pointer to key 2
  * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2
@@ -67,8 +70,27 @@ avl_comp_uint32(const void *k1, const void *k2) {
 }
 
 /**
+ * AVL tree comparator for signed 32 bit integers
+ * @param k1 pointer to key 1
+ * @param k2 pointer to key 2
+ * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2
+ */
+int
+avl_comp_int32(const void *k1, const void *k2) {
+  const int32_t *i1 = k1;
+  const int32_t *i2 = k2;
+
+  if (*i1 > *i2) {
+    return 1;
+  }
+  if (*i2 > *i1) {
+    return -1;
+  }
+  return 0;
+}
+
+/**
  * AVL tree comparator for unsigned 16 bit integers
- * Custom pointer is not used.
  * @param k1 pointer to key 1
  * @param k2 pointer to key 2
  * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2
@@ -89,7 +111,6 @@ avl_comp_uint16(const void *k1, const void *k2) {
 
 /**
  * AVL tree comparator for unsigned 8 bit integers
- * Custom pointer is not used
  * @param k1 pointer to key 1
  * @param k2 pointer to key 2
  * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2
@@ -122,8 +143,20 @@ avl_comp_netaddr(const void *k1, const void *k2) {
 }
 
 /**
+ * AVL tree comparator for netaddr objects.
+ * @param k1 pointer to key 1
+ * @param k2 pointer to key 2
+ * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2
+ */
+int
+avl_comp_netaddr_socket(const void *k1, const void *k2) {
+  const union netaddr_socket *s1 = k1;
+  const union netaddr_socket *s2 = k2;
+  return memcmp(s1, s2, sizeof(union netaddr_socket));
+}
+
+/**
  * AVL tree comparator for case insensitive strings.
- * Custom pointer is the length of the memory to compare.
  * @param txt1 pointer to string 1
  * @param txt2 pointer to string 2
  * @return +1 if k1>k2, -1 if k1<k2, 0 if k1==k2

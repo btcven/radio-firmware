@@ -1,5 +1,0 @@
-/**
-@defgroup        boards_cc1352p_launchpad TI CC1352P LaunchPad
-@ingroup         boards
-@brief           Texas Instruments SimpleLink(TM) CC1352P Wireless MCU LaunchPad(TM) Kit
-*/

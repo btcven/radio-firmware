@@ -31,8 +31,9 @@ int seqnum_get_cmd(int argc, char **argv);
 #if IS_USED(MODULE_GNRC_UDP)
 int udp_cmd(int argc, char **argv);
 #endif
-#if IS_USED(MODULE_CHAT)
-int chat_cmd(int argc, char **argv);
+
+#if IS_USED(MODULE_AODVV2)
+int sc_aodvv2_cmd(int argc, char **argv);
 #endif
 
 const shell_command_t shell_extended_commands[] = {
@@ -43,8 +44,8 @@ const shell_command_t shell_extended_commands[] = {
 #if IS_USED(MODULE_GNRC_UDP)
     { "udp", "send data over UDP and listen on UDP ports", udp_cmd },
 #endif
-#if IS_USED(MODULE_CHAT)
-    { "greet", "Say hello to our peers", chat_cmd },
+#if IS_USED(MODULE_AODVV2)
+    { "aodvv2", "AODVv2 routing protocol command", sc_aodvv2_cmd },
 #endif
     { NULL, NULL, NULL }
 };

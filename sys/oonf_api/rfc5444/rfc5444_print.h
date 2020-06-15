@@ -1,7 +1,7 @@
 
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
- * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
+ * Copyright (c) 2004-2015, the olsr.org team - see HISTORY file
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,32 +38,48 @@
  * the copyright holders.
  *
  */
+
+/**
+ * @file
+ */
 #ifndef PRINT_RFC5444_H_
 #define PRINT_RFC5444_H_
 
 #include "common/autobuf.h"
-#include "rfc5444/rfc5444_reader.h"
+#include "common/common_types.h"
+#include "rfc5444_reader.h"
 
+/**
+ * RFC5444 printer session
+ */
 struct rfc5444_print_session {
+  /*! output buffer */
   struct autobuf *output;
 
-  void (*print_packet)(struct rfc5444_print_session *);
+  /**
+   * Callback to print RFC5444 packet text representation
+   * @param session printer session
+   */
+  void (*print_packet)(struct rfc5444_print_session *session);
 
+  /*! packet consumer */
   struct rfc5444_reader_tlvblock_consumer _pkt;
+
+  /*! message consumer */
   struct rfc5444_reader_tlvblock_consumer _msg;
+
+  /*! address consumer */
   struct rfc5444_reader_tlvblock_consumer _addr;
 
+  /*! rfc5444 reader */
   struct rfc5444_reader *_reader;
 };
 
-void rfc5444_print_add(
-    struct rfc5444_print_session *, struct rfc5444_reader *reader);
-void rfc5444_print_remove(
-    struct rfc5444_print_session *session);
+EXPORT void rfc5444_print_add(struct rfc5444_print_session *, struct rfc5444_reader *reader);
+EXPORT void rfc5444_print_remove(struct rfc5444_print_session *session);
 
-enum rfc5444_result rfc5444_print_direct(
-    struct autobuf *out, void *buffer, size_t length);
-void rfc5444_print_hexdump(
-    struct autobuf *out, const char *prefix, void *buffer, size_t length);
+EXPORT enum rfc5444_result rfc5444_print_direct(struct autobuf *out, void *buffer, size_t length);
+
+EXPORT int rfc5444_print_raw(struct autobuf *out, void *buffer, size_t length);
 
 #endif /* PRINT_RFC5444_H_ */
