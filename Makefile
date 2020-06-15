@@ -11,6 +11,9 @@ RIOTBASE ?= $(CURDIR)/RIOT
 # Application absolute path
 APPBASE ?= $(CURDIR)
 
+# Radio firmware absolute path
+RADIOBASE ?= $(CURDIR)
+
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
