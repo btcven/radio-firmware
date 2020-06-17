@@ -125,14 +125,18 @@ static int _process_msg(vaina_msg_t *msg)
             break;
 #endif
 
-        case VAINA_MSG_NIB_ADD:
+        case VAINA_MSG_NIB_ADD: {
             DEBUG_PUTS("vaina: adding NIB entry");
+            ipv6_addr_t next_hop = {
+                .u8 = { 0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }
+            };
             if (gnrc_ipv6_nib_ft_add(&msg->payload.nib_add.ip,
                                      msg->payload.nib_add.pfx_len,
-                                     NULL, _netif->pid, 0) < 0) {
+                                     &next_hop, _netif->pid, 0) < 0) {
                 return -ENOMEM;
             }
             break;
+        }
 
         case VAINA_MSG_NIB_DEL:
             gnrc_ipv6_nib_ft_del(&msg->payload.nib_del.ip,
