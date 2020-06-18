@@ -141,7 +141,6 @@ static int _bq27441_read_word(bq27441_t *dev, uint16_t reg,
 int bq27441_init(bq27441_t *dev, const bq27441_params_t *params)
 {
     DEBUG_DEV("params=%p", dev, params);
-    int ret;
 
     dev->params = *params;
 
