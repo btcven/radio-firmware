@@ -31,9 +31,5 @@ int manet_netif_ipv6_group_join(gnrc_netif_t *netif)
         gnrc_netif_ipv6_group_join(netif,
                                    &ipv6_addr_all_manet_routers_link_local);
 
-    if (res < 0) {
-        return -1;
-    }
-
-    return 0;
+    return (res < 0) ? -1 : 0;
 }
