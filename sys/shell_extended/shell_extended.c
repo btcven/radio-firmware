@@ -38,7 +38,6 @@ int sc_aodvv2_cmd(int argc, char **argv);
 
 const shell_command_t shell_extended_commands[] = {
 #if IS_USED(MODULE_AODVV2)
-    { "find_route", "find a route to a node using IPv6 address", find_route_cmd },
     { "seqnum_get", "get (and increment) a SeqNum", seqnum_get_cmd },
 #endif
 #if IS_USED(MODULE_GNRC_UDP)
