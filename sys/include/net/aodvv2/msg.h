@@ -20,8 +20,8 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef NET_AODVV2_RFC5444_H
-#define NET_AODVV2_RFC5444_H
+#ifndef NET_AODVV2_MSG_H
+#define NET_AODVV2_MSG_H
 
 #include "net/aodvv2/seqnum.h"
 #include "net/manet.h"
@@ -29,47 +29,8 @@
 
 #include "timex.h"
 
-#include "common/netaddr.h"
-#include "rfc5444/rfc5444_reader.h"
-#include "rfc5444/rfc5444_writer.h"
-
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-/**
- * @name    RFC5444 thread stack size
- */
-#ifndef CONFIG_AODVV2_RFC5444_STACK_SIZE
-#define CONFIG_AODVV2_RFC5444_STACK_SIZE     (2048)
-#endif
-
-/**
- * @name    RFC5444 thread priority
- */
-#ifndef CONFIG_AODVV2_RFC5444_PRIO
-#define CONFIG_AODVV2_RFC5444_PRIO           (6)
-#endif
-
-/**
- * @name    RFC5444 message queue size
- */
-#ifndef CONFIG_AODVV2_RFC5444_MSG_QUEUE_SIZE
-#define CONFIG_AODVV2_RFC5444_MSG_QUEUE_SIZE (32)
-#endif
-
-/**
- * @name    RFC5444 maximum packet size
- */
-#ifndef CONFIG_AODVV2_RFC5444_PACKET_SIZE
-#define CONFIG_AODVV2_RFC5444_PACKET_SIZE    (128)
-#endif
-
-/**
- * @name    RFC5444 address TLVs buffer size
- */
-#ifndef CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE
-#define CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE (1000)
 #endif
 
 /**
@@ -114,11 +75,6 @@ typedef struct {
     ipv6_addr_t seqnortr;         /**< SeqNoRtr */
     timex_t timestamp;            /**< Time at which the message was received */
 } aodvv2_message_t;
-
-typedef struct {
-    struct rfc5444_writer_target target; /**< RFC5444 writer target */
-    ipv6_addr_t target_addr;             /**< Address where the packet will be sent */
-} aodvv2_writer_target_t;
 
 #ifdef __cplusplus
 } /* extern "C" */

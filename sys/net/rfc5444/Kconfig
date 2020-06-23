@@ -1,0 +1,33 @@
+# Copyright (C) 2020 Locha Inc
+#
+# This file is subject to the terms and conditions of the GNU Lesser
+# General Public License v2.1. See the file LICENSE in the top level
+# directory for more details.
+#
+
+menuconfig KCONFIG_MODULE_RFC5444
+    bool "Configure RFC 5444"
+    depends on MODULE_AODVV2
+
+if KCONFIG_MODULE_RFC5444
+
+config RFC5444_MSG_QUEUE_SIZE
+    int "Message queue size for RFC 5444 thread"
+    default 16
+
+config RFC5444_MAX_TARGETS
+    int "Maximum number of targets"
+    default 16
+
+config RFC5444_MSG_AGGREGATION_TIME
+    int "Aggregation time for RFC 5444 messages (in ms)"
+    default 100
+    help
+        This is the aggregation time of RFC 5444 messages after one has been
+        created, to join them, in a single packet.
+        The more high this value is, the more messages that will be in a packet
+        as they're created with the cost of a higher waiting time for packet
+        creation.
+        Value is in ms.
+
+endif

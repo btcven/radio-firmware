@@ -1,5 +1,8 @@
 MODULE = radio_firmware_sys
 
+ifneq (,$(filter radio_firmware_auto_init,$(USEMODULE)))
+  DIRS += auto_init
+endif
 ifneq (,$(filter shell_extended,$(USEMODULE)))
   DIRS += shell_extended
 endif

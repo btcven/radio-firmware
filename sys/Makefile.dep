@@ -1,9 +1,17 @@
 PSEUDOMODULES += bq27441_int
 
 ifneq (,$(filter aodvv2,$(USEMODULE)))
-  USEMODULE += oonf_rfc5444
+  USEMODULE += rfc5444
   USEMODULE += manet
   USEMODULE += timex
+  USEMODULE += xtimer
+endif
+
+ifneq (,$(filter rfc5444,$(USEMODULE)))
+  USEMODULE += radio_firmware_net
+  USEMODULE += oonf_rfc5444
+  USEMODULE += manet
+  USEMODULE += gnrc_udp
 endif
 
 ifneq (,$(filter vaina,$(USEMODULE)))

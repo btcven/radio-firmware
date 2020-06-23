@@ -134,6 +134,10 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
 aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr)
 {
     mutex_lock(&_lock);
+    if (addr == NULL) {
+        return NULL;
+    }
+
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
         internal_entry_t *entry = &_entries[i];
 

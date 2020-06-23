@@ -61,5 +61,9 @@
 #define CONFIG_AODVV2_RREQ_HOLDDOWN_TIME (10)
 #endif
 
+#ifndef CONFIG_AODVV2_MAX_HOPCOUNT
+#define CONFIG_AODVV2_MAX_HOPCOUNT (20)
+#endif
+
 #endif /* AODVV2_CONF_H */
 /** @} */

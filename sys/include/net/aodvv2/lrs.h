@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-#include "net/aodvv2/rfc5444.h"
+#include "net/aodvv2/msg.h"
 #include "net/aodvv2/seqnum.h"
 #include "net/metric.h"
 

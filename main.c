@@ -62,6 +62,11 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 int main(void)
 {
+    if (IS_USED(MODULE_RADIO_FIRMWARE_AUTO_INIT)) {
+        extern void radio_firmware_auto_init(void);
+        radio_firmware_auto_init();
+    }
+
     if (_init_ieee802154() < 0) {
         printf("Error: Couldn't initialize IEEE 802.15.4g device correctly.\n");
     }
@@ -96,18 +101,8 @@ static int _init_ieee802154(void)
      * sort of generic router which peers should connect to. */
     gnrc_ipv6_nib_change_rtr_adv_iface(ieee802154_netif, false);
 
-    /* Join LL-MANET-Routers multicast group, this is the IPv6 group where we'll
-     * be receiving RFC 5444 UDP packets */
-    if (manet_netif_ipv6_group_join(ieee802154_netif) < 0) {
-        printf("Error: Couldn't join LL-MANET-Routers group\n");
-        return -1;
-    }
-
-    /* Initialize AODVv2 */
-    if (aodvv2_init(ieee802154_netif) < 0) {
-        printf("Error: Couldn't initialize AODVv2\n");
-        return -1;
-    }
+    /* Register this interface as an AODVv2 router */
+    aodvv2_netif_register(ieee802154_netif);
 
     return 0;
 }

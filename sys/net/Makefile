@@ -9,5 +9,8 @@ endif
 ifneq (,$(filter vaina,$(USEMODULE)))
   DIRS += vaina
 endif
+ifneq (,$(filter rfc5444,$(USEMODULE)))
+  DIRS += rfc5444
+endif
 
 include $(RIOTBASE)/Makefile.base

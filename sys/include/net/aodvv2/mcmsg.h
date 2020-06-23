@@ -24,8 +24,8 @@
 #define NET_AODVV2_MCMSG_H
 
 #include "net/metric.h"
+#include "net/aodvv2/msg.h"
 #include "net/aodvv2/seqnum.h"
-#include "net/aodvv2/rfc5444.h"
 
 #include "timex.h"
 

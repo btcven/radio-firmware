@@ -27,16 +27,18 @@
 #include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
-#include "net/aodvv2/rfc5444.h"
+#include "net/aodvv2/msg.h"
 #include "net/manet.h"
+#include "net/rfc5444.h"
 
 #include "net/gnrc/ipv6/nib/ft.h"
 
 #include "xtimer.h"
 
+#include "aodvv2_writer.h"
 #include "rfc5444_compat.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define AODVV2_ROUTE_LIFETIME \
@@ -113,8 +115,6 @@ static struct rfc5444_reader_tlvblock_consumer_entry _address_consumer_entries[]
 
 static struct netaddr_str nbuf;
 static aodvv2_message_t _msg_data;
-
-static kernel_pid_t _netif_pid = KERNEL_PID_UNDEF;
 
 static enum rfc5444_result _cb_rrep_blocktlv_messagetlvs_okay(
         struct rfc5444_reader_tlvblock_context *cont)
@@ -244,8 +244,8 @@ static enum rfc5444_result _cb_rrep_end_callback(
         /* Add entry to NIB forwading table */
         DEBUG_PUTS("aodvv2: adding Local Route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&_msg_data.targ_node.addr,
-                                 _msg_data.targ_node.pfx_len, &_msg_data.sender,
-                                 _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+                                 _msg_data.targ_node.pfx_len, &rfc5444_protocol.sender,
+                                 rfc5444_protocol.netif, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG_PUTS("aodvv2: couldn't add route");
         }
     }
@@ -265,7 +265,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
 
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&rt_entry->addr, rt_entry->pfx_len,
-                                 &rt_entry->next_hop, _netif_pid,
+                                 &rt_entry->next_hop, rfc5444_protocol.netif,
                                  AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG_PUTS("aodvv2: couldn't add route");
         }
@@ -287,7 +287,10 @@ static enum rfc5444_result _cb_rrep_end_callback(
         ipv6_addr_t *next_hop =
             aodvv2_lrs_get_next_hop(&_msg_data.orig_node.addr,
                                     _msg_data.metric_type);
-        aodvv2_send_rrep(&_msg_data, next_hop);
+        rfc5444_writer_acquire();
+        rfc5444_writer_target_t *target = rfc5444_register_target(next_hop, rfc5444_protocol.netif, 300);
+        aodvv2_writer_send_rrep(&rfc5444_protocol.writer, &_msg_data, target);
+        rfc5444_writer_release();
     }
     return RFC5444_OKAY;
 }
@@ -444,8 +447,8 @@ static enum rfc5444_result _cb_rreq_end_callback(
         /* Add entry to NIB forwading table */
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&_msg_data.orig_node.addr,
-                                 _msg_data.orig_node.pfx_len, &_msg_data.sender,
-                                 _netif_pid, AODVV2_ROUTE_LIFETIME) < 0) {
+                                 _msg_data.orig_node.pfx_len, &rfc5444_protocol.sender,
+                                 rfc5444_protocol.netif, AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG_PUTS("aodvv2: couldn't add route");
         }
     }
@@ -467,7 +470,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
 
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&rt_entry->addr, rt_entry->pfx_len,
-                                 &rt_entry->next_hop, _netif_pid,
+                                 &rt_entry->next_hop, rfc5444_protocol.netif,
                                  AODVV2_ROUTE_LIFETIME) < 0) {
             DEBUG_PUTS("aodvv2: couldn't add route");
         }
@@ -484,23 +487,24 @@ static enum rfc5444_result _cb_rreq_end_callback(
         /* Make sure to start with a clean metric value */
         _msg_data.targ_node.metric = 0;
 
-        aodvv2_send_rrep(&_msg_data, &_msg_data.sender);
+        rfc5444_writer_acquire();
+        rfc5444_writer_target_t *target = rfc5444_register_target(&rfc5444_protocol.sender, rfc5444_protocol.netif, 300);
+        aodvv2_writer_send_rrep(&rfc5444_protocol.writer, &_msg_data, target);
+        rfc5444_writer_release();
     }
     else {
         DEBUG_PUTS("aodvv2: I'm not TargNode, forwarding RREQ");
-        aodvv2_send_rreq(&_msg_data, &ipv6_addr_all_manet_routers_link_local);
+        rfc5444_writer_acquire();
+        aodvv2_writer_send_rreq(&rfc5444_protocol.writer, &_msg_data);
+        rfc5444_writer_release();
     }
 
     return RFC5444_OKAY;
 }
 
-void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid)
+void aodvv2_reader_init(struct rfc5444_reader *reader)
 {
-    assert(reader != NULL && netif_pid != KERNEL_PID_UNDEF);
-
-    if (_netif_pid == KERNEL_PID_UNDEF) {
-        _netif_pid = netif_pid;
-    }
+    assert(reader != NULL);
 
     rfc5444_reader_add_message_consumer(reader, &_rrep_consumer,
                                         NULL, 0);
@@ -515,11 +519,4 @@ void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid)
     rfc5444_reader_add_message_consumer(reader, &_rreq_address_consumer,
                                         _address_consumer_entries,
                                         ARRAY_SIZE(_address_consumer_entries));
-}
-
-void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender)
-{
-    assert(sender != NULL);
-
-    _msg_data.sender = *sender;
 }

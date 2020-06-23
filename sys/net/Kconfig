@@ -3,6 +3,7 @@
 menu "Network"
 
 rsource "aodvv2/Kconfig"
+rsource "rfc5444/Kconfig"
 rsource "vaina/Kconfig"
 
 endmenu

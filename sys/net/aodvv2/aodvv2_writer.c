@@ -211,15 +211,14 @@ int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_message_t *message
     return 0;
 }
 
-int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message)
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message,
+                            rfc5444_writer_target_t *target)
 {
     memcpy(&_msg, message, sizeof(aodvv2_message_t));
 
-    /* TODO(jeandudey): should we use alltarget for RREP? AFAIK we should have
-     * multiple targets to specific destinations (with the specified network
-     * interface), not to _all targets_ (all nodes we know of) */
-    if (rfc5444_writer_create_message_alltarget(wr, RFC5444_MSGTYPE_RREP,
-                                                RFC5444_MAX_ADDRLEN) != RFC5444_OKAY) {
+    if (rfc5444_writer_create_message_singletarget(wr, RFC5444_MSGTYPE_RREP,
+                                                   RFC5444_MAX_ADDRLEN,
+                                                   &target->target) != RFC5444_OKAY) {
         DEBUG_PUTS("aodvv2: RREP message not created");
         return -EIO;
     }

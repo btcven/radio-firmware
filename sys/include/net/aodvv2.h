@@ -24,7 +24,7 @@
 #define NET_AODVV2_AODVV2_H
 
 #include "net/aodvv2/conf.h"
-#include "net/aodvv2/rfc5444.h"
+#include "net/aodvv2/msg.h"
 #include "net/ipv6/addr.h"
 #include "net/gnrc.h"
 
@@ -32,66 +32,26 @@
 extern "C" {
 #endif
 
+#if IS_USED(MODULE_AUTO_INIT_AODVV2) || defined(DOXYGEN)
 /**
- * @brief   IPC message to send a RREQ
+ * @brief   Auto-initialize AODVv2
  */
-#define AODVV2_MSG_TYPE_SEND_RREQ (0x9000)
+void aodvv2_auto_init(void);
+#endif
 
 /**
- * @brief   IPC message to send a RREP
+ * @brief   Initialize AODVv2
  */
-#define AODVV2_MSG_TYPE_SEND_RREP (0x9001)
-
-typedef struct {
-    aodvv2_message_t pkt; /**< Packet to send */
-    ipv6_addr_t next_hop; /**< Next hop */
-} aodvv2_msg_t;
+void aodvv2_init(void);
 
 /**
- * @brief   Initialize and start RFC5444
+ * @brief   Register a network interface as an AODVv2 router
  *
  * @pre @p netif != NULL
  *
- * @return PID of the RFC5444 thread
- * @reutnr negative value on error
+ * @param[in]  netif The network interface to register.
  */
-int aodvv2_init(gnrc_netif_t *netif);
-
-/**
- * @brief   Send a RREQ
- *
- * @pre (@p pkt != NULL) && (@p next_hop != NULL)
- *
- * @param[in] pkt      The RREQ packet.
- * @param[in] next_hop Where to send the packet.
- *
- * @return Negative number on failure, otherwise succeed.
- */
-int aodvv2_send_rreq(aodvv2_message_t *pkt, ipv6_addr_t *next_hop);
-
-/**
- * @brief   Send a RREP
- *
- * @pre @p netif != NULL
- *
- * @param[in] pkt      The RREQ packet.
- * @param[in] next_hop Where to send the packet.
- *
- * @return Negative number on failure, otherwise succeed.
- */
-int aodvv2_send_rrep(aodvv2_message_t *pkt, ipv6_addr_t *next_hop);
-
-/**
- * @brief   Initiate a route discovery process to find the given address.
- *
- * @pre @p target_addr != NULL && @p orig_addr != NULL
- *
- * @param[in] target_addr The IP address where we want a route to.
- *
- * @return Negative number on failure, otherwise succeed.
- */
-int aodvv2_find_route(const ipv6_addr_t *orig_addr,
-                      const ipv6_addr_t *target_addr);
+void aodvv2_netif_register(gnrc_netif_t *netif);
 
 /**
  * @brief   Initialize the AODVv2 packer buffering code.

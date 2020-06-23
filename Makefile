@@ -17,7 +17,7 @@ RADIOBASE ?= $(CURDIR)
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
 # development process:
-DEVELHELP ?= 0
+DEVELHELP ?= 1
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
@@ -27,6 +27,10 @@ EXTERNAL_MODULE_DIRS += sys
 # Initialize GNRC netif
 USEMODULE += gnrc_netdev_default
 USEMODULE += auto_init_gnrc_netif
+
+USEMODULE += radio_firmware_auto_init
+USEMODULE += auto_init_aodvv2
+USEMODULE += auto_init_rfc5444
 
 USEMODULE += gnrc_ipv6_router
 USEMODULE += gnrc_icmpv6

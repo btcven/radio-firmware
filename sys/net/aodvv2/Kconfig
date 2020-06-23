@@ -43,4 +43,8 @@ config AODVV2_MAX_ROUTING_ENTRIES
     int "Configure maximum number of routing entries"
     default 16
 
+config AODVV2_MAX_HOP_COUNT
+    int "Limit to number of hops an RREQ/RREP can traverse"
+    default 20
+
 endif

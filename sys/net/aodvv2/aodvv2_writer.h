@@ -23,7 +23,8 @@
 #ifndef AODVV2_WRITER_H
 #define AODVV2_WRITER_H
 
-#include "net/aodvv2/rfc5444.h"
+#include "net/aodvv2/msg.h"
+#include "net/rfc5444.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,10 +56,12 @@ int aodvv2_writer_send_rreq(struct rfc5444_writer *wr, aodvv2_message_t *message
  *
  * @param[in] wr      The RFC 5444 writer.
  * @param[in] message The RREP message data.
+ * @param[im] target  The node we want to send this RREQ to.
  *
  * @return 0 on success, otherwise 0< on failure.
  */
-int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message);
+int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message,
+                            rfc5444_writer_target_t *target);
 
 #ifdef __cplusplus
 } /* extern "C" */
