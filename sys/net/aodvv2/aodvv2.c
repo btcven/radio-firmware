@@ -37,7 +37,7 @@
 #include "_aodvv2_reader.h"
 #include "_aodvv2_writer.h"
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
