@@ -241,7 +241,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         aodvv2_lrs_fill_routing_entry_rrep(&_msg_data, &tmp, link_cost);
         aodvv2_lrs_add_entry(&tmp);
 
-        /* Add entry to NIB forwading table */
+        /* Add entry to NIB forwarding table */
         DEBUG_PUTS("aodvv2: adding Local Route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&_msg_data.targ_node.addr,
                                  _msg_data.targ_node.pfx_len, &_msg_data.sender,
@@ -260,7 +260,7 @@ static enum rfc5444_result _cb_rrep_end_callback(
         DEBUG_PUTS("aodvv2: updating Routing Table entry");
         aodvv2_lrs_fill_routing_entry_rrep(&_msg_data, rt_entry, link_cost);
 
-        /* Add entry to nib forwading table */
+        /* Add entry to nib forwarding table */
         gnrc_ipv6_nib_ft_del(&rt_entry->addr, rt_entry->pfx_len);
 
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
@@ -441,7 +441,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         aodvv2_lrs_fill_routing_entry_rreq(&_msg_data, &tmp, link_cost);
         aodvv2_lrs_add_entry(&tmp);
 
-        /* Add entry to NIB forwading table */
+        /* Add entry to NIB forwarding table */
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
         if (gnrc_ipv6_nib_ft_add(&_msg_data.orig_node.addr,
                                  _msg_data.orig_node.pfx_len, &_msg_data.sender,
@@ -450,7 +450,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         }
     }
     else {
-        /* If the route is aready stored verify if this route offers an
+        /* If the route is already stored verify if this route offers an
          * improvement in path*/
         if (!aodvv2_lrs_offers_improvement(rt_entry, &_msg_data.orig_node)) {
             DEBUG_PUTS("aodvv2: packet offers no improvement over known route");
@@ -462,7 +462,7 @@ static enum rfc5444_result _cb_rreq_end_callback(
         DEBUG_PUTS("aodvv2: updating Local Route");
         aodvv2_lrs_fill_routing_entry_rreq(&_msg_data, rt_entry, link_cost);
 
-        /* Add entry to nib forwading table */
+        /* Add entry to nib forwarding table */
         gnrc_ipv6_nib_ft_del(&rt_entry->addr, rt_entry->pfx_len);
 
         DEBUG_PUTS("aodvv2: adding route to NIB FT");
