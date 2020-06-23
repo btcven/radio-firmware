@@ -20,8 +20,8 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_WRITER_H
-#define AODVV2_WRITER_H
+#ifndef PRIV_AODVV2_WRITER_H
+#define PRIV_AODVV2_WRITER_H
 
 #include "net/aodvv2/msg.h"
 #include "net/rfc5444.h"
@@ -67,5 +67,5 @@ int aodvv2_writer_send_rrep(struct rfc5444_writer *wr, aodvv2_message_t *message
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_WRITER_H */
+#endif /* PRIV_AODVV2_WRITER_H */
 /** @} */

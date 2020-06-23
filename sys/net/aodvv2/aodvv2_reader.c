@@ -21,7 +21,6 @@
  * @}
  */
 
-#include "aodvv2_reader.h"
 #include "net/aodvv2.h"
 #include "net/aodvv2/lrs.h"
 #include "net/aodvv2/mcmsg.h"
@@ -35,8 +34,9 @@
 
 #include "xtimer.h"
 
-#include "aodvv2_writer.h"
 #include "_aodvv2_buffer.h"
+#include "_aodvv2_reader.h"
+#include "_aodvv2_writer.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"

@@ -33,9 +33,9 @@
 #include "net/gnrc/ipv6.h"
 #include "net/gnrc/ipv6/nib.h"
 
-#include "aodvv2_reader.h"
-#include "aodvv2_writer.h"
 #include "_aodvv2_buffer.h"
+#include "_aodvv2_reader.h"
+#include "_aodvv2_writer.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"

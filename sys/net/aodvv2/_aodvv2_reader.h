@@ -20,8 +20,8 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_READER_H
-#define AODVV2_READER_H
+#ifndef PRIV_AODVV2_READER_H
+#define PRIV_AODVV2_READER_H
 
 #include "net/rfc5444.h"
 
@@ -40,5 +40,5 @@ void aodvv2_reader_init(struct rfc5444_reader *reader);
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_READER_H */
+#endif /* PRIV_AODVV2_READER_H */
 /** @} */

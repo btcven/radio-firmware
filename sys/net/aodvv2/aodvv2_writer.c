@@ -21,9 +21,9 @@
  * @}
  */
 
-#include "aodvv2_writer.h"
 #include "net/aodvv2/metric.h"
 
+#include "_aodvv2_writer.h"
 
 #define ENABLE_DEBUG (0)
 #include "debug.h"
