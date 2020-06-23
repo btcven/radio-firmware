@@ -36,6 +36,7 @@
 #include "xtimer.h"
 
 #include "aodvv2_writer.h"
+#include "_aodvv2_buffer.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"

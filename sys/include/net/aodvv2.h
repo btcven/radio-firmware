@@ -53,30 +53,6 @@ void aodvv2_init(void);
  */
 void aodvv2_netif_register(gnrc_netif_t *netif);
 
-/**
- * @brief   Initialize the AODVv2 packer buffering code.
- */
-void aodvv2_buffer_init(void);
-
-/**
- * @brief   Add a packet to the packet buffer
- *
- * @pre @p dst != NULL && @p pkt != NULL
- *
- * @brief[in] dst Packet destination address.
- * @brief[in] pkt Packet.
- */
-int aodvv2_buffer_pkt_add(const ipv6_addr_t *dst, gnrc_pktsnip_t *pkt);
-
-/**
- * @brief   Dispatch buffered packets to `targ_addr`
- *
- * @notes Only call this when a route to `targ_addr` is on the NIB
- *
- * @param[in] targ_addr Target address to dispatch packets.
- */
-void aodvv2_buffer_dispatch(const ipv6_addr_t *targ_addr);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
