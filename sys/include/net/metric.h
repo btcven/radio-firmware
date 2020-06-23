@@ -36,7 +36,7 @@ typedef enum {
      METRIC_NODE_STATE_AND_ATTRIBUTE = 1, /**< Node State and Attribute */
      METRIC_NODE_ENERGY = 2,              /**< Node Energy */
      METRIC_HOP_COUNT = 3,                /**< Hop Count */
-     METRIC_LINK_TROUGHPUT = 4,           /**< Link Troughput */
+     METRIC_LINK_TROUGHPUT = 4,           /**< Link Throughput */
      METRIC_LINK_LATENCY = 5,             /**< Link Latency */
      METRIC_LINK_QUALITY_LEVEL = 6,       /**< Link Quality Level */
      METRIC_LINK_ETX = 7,                 /**< Link ETX*/
