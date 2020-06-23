@@ -20,7 +20,7 @@ The following is a set of guidelines for contributing to [**Locha**](), [**Turpi
 
 ## Before starting.
 
-Please read our [code of conduct.](CODE_OF_CONDUCT.md)
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## How can I contribute?
 
@@ -29,8 +29,12 @@ are some guidelines you need to follow.
 
 ### I have a question.
 
-For any question you can send us a message via Twitter [@Locha_io](https://twitter.com/Locha_io), our Telegram group [t.me/Locha_io](https://t.me/Locha_io), or through our website
-[locha.io](https://locha.io)
+For any question you can send us a message via Twitter [@Locha_io][tw], our
+Telegram group [t.me/Locha_io][tg], or through our website [locha.io][website]
+
+[tw]: https://twitter.com/Locha_io
+[tg]: https://t.me/Locha_io
+[website]: https://locha.io
 
 ### Suggesting features and reporting bugs.
 
@@ -49,14 +53,15 @@ first, and after that it can be merged.
 
 ### Making a change.
 
-Antes de empezar a hacer modificaciones ejecuta estos comandos para crear una nueva rama que esté sincronizada con dev:
+Before starting to make modifications execute these commands to create a new
+branch that's synchronized with `dev`:
 
 ```bash
 git fetch --all
 
 git checkout dev
 
-# Synchronize with the origin branch.
+# Synchronize with the origin remote.
 git pull origin dev
 
 # Create a branch for your feature.
@@ -68,6 +73,6 @@ git push pr featurebranch
 
 ## Styleguide
 
-Actually we use the same style Contiki-NG uses for it's code, you can more
+Actually we use the same style RIOT uses for it's code, you can more
 information about it
-[here](https://github.com/contiki-ng/contiki-ng/wiki/Code-style).
+[here](https://github.com/RIOT-OS/RIOT/blob/master/CODING_CONVENTIONS.md).
