@@ -36,7 +36,6 @@
 #include "xtimer.h"
 
 #include "aodvv2_writer.h"
-#include "rfc5444_compat.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"

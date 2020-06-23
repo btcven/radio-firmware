@@ -161,6 +161,28 @@ static inline void rfc5444_writer_release(void)
     rmutex_unlock(&rfc5444_protocol.wr_lock);
 }
 
+/**
+ * @brief   `ipv6_addr_t` to `struct netaddr`.
+ *
+ * @pre (@p src != NULL) && (@p dst != NULL)
+ *
+ * @param[in]  src     Source.
+ * @param[in]  pfx_len Prefix length.
+ * @param[out] dst     Destination.
+ */
+void ipv6_addr_to_netaddr(const ipv6_addr_t *src, uint8_t pfx_len, struct netaddr *dst);
+
+/**
+ * @brief   `struct netaddr` to `ipv6_addr_t`.
+ *
+ * @pre (@p src != NULL) && (@p dst != NULL)
+ *
+ * @param[in]  src     Source.
+ * @param[out] dst     Destination.
+ * @param[out] pfx_len Prefix length.
+ */
+void netaddr_to_ipv6_addr(struct netaddr *src, ipv6_addr_t *dst, uint8_t *pfx_len);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
