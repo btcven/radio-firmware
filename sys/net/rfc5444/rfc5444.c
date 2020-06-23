@@ -338,7 +338,7 @@ static void _reset_target_if_stale(target_entry_t *entry)
 
     timex_t now;
     xtimer_now_timex(&now);
-    if (timex_cmp(entry->data.lifetime, now) > 0) {
+    if (timex_cmp(now, entry->data.lifetime) > 0) {
         DEBUG_PUTS("rfc5444: stale target, removing");
         entry->used = false;
     }
