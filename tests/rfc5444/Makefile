@@ -1,6 +1,7 @@
 include ../Makefile.tests_common
 
 USEMODULE += gnrc_netdev_default
+USEMODULE += gnrc_ipv6_router
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += auto_init_rfc5444
 USEMODULE += gnrc_ipv6_router
