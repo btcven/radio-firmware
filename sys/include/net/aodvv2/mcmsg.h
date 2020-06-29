@@ -77,6 +77,20 @@ void aodvv2_mcmsg_init(void);
  */
 int aodvv2_mcmsg_process(aodvv2_message_t *msg);
 
+/**
+ * @brief   Are both Multicast Messages compatible?
+ *
+ * A RREQ is considered compatible if they both contain the same OrigPrefix,
+ * OrigPrefixLength, TargPrefix and MetricType.
+ *
+ * @see [draft-perkins-manet-aodvv2-03, Section 6.8]
+ *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-6.8)
+ *
+ * @param[in]  a Mutlicast Message
+ * @param[in]  b Multicast Message
+ */
+bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

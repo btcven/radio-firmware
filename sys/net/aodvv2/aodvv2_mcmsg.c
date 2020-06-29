@@ -55,20 +55,8 @@ static void _reset_entry_if_stale(internal_entry_t *entry)
     }
 }
 
-static inline bool _is_compatible_mcmsg(aodvv2_mcmsg_t *lhs, aodvv2_mcmsg_t *rhs)
-{
-    /* A RREQ is considered compatible if they both contain the same OrigPrefix,
-     * OrigPrefixLength, TargPrefix and MetricType */
-    if (ipv6_addr_equal(&lhs->orig_prefix, &rhs->orig_prefix) &&
-        (lhs->orig_pfx_len == rhs->orig_pfx_len) &&
-        ipv6_addr_equal(&lhs->targ_prefix, &rhs->targ_prefix) &&
-        (lhs->metric_type == rhs->metric_type)) {
-        return true;
-    }
-
-    return false;
-}
-
+/* TODO(jeandudey): remove this function, McMsg should _not_ know anything of
+ * AODVv2 messages. */
 static inline bool _is_compatible(aodvv2_mcmsg_t *entry, aodvv2_message_t *msg)
 {
     /* A RREQ is considered compatible if they both contain the same OrigPrefix,
@@ -211,7 +199,7 @@ int aodvv2_mcmsg_process(aodvv2_message_t *msg)
         _reset_entry_if_stale(entry);
 
         if (entry->used && entry != comparable) {
-            if (_is_compatible_mcmsg(&comparable->data, &entry->data)) {
+            if (aodvv2_mcmsg_is_compatible(&comparable->data, &entry->data)) {
                 if (entry->data.metric <= comparable->data.metric) {
                     DEBUG_PUTS("aodvv2: received McMsg is worse than stored");
                     mutex_unlock(&_lock);
@@ -223,4 +211,18 @@ int aodvv2_mcmsg_process(aodvv2_message_t *msg)
 
     mutex_unlock(&_lock);
     return AODVV2_MCMSG_OK;
+}
+
+bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b)
+{
+    /* A RREQ is considered compatible if they both contain the same OrigPrefix,
+     * OrigPrefixLength, TargPrefix and MetricType */
+    if (ipv6_addr_equal(&a->orig_prefix, &b->orig_prefix) &&
+        (a->orig_pfx_len == b->orig_pfx_len) &&
+        ipv6_addr_equal(&a->targ_prefix, &b->targ_prefix) &&
+        (a->metric_type == b->metric_type)) {
+        return true;
+    }
+
+    return false;
 }
