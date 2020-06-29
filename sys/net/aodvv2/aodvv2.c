@@ -83,6 +83,8 @@ static uint8_t _writer_msg_addrtlvs[CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE];
 static uint8_t _writer_pkt_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static mutex_t _writer_lock;
 
+static void _debug_packet(void *data, size_t size);
+
 static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                         const void *ctx)
 {
@@ -166,18 +168,8 @@ static void _send_packet(struct rfc5444_writer *writer,
     (void)writer;
 #endif
 
-#if ENABLE_DEBUG == 1
-    static struct autobuf hexbuf;
 
-    /* Generate hexdump of packet */
-    abuf_hexdump(&hexbuf, "\t", buffer, length);
-    rfc5444_print_direct(&hexbuf, buffer, length);
-
-    /* Print hexdump to console */
-    DEBUG("%s", abuf_getptr(&hexbuf));
-
-    abuf_free(&hexbuf);
-#endif
+    _debug_packet(buffer, length);
 
     aodvv2_writer_target_t *ctx = container_of(iface, aodvv2_writer_target_t,
                                                target);
@@ -229,18 +221,7 @@ static void _receive(gnrc_pktsnip_t *pkt)
 {
     assert(pkt != NULL && pkt->data != NULL && pkt->size > 0);
 
-#if ENABLE_DEBUG == 1
-    static struct autobuf hexbuf;
-
-    /* Generate hexdump of packet */
-    abuf_hexdump(&hexbuf, "\t", pkt->data, pkt->size);
-    rfc5444_print_direct(&hexbuf, pkt->data, pkt->size);
-
-    /* Print hexdump to console */
-    DEBUG("%s", abuf_getptr(&hexbuf));
-
-    abuf_free(&hexbuf);
-#endif
+    _debug_packet(pkt->data, pkt->size);
 
     /* Find sender address on IPv6 header */
     ipv6_addr_t sender;
@@ -489,4 +470,23 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     aodvv2_mcmsg_process(&pkt);
 
     return aodvv2_send_rreq(&pkt, &ipv6_addr_all_manet_routers_link_local);
+}
+
+static void _debug_packet(void *data, size_t size)
+{
+#if ENABLE_DEBUG
+    static struct autobuf hexbuf;
+
+    /* Generate hexdump of packet */
+    abuf_hexdump(&hexbuf, "\t", data, size);
+    rfc5444_print_direct(&hexbuf, data, size);
+
+    /* Print hexdump to console */
+    DEBUG("%s", abuf_getptr(&hexbuf));
+
+    abuf_free(&hexbuf);
+#else
+    (void)data;
+    (void)size;
+#endif
 }
