@@ -68,6 +68,8 @@ CFLAGS += -I$(CURDIR)
 ifeq (1,$(USE_SLIPTTY))
 .PHONY: host-tools
 
+HOST_TOOLS=sliptty
+
 host-tools:
 	$(Q)env -u CC -u CFLAGS make -C $(RIOTTOOLS)
 

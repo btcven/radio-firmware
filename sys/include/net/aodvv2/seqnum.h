@@ -13,7 +13,7 @@
  * @{
  *
  * @file
- * @brief       AODVv2 Node Sequence Number maintenace
+ * @brief       AODVv2 Node Sequence Number maintenance
  *
  * @author      Lotte Steenbrink <lotte.steenbrink@fu-berlin.de>
  * @author      Gustavo Grisales <gustavosinbandera1@hotmail.com>

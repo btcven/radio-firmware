@@ -171,26 +171,26 @@ void aodvv2_writer_init(struct rfc5444_writer *wr)
     res = rfc5444_writer_register_msgcontentprovider(wr, &_rreq_message_content_provider, _rreq_addrtlvs,
                                                      ARRAY_SIZE(_rreq_addrtlvs));
     if (res < 0) {
-        DEBUG("rfc5444_writer: couldn't reigster RREQ message provider\n");
+        DEBUG("rfc5444_writer: couldn't register RREQ message provider\n");
         return;
     }
 
     res = rfc5444_writer_register_msgcontentprovider(wr, &_rrep_message_content_provider, _rrep_addrtlvs,
                                                      ARRAY_SIZE(_rrep_addrtlvs));
     if (res < 0) {
-        DEBUG("rfc5444_writer: couldn't reigster RREQ message provider\n");
+        DEBUG("rfc5444_writer: couldn't register RREQ message provider\n");
         return;
     }
 
     _rreq_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREQ, false);
     if (_rreq_msg == NULL) {
-        DEBUG("rfc5444_writer: couldn't reigster RREQ message\n");
+        DEBUG("rfc5444_writer: couldn't register RREQ message\n");
         return;
     }
 
     _rrep_msg = rfc5444_writer_register_message(wr, RFC5444_MSGTYPE_RREP, false);
     if (_rrep_msg == NULL) {
-        DEBUG("rfc5444_writer: couldn't reigster RREP message\n");
+        DEBUG("rfc5444_writer: couldn't register RREP message\n");
         return;
     }
 

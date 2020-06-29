@@ -38,9 +38,9 @@ extern "C" {
  * @name    Front-End configuration
  * @{
  */
-#define RF_PA_EN_PIN        GPIO_PIN(0, 28)
+#define RF_HGM_PIN          GPIO_PIN(0, 28)
 #define RF_LNA_EN_PIN       GPIO_PIN(0, 29)
-#define RF_HGM_PIN          GPIO_PIN(0, 30)
+#define RF_PA_EN_PIN        GPIO_PIN(0, 30)
 /** @} */
 
 /**
