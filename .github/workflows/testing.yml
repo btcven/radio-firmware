@@ -3,6 +3,16 @@ name: Automated tests
 on: [push, pull_request]
 
 jobs:
+    uncrustify:
+        name: Uncrustify
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v1
+            - name: uncrustify
+              uses: coleaeason/actions-uncrustify@v1
+              with:
+                  configPath: 'RIOT/uncrustify.cfg'
+
     codespell:
         name: Check for spelling errors
         runs-on: ubuntu-latest
