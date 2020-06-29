@@ -24,6 +24,8 @@
 #include "net/aodvv2/conf.h"
 #include "net/aodvv2/mcmsg.h"
 
+#include "xtimer.h"
+
 #define ENABLE_DEBUG (0)
 #include "debug.h"
 
