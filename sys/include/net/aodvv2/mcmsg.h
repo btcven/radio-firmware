@@ -34,13 +34,6 @@ extern "C" {
 #endif
 
 /**
- * @brief   Maximum number of entries on the set.
- */
-#ifndef CONFIG_AODVV2_MCMSG_MAX_ENTRIES
-#define CONFIG_AODVV2_MCMSG_MAX_ENTRIES (16)
-#endif
-
-/**
  * @brief   A Multicast Message
  */
 typedef struct {
