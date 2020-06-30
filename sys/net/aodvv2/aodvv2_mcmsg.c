@@ -34,26 +34,12 @@ typedef struct {
     bool used;           /**< Is this entry used? */
 } internal_entry_t;
 
+static void _reset_entry_if_stale(internal_entry_t *entry);
+
 static internal_entry_t _entries[CONFIG_AODVV2_MCMSG_MAX_ENTRIES];
 static mutex_t _lock = MUTEX_INIT;
 
 static timex_t _max_seqnum_lifetime;
-
-static void _reset_entry_if_stale(internal_entry_t *entry)
-{
-    if (!entry->used) {
-        return;
-    }
-
-    timex_t current_time;
-    xtimer_now_timex(&current_time);
-
-    if (timex_cmp(current_time, entry->data.removal_time) == 1) {
-        DEBUG_PUTS("aodvv2: McMsg is stale");
-        memset(&entry->data, 0, sizeof(entry->data));
-        entry->used = false;
-    }
-}
 
 /* TODO(jeandudey): remove this function, McMsg should _not_ know anything of
  * AODVv2 messages. */
@@ -225,4 +211,25 @@ bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b)
     }
 
     return false;
+}
+
+bool aodvv2_mcmsg_is_stale(aodvv2_mcmsg_t *mcmsg)
+{
+    timex_t current_time;
+    xtimer_now_timex(&current_time);
+
+    return timex_cmp(current_time, mcmsg->removal_time) >= 0;
+}
+
+static void _reset_entry_if_stale(internal_entry_t *entry)
+{
+    if (!entry->used) {
+        return;
+    }
+
+    if (aodvv2_mcmsg_is_stale(&entry->data)) {
+        DEBUG_PUTS("aodvv2: McMsg is stale");
+        memset(&entry->data, 0, sizeof(entry->data));
+        entry->used = false;
+    }
 }

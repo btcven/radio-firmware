@@ -81,8 +81,23 @@ int aodvv2_mcmsg_process(aodvv2_message_t *msg);
  *
  * @param[in]  a Mutlicast Message
  * @param[in]  b Multicast Message
+ *
+ * @return true both McMsg's are compatible
+ * @return false both McMsg's aren't compatible
  */
 bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+
+/**
+ * @brief   Is this message stale?
+ *
+ * Compares the removal_time of the McMsg to the current time.
+ *
+ * @param[in]  mcmsg Mutlicast Message
+ *
+ * @return true stale
+ * @return false not stale
+ */
+bool aodvv2_mcmsg_is_stale(aodvv2_mcmsg_t *mcmsg);
 
 #ifdef __cplusplus
 } /* extern "C" */
