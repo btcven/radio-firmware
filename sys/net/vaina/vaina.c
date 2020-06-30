@@ -114,14 +114,15 @@ static int _process_msg(vaina_msg_t *msg)
         case VAINA_MSG_RCS_ADD:
             DEBUG_PUTS("vaina: adding new client");
             if (aodvv2_rcs_add(&msg->payload.rcs_add.ip,
-                               msg->payload.rcs_add.pfx_len, 1) == NULL) {
+                               msg->payload.rcs_add.pfx_len, 1) == 0) {
                 DEBUG_PUTS("vaina: client set is full");
                 return -ENOSPC;
             }
             break;
 
         case VAINA_MSG_RCS_DEL:
-            aodvv2_rcs_del(&msg->payload.rcs_del.ip, msg->payload.rcs_del.pfx_len);
+            return aodvv2_rcs_del(&msg->payload.rcs_del.ip,
+                                  msg->payload.rcs_del.pfx_len);
             break;
 #endif
 

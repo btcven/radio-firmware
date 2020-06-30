@@ -21,6 +21,7 @@
  * @}
  */
 
+#include "net/aodvv2/conf.h"
 #include "net/aodvv2/rcs.h"
 
 #include "mutex.h"
@@ -32,11 +33,11 @@
  * @brief   Memory for the Client Set entries.
  */
 typedef struct {
-    aodvv2_rcs_entry_t data; /**< Client data */
+    aodvv2_router_client_t data; /**< Client data */
     bool used; /**< Is this entry used? */
 } internal_entry_t;
 
-static internal_entry_t _entries[CONFIG_AODVV2_RCS_ENTRIES];
+static internal_entry_t _entries[CONFIG_AODVV2_RCS_MAX_ENTRIES];
 static mutex_t _lock = MUTEX_INIT;
 
 void aodvv2_rcs_init(void)
@@ -46,17 +47,23 @@ void aodvv2_rcs_init(void)
     mutex_unlock(&_lock);
 }
 
-aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len,
-                                   const uint8_t cost)
+int aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len, const uint8_t cost)
 {
+    assert(addr != NULL);
+
+    if (pfx_len == 0 || ipv6_addr_is_unspecified(addr)) {
+        DEBUG_PUTS("aodvv2: invalid client");
+        return -EINVAL;
+    }
+
     if (pfx_len > 128) {
         pfx_len = 128;
     }
 
-    const aodvv2_rcs_entry_t *entry = aodvv2_rcs_matches(addr, pfx_len);
-    if (entry != NULL) {
+    aodvv2_router_client_t entry;
+    if (aodvv2_rcs_find(&entry, addr, pfx_len) == 0) {
         DEBUG_PUTS("aodvv2: client exists, not adding it");
-        return NULL;
+        return -EEXIST;
     }
 
     mutex_lock(&_lock);
@@ -72,38 +79,55 @@ aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len,
             entry->used = true;
 
             mutex_unlock(&_lock);
-            return &entry->data;
+            return 0;
         }
     }
 
     DEBUG_PUTS("aodvv2: router client set is full");
     mutex_unlock(&_lock);
-    return NULL;
+    return -ENOSPC;
 }
 
-void aodvv2_rcs_del(const ipv6_addr_t *addr, uint8_t pfx_len)
+int aodvv2_rcs_del(const ipv6_addr_t *addr, uint8_t pfx_len)
 {
+    assert(addr != NULL);
+
+    if (pfx_len == 0 || ipv6_addr_is_unspecified(addr)) {
+        return -EINVAL;
+    }
+
     if (pfx_len > 128) {
         pfx_len = 128;
     }
 
-    aodvv2_rcs_entry_t *entry = aodvv2_rcs_matches(addr, pfx_len);
-
-    if (!entry) {
-        DEBUG_PUTS("aodvv2: client not found\n");
-        return;
-    }
-
     mutex_lock(&_lock);
-    internal_entry_t *internal = container_of(entry, internal_entry_t, data);
-    memset(&internal->data, 0, sizeof(aodvv2_rcs_entry_t));
-    internal->used = false;
+    for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
+        internal_entry_t *entry = &_entries[i];
+
+        /* Skip unused entries */
+        if (entry->used) {
+            /* Compare addresses by prefix */
+            if ((entry->data.pfx_len == pfx_len) &&
+                (ipv6_addr_match_prefix(&entry->data.addr, addr) >= pfx_len)) {
+                memset(&entry->data, 0, sizeof(aodvv2_router_client_t));
+                entry->used = false;
+                mutex_unlock(&_lock);
+                return 0;
+            }
+        }
+    }
     mutex_unlock(&_lock);
+    return -ENOENT;
 }
 
-aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
-                                       uint8_t pfx_len)
+int aodvv2_rcs_find(aodvv2_router_client_t *client, const ipv6_addr_t *addr,
+                    uint8_t pfx_len)
 {
+    assert(addr != NULL);
+    if (ipv6_addr_is_unspecified(addr) || pfx_len == 0) {
+        return -EINVAL;
+    }
+
     if (pfx_len > 128) {
         pfx_len = 128;
     }
@@ -120,37 +144,57 @@ aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
         /* Compare addresses by prefix */
         if ((entry->data.pfx_len == pfx_len) &&
             (ipv6_addr_match_prefix(&entry->data.addr,
-                                   addr) >= entry->data.pfx_len)) {
+                                   addr) >= pfx_len)) {
+            *client = entry->data;
             mutex_unlock(&_lock);
-            return &entry->data;
+            return 0;
         }
     }
 
     /* No entry matches */
     mutex_unlock(&_lock);
-    return NULL;
+    return -ENOENT;
 }
 
-aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr)
+int aodvv2_rcs_get(aodvv2_router_client_t *client, const ipv6_addr_t *addr)
 {
+    assert(addr != NULL);
+    if (ipv6_addr_is_unspecified(addr)) {
+        return -EINVAL;
+    }
+
     mutex_lock(&_lock);
+    internal_entry_t *best_match = NULL;
     for (unsigned i = 0; i < ARRAY_SIZE(_entries); i++) {
         internal_entry_t *entry = &_entries[i];
 
         /* Skip unused entries */
-        if (!entry->used) {
-            continue;
-        }
-
-        /* Compare addresses by prefix */
-        if (ipv6_addr_match_prefix(&entry->data.addr,
-                                   addr) >= entry->data.pfx_len) {
-            mutex_unlock(&_lock);
-            return &entry->data;
+        if (entry->used) {
+            /* Compare addresses by prefix */
+            if (ipv6_addr_match_prefix(&entry->data.addr,
+                                       addr) >= entry->data.pfx_len) {
+                if (best_match == NULL) {
+                    best_match = entry;
+                }
+                else {
+                    /* Use the one with the highest matching prefix length */
+                    if (best_match->data.pfx_len < entry->data.pfx_len) {
+                        best_match = entry;
+                    }
+                }
+            }
         }
     }
+
+    if (best_match == NULL) {
+        mutex_unlock(&_lock);
+        return -ENOENT;
+    }
+
+    *client = best_match->data;
+
     mutex_unlock(&_lock);
-    return NULL;
+    return 0;
 }
 
 void aodvv2_rcs_print_entries(void)
