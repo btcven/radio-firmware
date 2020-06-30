@@ -466,8 +466,18 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     pkt.targ_node.metric = 0;
     pkt.targ_node.seqnum = 0;
 
-    /* Add RREQ to mcmsg */
-    aodvv2_mcmsg_process(&pkt);
+    /* Add RREQ to McMsg set */
+    aodvv2_mcmsg_t mcmsg = {
+        .orig_prefix = pkt.orig_node.addr,
+        .orig_pfx_len = pkt.orig_node.pfx_len,
+        .targ_prefix = pkt.targ_node.addr,
+        .metric_type = pkt.metric_type,
+        .metric = pkt.orig_node.metric,
+        .orig_seqnum = pkt.orig_node.seqnum,
+        .targ_seqnum = pkt.targ_node.seqnum,
+        .netif = _netif->pid,
+    };
+    aodvv2_mcmsg_process(&mcmsg);
 
     return aodvv2_send_rreq(&pkt, &ipv6_addr_all_manet_routers_link_local);
 }

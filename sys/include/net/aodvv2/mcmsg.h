@@ -68,7 +68,7 @@ void aodvv2_mcmsg_init(void);
  * @return AODVV2_MCMSG_OK processing went fine.
  * @return AODVV2_MCMSG_REDUNDANT message is redundant.
  */
-int aodvv2_mcmsg_process(aodvv2_message_t *msg);
+int aodvv2_mcmsg_process(aodvv2_mcmsg_t *msg);
 
 /**
  * @brief   Are both Multicast Messages compatible?
@@ -86,6 +86,23 @@ int aodvv2_mcmsg_process(aodvv2_message_t *msg);
  * @return false both McMsg's aren't compatible
  */
 bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+
+/**
+ * @brief   Are both Multicast Messages comparable?
+ *
+ * A RREQ is considered comparable if they both are compatible and SeqNoRtr are
+ * equal.
+ *
+ * @see [draft-perkins-manet-aodvv2-03, Section 6.8]
+ *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-6.8)
+ *
+ * @param[in]  a Mutlicast Message
+ * @param[in]  b Multicast Message
+ *
+ * @return true both McMsg's are comparable
+ * @return false both McMsg's aren't comparable
+ */
+bool aodvv2_mcmsg_is_comparable(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
 
 /**
  * @brief   Is this message stale?
