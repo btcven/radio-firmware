@@ -58,7 +58,7 @@
 #include "common/autobuf.h"
 #include "common/string.h"
 
-#ifdef RIOT_VERSION
+#if defined(RIOT_VERSION) && !defined(BOARD_NATIVE)
 static size_t getpagesize(void)
 {
   return 512;

@@ -61,5 +61,14 @@
 #define CONFIG_AODVV2_RREQ_HOLDDOWN_TIME (10)
 #endif
 
+/**
+ * @brief   Multicast Message Set size.
+ *
+ * This is the maximum number of entries in the Multicast Message Set.
+ */
+#ifndef CONFIG_AODVV2_MCMSG_MAX_ENTRIES
+#define CONFIG_AODVV2_MCMSG_MAX_ENTRIES (16)
+#endif
+
 #endif /* AODVV2_CONF_H */
 /** @} */

@@ -7,8 +7,10 @@ if KCONFIG_MODULE_AODVV2
 rsource "Kconfig.timers"
 
 config AODVV2_MCMSG_MAX_ENTRIES
-    int "Maximum number of entries on the Multicast Message Set"
+    int "Multicast Message Set size"
     default 16
+    help
+        This is the maximum number of entries in the Multicast Message Set.
 
 config AODVV2_RCS_ENTRIES
     int "Configure maximum number of entries on the Router Client Set"

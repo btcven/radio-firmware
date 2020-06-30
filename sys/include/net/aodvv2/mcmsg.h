@@ -34,13 +34,6 @@ extern "C" {
 #endif
 
 /**
- * @brief   Maximum number of entries on the set.
- */
-#ifndef CONFIG_AODVV2_MCMSG_MAX_ENTRIES
-#define CONFIG_AODVV2_MCMSG_MAX_ENTRIES (16)
-#endif
-
-/**
  * @brief   A Multicast Message
  */
 typedef struct {
@@ -75,7 +68,53 @@ void aodvv2_mcmsg_init(void);
  * @return AODVV2_MCMSG_OK processing went fine.
  * @return AODVV2_MCMSG_REDUNDANT message is redundant.
  */
-int aodvv2_mcmsg_process(aodvv2_message_t *msg);
+int aodvv2_mcmsg_process(aodvv2_mcmsg_t *msg);
+
+/**
+ * @brief   Are both Multicast Messages compatible?
+ *
+ * A RREQ is considered compatible if they both contain the same OrigPrefix,
+ * OrigPrefixLength, TargPrefix and MetricType.
+ *
+ * @see [draft-perkins-manet-aodvv2-03, Section 6.8]
+ *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-6.8)
+ *
+ * @param[in]  a Mutlicast Message
+ * @param[in]  b Multicast Message
+ *
+ * @return true both McMsg's are compatible
+ * @return false both McMsg's aren't compatible
+ */
+bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+
+/**
+ * @brief   Are both Multicast Messages comparable?
+ *
+ * A RREQ is considered comparable if they both are compatible and SeqNoRtr are
+ * equal.
+ *
+ * @see [draft-perkins-manet-aodvv2-03, Section 6.8]
+ *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-6.8)
+ *
+ * @param[in]  a Mutlicast Message
+ * @param[in]  b Multicast Message
+ *
+ * @return true both McMsg's are comparable
+ * @return false both McMsg's aren't comparable
+ */
+bool aodvv2_mcmsg_is_comparable(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+
+/**
+ * @brief   Is this message stale?
+ *
+ * Compares the removal_time of the McMsg to the current time.
+ *
+ * @param[in]  mcmsg Mutlicast Message
+ *
+ * @return true stale
+ * @return false not stale
+ */
+bool aodvv2_mcmsg_is_stale(aodvv2_mcmsg_t *mcmsg);
 
 #ifdef __cplusplus
 } /* extern "C" */

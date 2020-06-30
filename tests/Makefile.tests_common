@@ -2,6 +2,10 @@ APPLICATION ?= tests_$(notdir $(patsubst %/,%,$(CURDIR)))
 
 BOARD ?= cc1312-launchpad
 
+ifneq (,$(wildcard $(CURDIR)/tests/.))
+  DEFAULT_MODULE += test_utils_interactive_sync
+endif
+
 EXTERNAL_MODULE_DIRS += $(CURDIR)/../../sys
 RADIOBASE = $(CURDIR)/../../
 RIOTBASE ?= $(CURDIR)/../../RIOT

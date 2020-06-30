@@ -48,10 +48,14 @@
 #include "common/common_types.h"
 #include "rfc5444_iana.h"
 
+/* timetlv_max = 14 * 2^28 * 1000 / 1024 = 14000 << 18 = 3 670 016 000 ms */
+#define RFC5497_TIMETLV_MAX 0xdac00000
+
+/* infinite path cost */
+#define RFC7181_METRIC_INFINITE_PATH 0xffffffff
+
 enum
 {
-  /* timetlv_max = 14 * 2^28 * 1000 / 1024 = 14000 << 18 = 3 670 016 000 ms */
-  RFC5497_TIMETLV_MAX = 0xdac00000,
 
   /* timetlv_min = 1000/1024 ms */
   RFC5497_TIMETLV_MIN = 0x00000001,
@@ -64,9 +68,6 @@ enum
 
   /* larger than possible metric value */
   RFC7181_METRIC_INFINITE = 0xffffff,
-
-  /* infinite path cost */
-  RFC7181_METRIC_INFINITE_PATH = 0xffffffff,
 };
 
 /**

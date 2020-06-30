@@ -411,8 +411,18 @@ static enum rfc5444_result _cb_rreq_end_callback(
         return RFC5444_DROP_PACKET;
     }
 
-    /* The incoming RREQ MUST be checked against previously received information */
-    if (aodvv2_mcmsg_process(&_msg_data) == AODVV2_MCMSG_REDUNDANT) {
+    /* Process the McMsg (RREQ) to see if it's redundant (or not) */
+    aodvv2_mcmsg_t mcmsg = {
+        .orig_prefix = _msg_data.orig_node.addr,
+        .orig_pfx_len = _msg_data.orig_node.pfx_len,
+        .targ_prefix = _msg_data.targ_node.addr,
+        .metric_type = _msg_data.metric_type,
+        .metric = _msg_data.orig_node.metric,
+        .orig_seqnum = _msg_data.orig_node.seqnum,
+        .targ_seqnum = _msg_data.targ_node.seqnum,
+        /* TODO(jeandudey): .netif */
+    };
+    if (aodvv2_mcmsg_process(&mcmsg) == AODVV2_MCMSG_REDUNDANT) {
         DEBUG_PUTS("aodvv2: packet is redundant");
         return RFC5444_DROP_PACKET;
     }
