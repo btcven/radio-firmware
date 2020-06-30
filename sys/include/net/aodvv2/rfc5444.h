@@ -23,11 +23,8 @@
 #ifndef NET_AODVV2_RFC5444_H
 #define NET_AODVV2_RFC5444_H
 
-#include "net/aodvv2/seqnum.h"
+#include "net/aodvv2/msg.h"
 #include "net/manet.h"
-#include "net/metric.h"
-
-#include "timex.h"
 
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -71,49 +68,6 @@ extern "C" {
 #ifndef CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE
 #define CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE (1000)
 #endif
-
-/**
- * @brief   AODVv2 message types
- */
-typedef enum {
-    RFC5444_MSGTYPE_RREQ = 10,    /**< RREQ message type */
-    RFC5444_MSGTYPE_RREP = 11,    /**< RREP message type */
-    RFC5444_MSGTYPE_RERR = 12,    /**< RERR message type */
-    RFC5444_MSGTYPE_RREP_ACK = 13 /**< RREP_Ack message type */
-} rfc5444_msg_type_t;
-
-/**
- * @brief   AODVv2 TLV types
- */
-typedef enum {
-    RFC5444_MSGTLV_ORIGSEQNUM,
-    RFC5444_MSGTLV_TARGSEQNUM,
-    RFC5444_MSGTLV_UNREACHABLE_NODE_SEQNUM,
-    RFC5444_MSGTLV_METRIC,
-} rfc5444_tlv_type_t;
-
-/**
- * @brief   Data about an OrigNode or TargNode.
- */
-typedef struct {
-    ipv6_addr_t addr;             /**< IPv6 address of the node */
-    uint8_t pfx_len;              /**< IPv6 address length */
-    uint8_t metric;               /**< Metric value */
-    aodvv2_seqnum_t seqnum;       /**< Sequence Number */
-} node_data_t;
-
-/**
- * @brief   All data contained in a RREQ or RREP.
- */
-typedef struct {
-    uint8_t msg_hop_limit;        /**< Hop limit */
-    ipv6_addr_t sender;           /**< IP address of the neighboring router */
-    routing_metric_t metric_type; /**< Metric type */
-    node_data_t orig_node;        /**< OrigNode data */
-    node_data_t targ_node;        /**< TargNode data */
-    ipv6_addr_t seqnortr;         /**< SeqNoRtr */
-    timex_t timestamp;            /**< Time at which the message was received */
-} aodvv2_message_t;
 
 typedef struct {
     struct rfc5444_writer_target target; /**< RFC5444 writer target */

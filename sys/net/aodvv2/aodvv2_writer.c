@@ -23,6 +23,7 @@
 
 #include "aodvv2_writer.h"
 #include "net/aodvv2/metric.h"
+#include "net/aodvv2/msg.h"
 
 #include "rfc5444_compat.h"
 
