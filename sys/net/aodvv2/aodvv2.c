@@ -99,7 +99,8 @@ static void _route_info(unsigned type, const ipv6_addr_t *ctx_addr,
                 gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)ctx;
                 ipv6_hdr_t *ipv6_hdr = gnrc_ipv6_get_header(pkt);
 
-                if (aodvv2_rcs_is_client(&ipv6_hdr->src) != NULL) {
+                aodvv2_router_client_t client;
+                if (aodvv2_rcs_get(&client, &ipv6_hdr->src) == 0) {
                     if (aodvv2_buffer_pkt_add(ctx_addr, pkt) == 0) {
                         DEBUG("aodvv2: finding route\n");
                         aodvv2_find_route(&ipv6_hdr->src, ctx_addr);
@@ -446,10 +447,10 @@ int aodvv2_find_route(const ipv6_addr_t *orig_addr,
     pkt.metric_type = CONFIG_AODVV2_DEFAULT_METRIC;
 
     /* Set OrigNode information */
-    aodvv2_rcs_entry_t *client;
-    if ((client = aodvv2_rcs_is_client(orig_addr)) != NULL) {
-        pkt.orig_node.addr = client->addr;
-        pkt.orig_node.pfx_len = client->pfx_len;
+    aodvv2_router_client_t client;
+    if (aodvv2_rcs_get(&client, orig_addr) == 0) {
+        pkt.orig_node.addr = client.addr;
+        pkt.orig_node.pfx_len = client.pfx_len;
     }
     else {
         DEBUG_PUTS("aodvv2: not a client");

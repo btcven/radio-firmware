@@ -5,12 +5,26 @@ on: [push, pull_request]
 jobs:
     codespell:
         name: Check for spelling errors
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-18.04
         steps:
-            - uses: actions/checkout@v1
+            - uses: actions/checkout@v2
             - uses: codespell-project/actions-codespell@master
               with:
                   check_filenames: false
                   check_hidden: false
                   skip: RIOT,*.svg,./sys/oonf_api,.git
                   ignore_words_list: rsource,inout
+
+    tests:
+        name: Compile and test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  submodules: true
+            - name: Install RIOT toolchain
+              run: sudo apt-get install gcc g++ gcc-multilib g++-multilib build-essential make python3-pexpect
+            - name: Building aodvv2_rcs
+              run: make BOARD=native -C tests/aodvv2_rcs
+            - name: Test aodvv2_rcs
+              run: make BOARD=native -C tests/aodvv2_rcs test

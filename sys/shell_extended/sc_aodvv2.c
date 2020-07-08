@@ -63,7 +63,7 @@ static int _rcs_add(int argc, char **argv)
         return 1;
     }
 
-    if (aodvv2_rcs_add(&addr, pfx_len, 1) == NULL) {
+    if (aodvv2_rcs_add(&addr, pfx_len, 1) == 0) {
         printf("error: unable to add client to RCS\n");
         return 1;
     }

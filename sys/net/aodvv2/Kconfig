@@ -12,9 +12,11 @@ config AODVV2_MCMSG_MAX_ENTRIES
     help
         This is the maximum number of entries in the Multicast Message Set.
 
-config AODVV2_RCS_ENTRIES
-    int "Configure maximum number of entries on the Router Client Set"
+config AODVV2_RCS_MAX_ENTRIES
+    int "Router Client Set size"
     default 2
+    help
+        This is the maximum number of entries in the Router Client Set.
 
 config METRIC_HOP_COUNT_AODVV2_MAX
     int "Configure maximum value for Hop Count metric"

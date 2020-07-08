@@ -23,20 +23,13 @@
 #ifndef AODVV2_RCS_H
 #define AODVV2_RCS_H
 
+#include <errno.h>
+
 #include "net/ipv6/addr.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @name    Configurable number of maximum entries in the Router Client Set
- * @{
- */
-#ifndef CONFIG_AODVV2_RCS_ENTRIES
-#define CONFIG_AODVV2_RCS_ENTRIES (2)
-#endif
-/** @} */
 
 /**
  * @brief   Router Client Set entry
@@ -65,7 +58,7 @@ typedef struct {
      *        range.
      */
     uint8_t cost;
-} aodvv2_rcs_entry_t;
+} aodvv2_router_client_t;
 
 /**
  * @brief   Initialize Router Client Set
@@ -77,57 +70,63 @@ void aodvv2_rcs_init(void);
  *
  * @pre @p addr != NULL
  *
- * @param[in] addr          Client IP address.
- * @param[in] prefix_length Length of the routing prefix associated with the
- * address.
- * @param[in] cost          Cost associated with the client.
+ * @param[in]  addr    Client address.
+ * @param[in]  pfx_len Prefix length.
+ * @param[in]  cost    Cost associated with the client address.
  *
- * @return NULL The Set is full.
- * @return aodvv2_rcs_entry_t * Pointer to the entry in the client set.
+ * @return 0 client added.
+ * @return -EEXISTS if client exists.
+ * @return -ENOSPC if the set is full.
+ * @return -EINVAL if the client data is invalid.
  */
-aodvv2_rcs_entry_t *aodvv2_rcs_add(const ipv6_addr_t *addr,
-                                   const uint8_t prefix_length,
-                                   const uint8_t cost);
+int aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len, const uint8_t cost);
 
 /**
  * @brief   Delete a client from the Router Client Set
  *
  * @pre @p addr != NULL
  *
- * @param[in] addr    IPv6 address of the client to remove.
- * @param[in] pfx_len `addr` prefix length.
+ * @param[in]  addr    IPv6 address of the client to remove.
+ * @param[in]  pfx_len `addr` prefix length.
+ *
+ * @return 0 on success.
+ * @return -EINVAL client address/prefix length is invalid.
+ * @return -ENOENT client not found.
  */
-void aodvv2_rcs_del(const ipv6_addr_t *addr, uint8_t pfx_len);
+int aodvv2_rcs_del(const ipv6_addr_t *addr, uint8_t pfx_len);
 
 /**
  * @brief   Find a client in the set.
  *
  * @pre @p addr != NULL
  *
- * @param[in] addr    The client address to be found.
- * @param[in] pfx_len `addr` prefix length.
+ * @param[out] client  The client return value.
+ * @param[in]  addr    The client address to be found.
+ * @param[in]  pfx_len `addr` prefix length.
  *
- * @return Pointer to entry if found.
- * @return NULL Not found.
+ * @return 0 on success
+ * @return -EINVAL parameter errors.
+ * @return -ENOENT entry doesn't exists.
  */
-aodvv2_rcs_entry_t *aodvv2_rcs_matches(const ipv6_addr_t *addr,
-                                       uint8_t pfx_len);
+int aodvv2_rcs_find(aodvv2_router_client_t *client, const ipv6_addr_t *addr,
+                    uint8_t pfx_len);
 
 /**
- * @brief   Checks if the given IPv6 address matches an entry.
+ * @brief   Verifies if the given IP address matches a client entry.
  *
  * @pre @p addr != NULL
  *
- * @param[in] addr The IPv6 address.
+ * @param[out] client The client return value.
+ * @param[in]  addr   The IPv6 address.
  *
- * @return NULL if not found, otherwise pointer to RCS entry.
+ * @return 0 if found.
+ * @return -ENOENT if not found.
+ * @return -EINVAL on invalid address (unspecified).
  */
-aodvv2_rcs_entry_t *aodvv2_rcs_is_client(const ipv6_addr_t *addr);
+int aodvv2_rcs_get(aodvv2_router_client_t *client, const ipv6_addr_t *addr);
 
 /**
  * @brief   Print RCS entries.
- *
- * @param[in] entry The entry to get printed.
  */
 void aodvv2_rcs_print_entries(void);
 
