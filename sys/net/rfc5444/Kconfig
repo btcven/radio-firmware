@@ -1,0 +1,32 @@
+menuconfig KCONFIG_MODULE_RFC5444
+    bool "RFC 5444"
+    depends on MODULE_RFC5444
+
+if KCONFIG_MODULE_RFC5444
+
+config RFC5444_MSG_QUEUE_SIZE
+    int "Thread message queue size"
+    default 16
+    help
+        This is the message queue size for the RFC 5444 thread.
+
+config RFC5444_PACKET_SIZE
+    int "Packet maximum size"
+    default 128
+    help
+        This is the maximum size for a RFC 5444 packet.
+
+config RFC5444_ADDR_TLVS_SIZE
+    int "Address/TLVs buffer size"
+    default 1024
+    help
+        This is the buffer size for the RFC 5444 Address/TLVs buffer used by the
+        writer.
+
+config RFC5444_TARGET_NUMOF
+    int "Targets"
+    default 16
+    help
+        This is the maximum target count.
+
+endif

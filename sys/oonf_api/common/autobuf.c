@@ -58,7 +58,8 @@
 #include "common/autobuf.h"
 #include "common/string.h"
 
-#if defined(RIOT_VERSION) && !defined(BOARD_NATIVE)
+#if defined(RIOT_VERSION) && !defined(BOARD_NATIVE) && \
+    !(defined(MCU_ESP32) || defined(MCU_ESP8266))
 static size_t getpagesize(void)
 {
   return 512;

@@ -26,5 +26,9 @@ jobs:
               run: sudo apt-get install gcc g++ gcc-multilib g++-multilib build-essential make python3-pexpect
             - name: Building aodvv2_rcs
               run: make BOARD=native -C tests/aodvv2_rcs
-            - name: Test aodvv2_rcs
+            - name: Testing aodvv2_rcs
               run: make BOARD=native -C tests/aodvv2_rcs test
+            - name: Building rfc5444
+              run: make BOARD=native -C tests/rfc5444
+            - name: Testing rfc5444 
+              run: make BOARD=native -C tests/rfc5444 test

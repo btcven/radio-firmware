@@ -16,6 +16,14 @@ ifneq (,$(filter vaina,$(USEMODULE)))
   USEMODULE += gnrc_sock_udp
 endif
 
+ifneq (,$(filter rfc5444,$(USEMODULE)))
+  USEMODULE += gnrc_ipv6
+  USEMODULE += gnrc_udp
+  USEMODULE += manet
+  USEMODULE += oonf_rfc5444
+  USEMODULE += radio_firmware_net
+endif
+
 ifneq (,$(filter manet,$(USEMODULE)))
   USEMODULE += radio_firmware_net
 endif

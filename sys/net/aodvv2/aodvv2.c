@@ -71,7 +71,7 @@ static gnrc_netreg_entry_t netreg = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX
  * @brief   The RFC5444 packet reader context
  */
 static struct rfc5444_reader _reader;
-static mutex_t _reader_lock;
+static mutex_t _reader_lock = MUTEX_INIT;
 
 /**
  * @brief   The RFC5444 packet writer context
@@ -81,7 +81,7 @@ static aodvv2_writer_target_t _writer_context;
 static uint8_t _writer_msg_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
 static uint8_t _writer_msg_addrtlvs[CONFIG_AODVV2_RFC5444_ADDR_TLVS_SIZE];
 static uint8_t _writer_pkt_buffer[CONFIG_AODVV2_RFC5444_PACKET_SIZE];
-static mutex_t _writer_lock;
+static mutex_t _writer_lock = MUTEX_INIT;
 
 static void _debug_packet(void *data, size_t size);
 
@@ -307,9 +307,6 @@ int aodvv2_init(gnrc_netif_t *netif)
     if (_pid != KERNEL_PID_UNDEF) {
         return _pid;
     }
-
-    mutex_init(&_writer_lock);
-    mutex_init(&_reader_lock);
 
     /* Start RFC5444 thread */
     _pid = thread_create(_stack, sizeof(_stack), CONFIG_AODVV2_RFC5444_PRIO,

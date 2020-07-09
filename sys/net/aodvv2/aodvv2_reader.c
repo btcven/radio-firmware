@@ -28,6 +28,7 @@
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
 #include "net/aodvv2/rfc5444.h"
+#include "net/aodvv2/msg.h"
 #include "net/manet.h"
 
 #include "net/gnrc/ipv6/nib/ft.h"

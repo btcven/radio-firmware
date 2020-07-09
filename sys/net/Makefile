@@ -6,6 +6,9 @@ endif
 ifneq (,$(filter manet,$(USEMODULE)))
   DIRS += manet
 endif
+ifneq (,$(filter rfc5444,$(USEMODULE)))
+  DIRS += rfc5444
+endif
 ifneq (,$(filter vaina,$(USEMODULE)))
   DIRS += vaina
 endif
