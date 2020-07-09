@@ -48,7 +48,7 @@ typedef struct {
      *  link to the neighbor has been confirmed as bidirectional.
      *
      *  - (HEARD)[@ref AODVV2_NEIGH_STATE_HEARD]: we've only heard of this
-     *  neighbor, althought, we haven't confirmed bidirectionality.
+     *  neighbor, although, we haven't confirmed bidirectionality.
      *
      *  - (BLACLISTED)[@ref AODVV2_NEIGH_STATE_BLACKLISTED]: indicates that the
      *  link to the neighbor is being treated as uni-directional.
