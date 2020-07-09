@@ -1,11 +1,10 @@
 PSEUDOMODULES += bq27441_int
 
 ifneq (,$(filter aodvv2,$(USEMODULE)))
-  USEMODULE += gnrc_ipv6
   USEMODULE += gnrc_ipv6_nib_router
-  USEMODULE += gnrc_udp
-  USEMODULE += manet
-  USEMODULE += oonf_rfc5444
+  USEMODULE += gnrc_icmpv6
+  USEMODULE += gnrc_icmpv6_error
+  USEMODULE += rfc5444
   USEMODULE += timex
   USEMODULE += xtimer
 endif

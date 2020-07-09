@@ -208,7 +208,7 @@ static internal_entry_t *_add(aodvv2_mcmsg_t *mcmsg)
             entry->data.timestamp = current_time;
             entry->data.removal_time = timex_add(current_time, _max_seqnum_lifetime);
 
-            entry->data.netif = mcmsg->netif;
+            entry->data.iface = mcmsg->iface;
             return entry;
         }
     }

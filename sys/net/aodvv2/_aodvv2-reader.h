@@ -20,10 +20,10 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef AODVV2_READER_H
-#define AODVV2_READER_H
+#ifndef PRIV_AODVV2_READER_H
+#define PRIV_AODVV2_READER_H
 
-#include "net/aodvv2/rfc5444.h"
+#include "net/rfc5444.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,20 +34,11 @@ extern "C" {
  *
  * @param[in] reader Pointer to the reader context.
  */
-void aodvv2_reader_init(struct rfc5444_reader *reader, kernel_pid_t netif_pid);
-
-/**
- * @brief   Sets the sender address
- *
- * @notes MUST be called before starting to parse the packet.
- *
- * @param[in] sender The address of the sender.
- */
-void aodvv2_rfc5444_handle_packet_prepare(ipv6_addr_t *sender);
+void _aodvv2_reader_init(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* AODVV2_READER_H */
+#endif /* PRIV_AODVV2_READER_H */
 /** @} */

@@ -39,12 +39,15 @@ config AODVV2_RREQ_WAIT_TIME
     int "RREQ_WAIT_TIME"
     default 2
 
-config AODVV2_RREP_ACK_SENT_TIMEOUT
-    int "RREP_ACK_SENT_TIMEOUT"
-    default 1
-
 config AODVV2_RREQ_HOLDDOWN_TIME
     int "RREQ_HOLDDOWN_TIME"
     default 10
+
+config AODVV2_RREP_ACK_SENT_TIMEOUT
+    int "RREP_Ack sent timeout"
+    default 1
+    help
+        This is the timeout (in seconds) for a sent RREP_Ack request, if no
+        reply is received within the timeout the node will be blacklisted.
 
 endif

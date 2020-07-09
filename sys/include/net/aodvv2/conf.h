@@ -19,6 +19,10 @@
 #ifndef AODVV2_CONF_H
 #define AODVV2_CONF_H
 
+#ifndef CONFIG_AODVV2_MAX_HOPCOUNT
+#define CONFIG_AODVV2_MAX_HOPCOUNT (20)
+#endif
+
 /**
  * @brief   Active interval value in seconds
  */
@@ -53,12 +57,27 @@
 #define CONFIG_AODVV2_RREQ_WAIT_TIME (2)
 #endif
 
+#ifndef CONFIG_AODVV2_RREQ_HOLDDOWN_TIME
+#define CONFIG_AODVV2_RREQ_HOLDDOWN_TIME (10)
+#endif
+
+/**
+ * @brief    RREP_Ack sent timeout.
+ *
+ * This is the timeout (in seconds) for a sent RREP_Ack request, if no reply is
+ * received within the timeout the node will be blacklisted.
+ */
 #ifndef CONFIG_AODVV2_RREP_ACK_SENT_TIMEOUT
 #define CONFIG_AODVV2_RREP_ACK_SENT_TIMEOUT (1)
 #endif
 
-#ifndef CONFIG_AODVV2_RREQ_HOLDDOWN_TIME
-#define CONFIG_AODVV2_RREQ_HOLDDOWN_TIME (10)
+/**
+ * @brief   Packet buffer size.
+ *
+ * This is the maximum number of entries in the AODVv2 buffered packets set.
+ */
+#ifndef CONFIG_AODVV2_BUFFER_MAX_ENTRIES
+#define CONFIG_AODVV2_BUFFER_MAX_ENTRIES (10)
 #endif
 
 /**
@@ -77,6 +96,24 @@
  */
 #ifndef CONFIG_AODVV2_RCS_MAX_ENTRIES
 #define CONFIG_AODVV2_RCS_MAX_ENTRIES (2)
+#endif
+
+/**
+ * @brief   Local Route Set size
+ *
+ * This is the maximum number of entries in the Local Route Set.
+ */
+#ifndef CONFIG_AODVV2_LRS_MAX_ENTRIES
+#define CONFIG_AODVV2_LRS_MAX_ENTRIES (16)
+#endif
+
+/**
+ * @brief   Neighbor Set size
+ *
+ * This is the maximum number of entries in the Neighbor Set.
+ */
+#ifndef CONFIG_AODVV2_NEIGH_MAX_ENTRIES
+#define CONFIG_AODVV2_NEIGH_MAX_ENTRIES (16)
 #endif
 
 #endif /* AODVV2_CONF_H */

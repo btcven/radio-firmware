@@ -30,7 +30,14 @@ extern "C" {
 #endif
 
 /**
- * @brief  Sequence number type
+ * @brief   Sequence Number
+ *
+ * Sequence Numbers are used to determine temporal order of AODVv2 messages that
+ * originate from AODVv2 routers. Used to identify routing stale information so
+ * that it can be discarded.
+ *
+ * @see [draft-perkins-manet-aodvv2-03, section 4.4]
+ *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-4.4)
  */
 typedef uint16_t aodvv2_seqnum_t;
 

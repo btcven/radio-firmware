@@ -25,7 +25,7 @@
 
 #include "net/metric.h"
 #include "net/aodvv2/seqnum.h"
-#include "net/aodvv2/rfc5444.h"
+#include "net/ipv6/addr.h"
 
 #include "timex.h"
 
@@ -46,7 +46,7 @@ typedef struct {
     uint8_t metric;               /**< Metric of the RREQ */
     timex_t timestamp;            /**< Last time this entry was updated */
     timex_t removal_time;         /**< Time at which this entry should be removed */
-    uint16_t netif;               /**< Interface where this McMsg was received */
+    uint16_t iface;               /**< Interface where this McMsg was received */
     ipv6_addr_t seqnortr;         /**< SeqNoRtr */
 } aodvv2_mcmsg_t;
 
