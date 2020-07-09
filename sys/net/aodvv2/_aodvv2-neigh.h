@@ -40,7 +40,7 @@ typedef struct {
      */
     ipv6_addr_t addr;
     /**
-     * @brief   Indicates wether the link to the neighbor is bidirectional.
+     * @brief   Indicates whether the link to the neighbor is bidirectional.
      *
      * There are three possible states:
      *
