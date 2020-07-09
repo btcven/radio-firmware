@@ -81,7 +81,7 @@ static inline const char *aodvv2_lrs_state_to_str(uint8_t state)
  * @see [draft-perkins-manet-aodvv2-03, section 4.5]
  *      (https://tools.ietf.org/html/draft-perkins-manet-aodvv2-03#section-4.5)
  *
- * TODO(jeandudey): add precursors optional feature for enchanced route error
+ * TODO(jeandudey): add precursors optional feature for enhanced route error
  * reporting.
  */
 typedef struct {
