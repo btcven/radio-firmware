@@ -300,7 +300,7 @@ static enum rfc5444_result _rreq_end(struct rfc5444_reader_tlvblock_context *con
         return RFC5444_DROP_PACKET;
     }
 
-    /* Check if this RREQ doesn't exceeds tha maximum value for the configured
+    /* Check if this RREQ doesn't exceeds the maximum value for the configured
      * MetricType */
     uint8_t link_cost = aodvv2_metric_link_cost(rreq->metric_type);
     if (rreq->orig_metric >= (aodvv2_metric_max(rreq->metric_type) - link_cost)) {
