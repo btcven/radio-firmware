@@ -32,3 +32,7 @@ jobs:
               run: make BOARD=native -C tests/rfc5444
             - name: Testing rfc5444 
               run: make BOARD=native -C tests/rfc5444 test
+            - name: Building aodvv2
+              run: make BOARD=native -C tests/aodvv2
+            - name: Testing aodvv2
+              run: make BOARD=native -C tests/aodvv2 test
