@@ -23,7 +23,6 @@
 
 #include "net/aodvv2/conf.h"
 #include "net/aodvv2.h"
-#include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
 #include "net/aodvv2/seqnum.h"
@@ -33,6 +32,7 @@
 
 #include "_aodvv2-buffer.h"
 #include "_aodvv2-lrs.h"
+#include "_aodvv2-mcmsg.h"
 #include "_aodvv2-neigh.h"
 #include "_aodvv2-reader.h"
 #include "_aodvv2-writer.h"
@@ -52,11 +52,11 @@ int aodvv2_init(void)
 
     _aodvv2_buffer_init();
     _aodvv2_lrs_init();
+    _aodvv2_mcmsg_init();
     _aodvv2_neigh_init();
 
     aodvv2_seqnum_init();
     aodvv2_rcs_init();
-    aodvv2_mcmsg_init();
 
     gnrc_rfc5444_reader_acquire();
     _aodvv2_reader_init();
@@ -147,6 +147,13 @@ static void _route_request(gnrc_pktsnip_t *pkt, const ipv6_addr_t *dst)
         return;
     }
 
+    aodvv2_router_client_t client;
+    if (aodvv2_rcs_get(&client, &ipv6_hdr->src) < 0) {
+        DEBUG("  no matching client for %s\n",
+              ipv6_addr_to_str(addr_str, &ipv6_hdr->src, sizeof(addr_str)));
+        return;
+    }
+
     /* Buffer this packet so the LRS can check for it */
     if (_aodvv2_buffer_pkt_add(pkt) < 0) {
         DEBUG("  packet buffer is full\n");
@@ -167,12 +174,6 @@ static void _route_request(gnrc_pktsnip_t *pkt, const ipv6_addr_t *dst)
     //    return;
     //}
 
-    aodvv2_router_client_t client;
-    if (aodvv2_rcs_get(&client, &ipv6_hdr->src) < 0) {
-        DEBUG("aodvv2: no matching client for %s\n",
-              ipv6_addr_to_str(addr_str, &ipv6_hdr->src, sizeof(addr_str)));
-        return;
-    }
 
     //aodvv2_msg_rreq_t route_request = {
     //    .msg_hop_limit = CONFIG_AODVV2_MAX_HOPCOUNT,

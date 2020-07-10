@@ -22,17 +22,16 @@
  */
 
 #include "_aodvv2-lrs.h"
+#include "_aodvv2-mcmsg.h"
 #include "_aodvv2-neigh.h"
 #include "_aodvv2-reader.h"
 #include "_aodvv2-writer.h"
 
 #include "net/aodvv2.h"
 #include "net/aodvv2/conf.h"
-#include "net/aodvv2/mcmsg.h"
 #include "net/aodvv2/metric.h"
 #include "net/aodvv2/rcs.h"
 #include "net/aodvv2/msg.h"
-#include "net/manet.h"
 
 #include "net/gnrc/icmpv6/error.h"
 #include "net/gnrc/ipv6/nib/ft.h"
@@ -317,7 +316,7 @@ static enum rfc5444_result _rreq_end(struct rfc5444_reader_tlvblock_context *con
     }
 
     /* Process the McMsg (RREQ) to see if it's redundant (or not) */
-    aodvv2_mcmsg_t mcmsg = {
+    _aodvv2_mcmsg_t mcmsg = {
         .orig_prefix = rreq->orig_prefix,
         .orig_pfx_len = rreq->orig_pfx_len,
         .targ_prefix = rreq->targ_prefix,
@@ -327,7 +326,7 @@ static enum rfc5444_result _rreq_end(struct rfc5444_reader_tlvblock_context *con
         .targ_seqnum = rreq->targ_seqnum,
         .iface = pkt_data->iface,
     };
-    if (aodvv2_mcmsg_process(&mcmsg) == AODVV2_MCMSG_REDUNDANT) {
+    if (_aodvv2_mcmsg_process(&mcmsg) == AODVV2_MCMSG_REDUNDANT) {
         DEBUG_PUTS("  packet is redundant");
         return RFC5444_DROP_PACKET;
     }

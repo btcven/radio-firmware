@@ -20,10 +20,12 @@
  * @author      Jean Pierre Dudey <jeandudey@hotmail.com>
  */
 
-#ifndef NET_AODVV2_MCMSG_H
-#define NET_AODVV2_MCMSG_H
+#ifndef PRIV_AODVV2_MCMSG_H
+#define PRIV_AODVV2_MCMSG_H
 
-#include "net/metric.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "net/aodvv2/seqnum.h"
 #include "net/ipv6/addr.h"
 
@@ -42,13 +44,14 @@ typedef struct {
     ipv6_addr_t targ_prefix;      /**< TargPrefix */
     aodvv2_seqnum_t orig_seqnum;  /**< SeqNum associated with OrigPrefix */
     aodvv2_seqnum_t targ_seqnum;  /**< SeqNum associated with TargPrefix */
-    routing_metric_t metric_type; /**< Metric type of the RREQ */
+    uint8_t metric_type;          /**< Metric type of the RREQ */
     uint8_t metric;               /**< Metric of the RREQ */
     timex_t timestamp;            /**< Last time this entry was updated */
     timex_t removal_time;         /**< Time at which this entry should be removed */
     uint16_t iface;               /**< Interface where this McMsg was received */
     ipv6_addr_t seqnortr;         /**< SeqNoRtr */
-} aodvv2_mcmsg_t;
+    bool used;                    /**< Is this entry used? */
+} _aodvv2_mcmsg_t;
 
 enum {
     AODVV2_MCMSG_REDUNDANT = -1,  /**< Processed McMsg is redundant */
@@ -58,7 +61,7 @@ enum {
 /**
  * @brief   Initialize RREQ table.
  */
-void aodvv2_mcmsg_init(void);
+void _aodvv2_mcmsg_init(void);
 
 /**
  * @brief   Process an RREQ
@@ -68,7 +71,17 @@ void aodvv2_mcmsg_init(void);
  * @return AODVV2_MCMSG_OK processing went fine.
  * @return AODVV2_MCMSG_REDUNDANT message is redundant.
  */
-int aodvv2_mcmsg_process(aodvv2_mcmsg_t *msg);
+int _aodvv2_mcmsg_process(_aodvv2_mcmsg_t *msg);
+
+/**
+ * @brief   Allocate a new Multicast Message entry.
+ *
+ * @param[in]  mcmsg Multicast Message entry.
+ *
+ * @return Pointer to @ref _aodvv2_mcmsg_t entry on success.
+ * @return NULL if no space available.
+ */
+_aodvv2_mcmsg_t *_aodvv2_mcmsg_alloc(_aodvv2_mcmsg_t *entry);
 
 /**
  * @brief   Are both Multicast Messages compatible?
@@ -85,7 +98,7 @@ int aodvv2_mcmsg_process(aodvv2_mcmsg_t *msg);
  * @return true both McMsg's are compatible
  * @return false both McMsg's aren't compatible
  */
-bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+bool _aodvv2_mcmsg_is_compatible(_aodvv2_mcmsg_t *a, _aodvv2_mcmsg_t *b);
 
 /**
  * @brief   Are both Multicast Messages comparable?
@@ -102,7 +115,7 @@ bool aodvv2_mcmsg_is_compatible(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
  * @return true both McMsg's are comparable
  * @return false both McMsg's aren't comparable
  */
-bool aodvv2_mcmsg_is_comparable(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
+bool _aodvv2_mcmsg_is_comparable(_aodvv2_mcmsg_t *a, _aodvv2_mcmsg_t *b);
 
 /**
  * @brief   Is this message stale?
@@ -114,11 +127,11 @@ bool aodvv2_mcmsg_is_comparable(aodvv2_mcmsg_t *a, aodvv2_mcmsg_t *b);
  * @return true stale
  * @return false not stale
  */
-bool aodvv2_mcmsg_is_stale(aodvv2_mcmsg_t *mcmsg);
+bool _aodvv2_mcmsg_is_stale(_aodvv2_mcmsg_t *mcmsg);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* NET_AODVV2_MCMSG_H */
+#endif /* PRIV_AODVV2_MCMSG_H */
 /** @} */
