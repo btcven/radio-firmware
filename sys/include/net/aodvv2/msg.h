@@ -60,7 +60,7 @@ extern "C" {
  */
 #define AODVV2_ADDRTLV_PATH_METRIC  (129) /**< PATH_METRIC (TBD) */
 #define AODVV2_ADDRTLV_SEQ_NUM      (130) /**< SEQ_NUM (TBD */
-#define AODVV2_ADDRTLV_ADDRESS_TYPE (130) /**< ADDRESS_TYPE (TBD) */
+#define AODVV2_ADDRTLV_ADDRESS_TYPE (131) /**< ADDRESS_TYPE (TBD) */
 /** @} */
 
 /**

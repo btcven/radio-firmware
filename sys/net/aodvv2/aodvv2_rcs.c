@@ -40,6 +40,8 @@ typedef struct {
 static internal_entry_t _entries[CONFIG_AODVV2_RCS_MAX_ENTRIES];
 static mutex_t _lock = MUTEX_INIT;
 
+static char addr_str[IPV6_ADDR_MAX_STR_LEN];
+
 void aodvv2_rcs_init(void)
 {
     mutex_lock(&_lock);
@@ -51,8 +53,11 @@ int aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len, const uint8_t cost)
 {
     assert(addr != NULL);
 
+    DEBUG("aodvv2: adding client (addr = %s, pfx_len = %d, cost = %d)\n",
+          ipv6_addr_to_str(addr_str, addr, sizeof(addr_str)), pfx_len, cost);
+
     if (pfx_len == 0 || ipv6_addr_is_unspecified(addr)) {
-        DEBUG_PUTS("aodvv2: invalid client");
+        DEBUG("  invalid client\n");
         return -EINVAL;
     }
 
@@ -62,7 +67,7 @@ int aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len, const uint8_t cost)
 
     aodvv2_router_client_t entry;
     if (aodvv2_rcs_find(&entry, addr, pfx_len) == 0) {
-        DEBUG_PUTS("aodvv2: client exists, not adding it");
+        DEBUG("  client exists, not adding it\n");
         return -EEXIST;
     }
 
@@ -83,7 +88,7 @@ int aodvv2_rcs_add(const ipv6_addr_t *addr, uint8_t pfx_len, const uint8_t cost)
         }
     }
 
-    DEBUG_PUTS("aodvv2: router client set is full");
+    DEBUG("  RCS FULL!\n");
     mutex_unlock(&_lock);
     return -ENOSPC;
 }
@@ -124,7 +129,13 @@ int aodvv2_rcs_find(aodvv2_router_client_t *client, const ipv6_addr_t *addr,
                     uint8_t pfx_len)
 {
     assert(addr != NULL);
+    assert(client != NULL);
+
+    DEBUG("aodvv2: finding client (addr = %s, prefix = %d)\n",
+          ipv6_addr_to_str(addr_str, addr, sizeof(addr_str)), pfx_len);
+
     if (ipv6_addr_is_unspecified(addr) || pfx_len == 0) {
+        DEBUG("  invalid parameters\n");
         return -EINVAL;
     }
 
@@ -151,6 +162,7 @@ int aodvv2_rcs_find(aodvv2_router_client_t *client, const ipv6_addr_t *addr,
         }
     }
 
+    DEBUG("  NOT FOUND\n");
     /* No entry matches */
     mutex_unlock(&_lock);
     return -ENOENT;

@@ -27,20 +27,20 @@
 
 static atomic_uint_fast32_t seqnum;
 
-void aodvv2_seqnum_init(void)
+void _aodvv2_seqnum_init(void)
 {
     /* Initialize to 1 */
     atomic_init(&seqnum, 1);
 }
 
-void aodvv2_seqnum_inc(void)
+void _aodvv2_seqnum_inc(void)
 {
     if (atomic_fetch_add(&seqnum, 1) >= 65535) {
         atomic_store(&seqnum, 1);
     }
 }
 
-aodvv2_seqnum_t aodvv2_seqnum_get(void)
+aodvv2_seqnum_t _aodvv2_seqnum_get(void)
 {
     return atomic_load(&seqnum);
 }

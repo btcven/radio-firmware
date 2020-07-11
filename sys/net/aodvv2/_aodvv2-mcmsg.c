@@ -26,7 +26,7 @@
 
 #include "xtimer.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 static void _reset_entry_if_stale(_aodvv2_mcmsg_t *entry);
@@ -39,7 +39,7 @@ static timex_t _max_seqnum_lifetime;
 
 void _aodvv2_mcmsg_init(void)
 {
-    DEBUG_PUTS("aodvv2: init McMset set");
+    DEBUG("aodvv2: initializing multicast message set\n");
     mutex_lock(&_lock);
 
     _max_seqnum_lifetime = timex_set(CONFIG_AODVV2_MAX_SEQNUM_LIFETIME, 0);
@@ -72,7 +72,7 @@ int _aodvv2_mcmsg_process(_aodvv2_mcmsg_t *mcmsg)
     comparable->timestamp = current_time;
     comparable->removal_time = timex_add(current_time, _max_seqnum_lifetime);
 
-    int seqcmp = aodvv2_seqnum_cmp(comparable->orig_seqnum, mcmsg->orig_seqnum);
+    int seqcmp = _aodvv2_seqnum_cmp(comparable->orig_seqnum, mcmsg->orig_seqnum);
     if (seqcmp < 0) {
         DEBUG("  stored McMsg is newer\n");
         mutex_unlock(&_lock);

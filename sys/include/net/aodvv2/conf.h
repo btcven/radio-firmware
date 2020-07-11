@@ -19,8 +19,31 @@
 #ifndef AODVV2_CONF_H
 #define AODVV2_CONF_H
 
+#include "thread.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef CONFIG_ADOVV2_STACK_SIZE
+#define CONFIG_AODVV2_STACK_SIZE (THREAD_STACKSIZE_DEFAULT)
+#endif
+
+#ifndef CONFIG_AODVV2_PRIO
+#define CONFIG_AODVV2_PRIO (THREAD_PRIORITY_MAIN - 1)
+#endif
+
+/**
+ * @brief   Control traffic limit
+ *
+ * @note MUST be a power of 2.
+ */
+#ifndef CONFIG_AODVV2_CONTROL_TRAFFIC_LIMIT
+#define CONFIG_AODVV2_CONTROL_TRAFFIC_LIMIT (16)
+#endif
+
 #ifndef CONFIG_AODVV2_MAX_HOPCOUNT
-#define CONFIG_AODVV2_MAX_HOPCOUNT (20)
+#define CONFIG_AODVV2_MAX_HOPCOUNT (64)
 #endif
 
 /**
@@ -114,6 +137,10 @@
  */
 #ifndef CONFIG_AODVV2_NEIGH_MAX_ENTRIES
 #define CONFIG_AODVV2_NEIGH_MAX_ENTRIES (16)
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* AODVV2_CONF_H */

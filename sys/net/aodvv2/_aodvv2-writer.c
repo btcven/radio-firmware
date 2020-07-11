@@ -135,7 +135,7 @@ static void _rreq_add_addrtlvs(struct rfc5444_writer *writer)
     uint8_t address_type;
     aodvv2_msg_rreq_t *rreq = &_msg.rreq;
 
-    DEBUG("aodvv2: adding RREQ Address/TLVs");
+    DEBUG("aodvv2: adding RREQ Address/TLVs\n");
     DEBUG("  OrigPrefix = %s/%d\n",
           ipv6_addr_to_str(addr_str, &rreq->orig_prefix, sizeof(addr_str)),
           rreq->orig_pfx_len);

@@ -25,6 +25,7 @@
 #include "_aodvv2-mcmsg.h"
 #include "_aodvv2-neigh.h"
 #include "_aodvv2-reader.h"
+#include "_aodvv2-seqnum.h"
 #include "_aodvv2-writer.h"
 
 #include "net/aodvv2.h"
@@ -338,9 +339,6 @@ static enum rfc5444_result _rreq_end(struct rfc5444_reader_tlvblock_context *con
               client.pfx_len);
 
         /* TODO(jeandudey): Check CONTROL_TRAFFIC_LIMIT */
-        aodvv2_seqnum_t seqnum = aodvv2_seqnum_get();
-        aodvv2_seqnum_inc();
-
         aodvv2_msg_rrep_t rrep = {
             .msg_hop_limit = CONFIG_AODVV2_MAX_HOPCOUNT - rreq->msg_hop_limit,
             .orig_prefix = rreq->orig_prefix,
@@ -348,7 +346,7 @@ static enum rfc5444_result _rreq_end(struct rfc5444_reader_tlvblock_context *con
             /* TODO(jeandudey): SeqNoRtr */
             .seqnortr = {{0}},
             .targ_pfx_len = client.pfx_len,
-            .targ_seqnum = seqnum,
+            .targ_seqnum = _aodvv2_seqnum_new(),
             .metric_type = AODVV2_METRIC_TYPE_HOP_COUNT,
             .targ_metric = client.cost,
         };

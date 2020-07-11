@@ -24,6 +24,7 @@
 #define NET_AODVV2_AODVV2_H
 
 #include "net/gnrc/netif.h"
+#include "net/aodvv2/msg.h"
 
 #ifdef __cplusplus
 extern "C" {

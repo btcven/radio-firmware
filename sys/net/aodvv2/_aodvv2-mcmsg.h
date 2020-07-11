@@ -26,10 +26,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "net/aodvv2/seqnum.h"
 #include "net/ipv6/addr.h"
 
 #include "timex.h"
+
+#include "_aodvv2-seqnum.h"
 
 #ifdef __cplusplus
 extern "C" {

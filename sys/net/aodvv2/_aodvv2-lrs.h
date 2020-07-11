@@ -158,6 +158,11 @@ typedef struct {
 } _aodvv2_local_route_t;
 
 /**
+ * @brief   Initialize LRS.
+ */
+void _aodvv2_lrs_init(void);
+
+/**
  * @brife   Acquire LRS lock
  */
 void _aodvv2_lrs_acquire(void);
@@ -166,11 +171,6 @@ void _aodvv2_lrs_acquire(void);
  * @brief   Release LRS lock
  */
 void _aodvv2_lrs_release(void);
-
-/**
- * @brief   Initialize LRS.
- */
-void _aodvv2_lrs_init(void);
 
 /**
  * @brief   Process an incoming Route Message (`RteMsg`).
