@@ -17,6 +17,10 @@
 
 <h1 align="center">Radio Firmware</h1>
 
+
+# Important!!
+## The development of this code continues in the [turpial-firmware](https://github.com/btcven/turpial-firmware) repository.
+
 Here you can
 find the main firmware for your device compatible with Locha Mesh (the radio)
 and be aware of our development process.
